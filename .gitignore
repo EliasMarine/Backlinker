@@ -1,0 +1,45 @@
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Build
+main.js
+*.js.map
+
+# TypeScript
+*.tsbuildinfo
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Obsidian
+data.json
+
+# Cache and temp files
+*.cache
+.cache/
+.tmp/
+temp/
+
+# Environment
+.env
+.env.local
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log

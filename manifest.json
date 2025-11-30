@@ -1,0 +1,10 @@
+{
+  "id": "smart-links",
+  "name": "Smart Links",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "Intelligent backlinking using hybrid TF-IDF and semantic analysis. Automatically discover connections between notes.",
+  "author": "Your Name",
+  "authorUrl": "https://github.com/yourusername/smart-links",
+  "isDesktopOnly": false
+}

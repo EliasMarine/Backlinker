@@ -1,0 +1,142 @@
+/* Smart Links Plugin Styles */
+
+/* Suggestion Panel */
+.smart-links-panel {
+  padding: 10px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.smart-links-header {
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.smart-links-header h4 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.smart-links-status {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.smart-links-status-empty {
+  color: var(--text-faint);
+}
+
+.smart-links-status-active {
+  color: var(--text-accent);
+  font-weight: 500;
+}
+
+/* Empty State */
+.smart-links-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.smart-links-empty-state p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Suggestion List */
+.smart-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Suggestion Item */
+.smart-links-item {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 12px;
+  background-color: var(--background-secondary);
+  transition: background-color 0.2s ease;
+}
+
+.smart-links-item:hover {
+  background-color: var(--background-secondary-alt);
+}
+
+.smart-links-item-title {
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: var(--text-normal);
+}
+
+.smart-links-item-explanation {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
+.smart-links-item-score {
+  font-size: 11px;
+  color: var(--text-accent);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+/* Action Buttons */
+.smart-links-item-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.smart-links-item-actions button {
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.smart-links-item-actions button:hover {
+  background-color: var(--interactive-hover);
+}
+
+.smart-links-btn-insert {
+  background-color: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+  border: none !important;
+  font-weight: 500;
+}
+
+.smart-links-btn-insert:hover {
+  background-color: var(--interactive-accent-hover) !important;
+}
+
+.smart-links-btn-dismiss {
+  flex: 0 0 30px !important;
+  padding: 4px !important;
+  color: var(--text-muted);
+}
+
+.smart-links-btn-dismiss:hover {
+  background-color: var(--background-modifier-error) !important;
+  color: var(--text-error) !important;
+}
+
+/* Footer */
+.smart-links-footer {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid var(--background-modifier-border);
+  font-size: 11px;
+  color: var(--text-faint);
+  text-align: center;
+}
