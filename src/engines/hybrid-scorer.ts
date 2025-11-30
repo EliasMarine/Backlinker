@@ -7,7 +7,7 @@
 
 import { NoteIndex, SmartLinksSettings } from '../types';
 import { TFIDFEngine, TFIDFResult } from './tfidf-engine';
-import { EmbeddingEngine, EmbeddingResult } from './embedding-engine';
+// import { EmbeddingEngine, EmbeddingResult } from './embedding-engine'; // Disabled for Phase 2
 
 export interface HybridResult {
   note: NoteIndex;
@@ -23,17 +23,21 @@ export interface HybridResult {
  */
 export class HybridScorer {
   private tfidfEngine: TFIDFEngine;
-  private embeddingEngine: EmbeddingEngine;
+  private embeddingEngine: any | null; // Changed to any | null for Phase 2 (embeddings disabled)
   private settings: SmartLinksSettings;
 
   constructor(
     tfidfEngine: TFIDFEngine,
-    embeddingEngine: EmbeddingEngine,
+    embeddingEngine: any | null, // null when embeddings disabled
     settings: SmartLinksSettings
   ) {
     this.tfidfEngine = tfidfEngine;
     this.embeddingEngine = embeddingEngine;
     this.settings = settings;
+
+    if (!embeddingEngine) {
+      console.log('[Smart Links] HybridScorer initialized with TF-IDF only (embeddings disabled)');
+    }
   }
 
   /**
@@ -44,7 +48,7 @@ export class HybridScorer {
     sourceNote: NoteIndex,
     maxResults: number = 10
   ): Promise<HybridResult[]> {
-    const embeddingsEnabled = this.settings.enableEmbeddings && sourceNote.embedding;
+    const embeddingsEnabled = this.embeddingEngine && this.settings.enableEmbeddings && sourceNote.embedding;
 
     if (embeddingsEnabled) {
       return this.hybridSearch(sourceNote, maxResults);
@@ -76,6 +80,12 @@ export class HybridScorer {
    * Hybrid search (TF-IDF + embeddings)
    */
   private hybridSearch(sourceNote: NoteIndex, maxResults: number): HybridResult[] {
+    // Safety check - should not be called if embedding engine is null
+    if (!this.embeddingEngine) {
+      console.warn('[Smart Links] hybridSearch called but embeddings disabled, falling back to TF-IDF');
+      return this.tfidfOnlySearch(sourceNote, maxResults);
+    }
+
     // Get TF-IDF results (use lower threshold to cast wider net)
     const tfidfResults = this.tfidfEngine.findSimilarNotes(
       sourceNote,

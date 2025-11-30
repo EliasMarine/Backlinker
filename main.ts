@@ -4,7 +4,7 @@ import { SmartLinksSettingTab } from './src/settings';
 import { VaultIndexer } from './src/indexing/vault-indexer';
 import { CacheManager } from './src/cache/cache-manager';
 import { TFIDFEngine } from './src/engines/tfidf-engine';
-import { EmbeddingEngine } from './src/engines/embedding-engine';
+// import { EmbeddingEngine } from './src/engines/embedding-engine'; // Disabled for Phase 2 - will re-enable in Phase 3
 import { HybridScorer } from './src/engines/hybrid-scorer';
 import { LinkDiscovery } from './src/discovery/link-discovery';
 import { SuggestionPanelView, SUGGESTION_PANEL_VIEW_TYPE } from './src/ui/suggestion-panel';
@@ -24,7 +24,7 @@ export default class SmartLinksPlugin extends Plugin {
 
   // Engines
   private tfidfEngine: TFIDFEngine;
-  private embeddingEngine: EmbeddingEngine;
+  // private embeddingEngine: EmbeddingEngine; // Disabled for Phase 2 - will re-enable in Phase 3
   private hybridScorer: HybridScorer;
 
   // Discovery & UI
@@ -57,10 +57,10 @@ export default class SmartLinksPlugin extends Plugin {
 
     // Initialize engines
     this.tfidfEngine = new TFIDFEngine(this.cache);
-    this.embeddingEngine = new EmbeddingEngine(this.cache);
+    // this.embeddingEngine = new EmbeddingEngine(this.cache); // Disabled for Phase 2 - will re-enable in Phase 3
     this.hybridScorer = new HybridScorer(
       this.tfidfEngine,
-      this.embeddingEngine,
+      null, // Embeddings disabled for Phase 2 testing
       this.settings
     );
 
