@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ IMPORTANT: Check Progress File First!
+
+**BEFORE responding to any prompt, you MUST:**
+1. Read `documents/CURRENT_PROGRESS.md` to understand current project status
+2. Check what's been tested vs what's just written
+3. Review known issues and blockers
+4. Understand the current phase and immediate priorities
+
+**This progress file is the SOURCE OF TRUTH for project state.**
+
+Do NOT assume features work just because code exists. Many components are written but completely untested.
+
+---
+
 ## Project Overview
 
 **Smart Links** is an Obsidian plugin that automatically suggests backlinks to relevant notes as you write. The plugin indexes your vault and provides real-time link suggestions, transforming the manual process of finding and creating connections into an effortless, automatic experience.
