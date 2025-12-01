@@ -180,21 +180,56 @@ export class SuggestionPanelView extends ItemView {
     console.log('[Smart Links] Insert button clicked for:', suggestion.targetNote);
 
     try {
-      const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+      // Find the source note file
+      const sourceFile = this.app.vault.getAbstractFileByPath(suggestion.sourceNote);
 
-      if (!activeView || !activeView.editor) {
-        console.warn('[Smart Links] No active markdown editor found');
-        new Notice('Please open a note to insert the link');
+      if (!(sourceFile instanceof TFile)) {
+        console.warn('[Smart Links] Source note not found:', suggestion.sourceNote);
+        new Notice('Source note not found');
         return;
       }
 
-      const editor = activeView.editor;
-      const noteName = this.getNoteName(suggestion.targetNote);
+      // Find the leaf containing the source file
+      const leaves = this.app.workspace.getLeavesOfType('markdown');
+      let targetLeaf = null;
 
-      console.log('[Smart Links] Inserting link:', noteName);
+      for (const leaf of leaves) {
+        const view = leaf.view;
+        if (view instanceof MarkdownView && view.file?.path === sourceFile.path) {
+          targetLeaf = leaf;
+          break;
+        }
+      }
 
-      // Insert wikilink at cursor
-      editor.replaceSelection(`[[${noteName}]]`);
+      if (!targetLeaf) {
+        console.warn('[Smart Links] Source note is not open in any editor');
+        // Open the file and insert
+        const leaf = this.app.workspace.getLeaf(false);
+        await leaf.openFile(sourceFile);
+        const view = leaf.view;
+        if (!(view instanceof MarkdownView) || !view.editor) {
+          new Notice('Failed to open source note');
+          return;
+        }
+        const editor = view.editor;
+        const noteName = this.getNoteName(suggestion.targetNote);
+        editor.replaceSelection(`[[${noteName}]]`);
+      } else {
+        // Use the existing editor
+        const view = targetLeaf.view;
+        if (!(view instanceof MarkdownView) || !view.editor) {
+          new Notice('Editor not available');
+          return;
+        }
+
+        const editor = view.editor;
+        const noteName = this.getNoteName(suggestion.targetNote);
+
+        console.log('[Smart Links] Inserting link:', noteName);
+
+        // Insert wikilink at cursor
+        editor.replaceSelection(`[[${noteName}]]`);
+      }
 
       // Update suggestion status
       suggestion.status = 'applied';
@@ -206,7 +241,7 @@ export class SuggestionPanelView extends ItemView {
       this.render();
 
       console.log('[Smart Links] ✓ Link inserted successfully');
-      new Notice(`Linked to: ${noteName}`);
+      new Notice(`Linked to: ${this.getNoteName(suggestion.targetNote)}`);
     } catch (error) {
       console.error('[Smart Links] Failed to insert link:', error);
       new Notice('Failed to insert link');
