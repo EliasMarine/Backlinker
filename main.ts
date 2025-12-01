@@ -331,11 +331,12 @@ export default class SmartLinksPlugin extends Plugin {
 
         console.log('[Smart Links] Active leaf changed, file:', file?.path || 'none');
 
-        // Trigger analysis for new active file
-        if (this.settings.enableRealTimeSuggestions) {
+        // Only analyze when switching TO a markdown note, not when losing focus
+        // This prevents clearing suggestions when clicking sidebar buttons
+        if (this.settings.enableRealTimeSuggestions && file !== null) {
           console.log('[Smart Links] Triggering real-time analysis for active file...');
           await this.linkDiscovery.analyzeCurrentNote(file);
-        } else {
+        } else if (!this.settings.enableRealTimeSuggestions) {
           console.log('[Smart Links] Real-time suggestions disabled, skipping analysis');
         }
       })

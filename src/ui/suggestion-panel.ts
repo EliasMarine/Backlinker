@@ -139,8 +139,10 @@ export class SuggestionPanelView extends ItemView {
       text: 'Insert',
       cls: 'smart-links-btn-insert'
     });
+
+    // Use click handler - now safe since we fixed the race condition in main.ts
     insertBtn.addEventListener('click', (e) => {
-      console.log('[Smart Links] Insert button event fired');
+      console.log('[Smart Links] Insert button clicked');
       e.preventDefault();
       e.stopPropagation();
       this.insertLink(suggestion);
@@ -152,7 +154,7 @@ export class SuggestionPanelView extends ItemView {
       cls: 'smart-links-btn-open'
     });
     openBtn.addEventListener('click', (e) => {
-      console.log('[Smart Links] Open button event fired');
+      console.log('[Smart Links] Open button clicked');
       e.preventDefault();
       e.stopPropagation();
       this.openNote(suggestion.targetNote);
@@ -164,7 +166,7 @@ export class SuggestionPanelView extends ItemView {
       cls: 'smart-links-btn-dismiss'
     });
     dismissBtn.addEventListener('click', (e) => {
-      console.log('[Smart Links] Dismiss button event fired');
+      console.log('[Smart Links] Dismiss button clicked');
       e.preventDefault();
       e.stopPropagation();
       this.dismissSuggestion(suggestion);
