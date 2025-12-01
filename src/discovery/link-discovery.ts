@@ -108,6 +108,13 @@ export class LinkDiscovery {
     file: TFile,
     content: string
   ): Promise<LinkSuggestion[]> {
+    // Check if document frequency is populated
+    if (this.cache.documentFrequency.size === 0) {
+      console.warn('[Smart Links] Cannot generate suggestions - documentFrequency is empty');
+      console.warn('[Smart Links] Please run "Analyze entire vault" command first');
+      return [];
+    }
+
     // Create temporary note index for current content
     const tempNote = await this.createTempNoteIndex(file, content);
 
@@ -139,11 +146,22 @@ export class LinkDiscovery {
     // Extract keywords
     const keywords = this.nlpProcessor.extractKeywords(parsed.cleanText);
 
-    // Get TF-IDF vector (simplified - just word frequency for now)
-    const wordFrequency = this.calculateWordFrequency(keywords);
+    // Get word frequency from full text (matches vault indexer behavior)
+    const wordFrequency = this.nlpProcessor.getWordFrequency(parsed.cleanText);
 
     // Calculate TF-IDF vector using cache's document frequency
     const tfidfVector = this.calculateTFIDFVector(wordFrequency);
+
+    // Diagnostic logging
+    console.log('[Smart Links] TempNote vector stats:', {
+      path: file.path,
+      vectorSize: tfidfVector.size,
+      wordFreqSize: wordFrequency.size,
+      topTerms: Array.from(tfidfVector.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([term, score]) => `${term}(${score.toFixed(3)})`)
+    });
 
     // Check if note is already in cache (might have embedding)
     const cachedNote = this.cache.notes.get(file.path);
@@ -163,19 +181,6 @@ export class LinkDiscovery {
       embedding: cachedNote?.embedding,
       embeddingVersion: cachedNote?.embeddingVersion
     };
-  }
-
-  /**
-   * Calculate word frequency from keywords
-   */
-  private calculateWordFrequency(keywords: string[]): Map<string, number> {
-    const frequency = new Map<string, number>();
-
-    for (const keyword of keywords) {
-      frequency.set(keyword, (frequency.get(keyword) || 0) + 1);
-    }
-
-    return frequency;
   }
 
   /**

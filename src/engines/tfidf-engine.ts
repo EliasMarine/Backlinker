@@ -112,6 +112,16 @@ export class TFIDFEngine {
       // Calculate similarity
       const score = this.calculateSimilarity(sourceNote, candidateNote);
 
+      // Diagnostic logging for non-trivial scores
+      if (score > 0.01) {
+        console.log('[Smart Links] Similarity:', {
+          candidate: candidateNote.title,
+          score: score.toFixed(4),
+          threshold: threshold,
+          passed: score >= threshold
+        });
+      }
+
       // Only include if above threshold
       if (score >= threshold) {
         const matchedKeywords = this.findMatchedKeywords(sourceNote, candidateNote);

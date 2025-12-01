@@ -40,73 +40,117 @@ export default class SmartLinksPlugin extends Plugin {
     console.log('[Smart Links] Loading plugin...');
 
     // Load settings
+    console.log('[Smart Links] Loading settings...');
     await this.loadSettings();
+    console.log('[Smart Links] Settings loaded:', {
+      enableRealTimeSuggestions: this.settings.enableRealTimeSuggestions,
+      maxSuggestionsPerNote: this.settings.maxSuggestionsPerNote,
+      debounceDelay: this.settings.debounceDelay,
+      tfidfThreshold: this.settings.tfidfThreshold
+    });
 
     // Initialize cache manager
+    console.log('[Smart Links] Initializing cache manager...');
     this.cacheManager = new CacheManager(this.app);
 
     // Try to load cache from disk
+    console.log('[Smart Links] Loading cache from disk...');
     const loadedCache = await this.cacheManager.loadCache();
     if (loadedCache) {
       this.cache = loadedCache;
-      console.log('[Smart Links] Loaded cache with', this.cache.totalDocuments, 'notes');
+      console.log('[Smart Links] ✓ Cache loaded:', this.cache.totalDocuments, 'notes,', this.cache.documentFrequency.size, 'unique terms');
+
+      // Warn if cache has notes but no document frequency data
+      if (this.cache.documentFrequency.size === 0 && this.cache.notes.size > 0) {
+        console.warn('[Smart Links] ⚠️  Cache has notes but no term frequencies!');
+        console.warn('[Smart Links] ⚠️  Suggestions will not work until you run "Analyze entire vault"');
+        new Notice('Smart Links: Please run "Analyze entire vault" to enable suggestions', 10000);
+      }
     } else {
       this.cache = this.cacheManager.createEmptyCache();
-      console.log('[Smart Links] Created new cache');
+      console.log('[Smart Links] ✓ New cache created (no existing cache found)');
     }
 
     // Initialize engines
+    console.log('[Smart Links] Initializing TF-IDF engine...');
     this.tfidfEngine = new TFIDFEngine(this.cache);
+    console.log('[Smart Links] ✓ TF-IDF engine initialized');
+
     // this.embeddingEngine = new EmbeddingEngine(this.cache); // Disabled for Phase 2 - will re-enable in Phase 3
+    console.log('[Smart Links] Initializing hybrid scorer...');
     this.hybridScorer = new HybridScorer(
       this.tfidfEngine,
       null, // Embeddings disabled for Phase 2 testing
       this.settings
     );
+    console.log('[Smart Links] ✓ Hybrid scorer initialized');
 
+    console.log('[Smart Links] Initializing vault indexer...');
     this.vaultIndexer = new VaultIndexer(
       this.app,
       this.cache,
       this.settings,
       this.cacheManager
     );
+    console.log('[Smart Links] ✓ Vault indexer initialized');
 
     // Initialize link discovery
+    console.log('[Smart Links] Initializing link discovery engine...');
     this.linkDiscovery = new LinkDiscovery(
       this.app,
       this.cache,
       this.settings,
       this.hybridScorer
     );
+    console.log('[Smart Links] ✓ Link discovery initialized');
 
     // Register suggestion panel view
+    console.log('[Smart Links] Registering suggestion panel view...');
     this.registerView(
       SUGGESTION_PANEL_VIEW_TYPE,
       (leaf) => new SuggestionPanelView(leaf, this)
     );
+    console.log('[Smart Links] ✓ Panel view registered');
 
     // Add ribbon icon
+    console.log('[Smart Links] Adding ribbon icon...');
     this.addRibbonIcon('link', 'Smart Links', () => {
+      console.log('[Smart Links] Ribbon icon clicked');
       this.toggleSuggestionPanel();
     });
+    console.log('[Smart Links] ✓ Ribbon icon added');
 
-    // Open suggestion panel by default
-    await this.activateSuggestionPanel();
+    // Open suggestion panel after workspace is ready
+    console.log('[Smart Links] Waiting for workspace to be ready...');
+    this.app.workspace.onLayoutReady(() => {
+      console.log('[Smart Links] ✓ Workspace is ready');
+      this.activateSuggestionPanel();
+    });
 
     // Register commands
+    console.log('[Smart Links] Registering commands...');
     this.registerCommands();
+    console.log('[Smart Links] ✓ Commands registered');
 
     // Register event handlers
+    console.log('[Smart Links] Registering event handlers...');
     this.registerEventHandlers();
+    console.log('[Smart Links] ✓ Event handlers registered');
 
     // Add settings tab
+    console.log('[Smart Links] Adding settings tab...');
     this.addSettingTab(new SmartLinksSettingTab(this.app, this));
+    console.log('[Smart Links] ✓ Settings tab added');
 
     // Add status bar
+    console.log('[Smart Links] Adding status bar...');
     this.statusBarItem = this.addStatusBarItem();
     this.updateStatusBar('Ready');
+    console.log('[Smart Links] ✓ Status bar added');
 
-    console.log('[Smart Links] Plugin loaded successfully');
+    console.log('[Smart Links] ========================================');
+    console.log('[Smart Links] ✓✓✓ Plugin loaded successfully ✓✓✓');
+    console.log('[Smart Links] ========================================');
   }
 
   onunload() {
@@ -277,6 +321,7 @@ export default class SmartLinksPlugin extends Plugin {
    * Register event handlers for file changes and real-time monitoring
    */
   private registerEventHandlers() {
+    console.log('[Smart Links] Registering active-leaf-change handler...');
     // Real-time suggestion updates (active file change)
     this.registerEvent(
       this.app.workspace.on('active-leaf-change', async (leaf) => {
@@ -284,13 +329,19 @@ export default class SmartLinksPlugin extends Plugin {
           ? this.app.workspace.getActiveFile()
           : null;
 
+        console.log('[Smart Links] Active leaf changed, file:', file?.path || 'none');
+
         // Trigger analysis for new active file
         if (this.settings.enableRealTimeSuggestions) {
+          console.log('[Smart Links] Triggering real-time analysis for active file...');
           await this.linkDiscovery.analyzeCurrentNote(file);
+        } else {
+          console.log('[Smart Links] Real-time suggestions disabled, skipping analysis');
         }
       })
     );
 
+    console.log('[Smart Links] Registering editor-change handler...');
     // Real-time suggestion updates (editor change with debounce)
     this.registerEvent(
       this.app.workspace.on('editor-change', () => {
@@ -303,19 +354,26 @@ export default class SmartLinksPlugin extends Plugin {
           clearTimeout(this.debounceTimer);
         }
 
+        console.log('[Smart Links] Editor changed, debouncing analysis (' + this.settings.debounceDelay + 'ms)...');
         this.debounceTimer = setTimeout(async () => {
           const activeFile = this.app.workspace.getActiveFile();
+          console.log('[Smart Links] Debounce complete, analyzing:', activeFile?.path);
           await this.linkDiscovery.analyzeCurrentNote(activeFile);
         }, this.settings.debounceDelay);
       })
     );
 
+    console.log('[Smart Links] Setting up suggestion update callback...');
     // Setup suggestion update callback
     this.linkDiscovery.onUpdate((update) => {
+      console.log('[Smart Links] Received suggestion update:', update.suggestions.length, 'suggestions');
       // Update suggestion panel if it exists
       const leaves = this.app.workspace.getLeavesOfType(SUGGESTION_PANEL_VIEW_TYPE);
       if (leaves.length > 0 && leaves[0].view instanceof SuggestionPanelView) {
+        console.log('[Smart Links] Updating suggestion panel...');
         leaves[0].view.updateSuggestions(update.suggestions);
+      } else {
+        console.log('[Smart Links] No suggestion panel found to update');
       }
     });
 
@@ -374,15 +432,19 @@ export default class SmartLinksPlugin extends Plugin {
    * Activate suggestion panel in right sidebar
    */
   async activateSuggestionPanel() {
+    console.log('[Smart Links] Activating suggestion panel...');
     const { workspace } = this.app;
 
     // Check if panel already exists
     let leaf = workspace.getLeavesOfType(SUGGESTION_PANEL_VIEW_TYPE)[0];
+    console.log('[Smart Links] Existing panel leaf:', leaf ? 'found' : 'not found');
 
     if (!leaf) {
       // Create new leaf in right sidebar
       const position = this.settings.suggestionPanelPosition;
+      console.log('[Smart Links] Creating new panel in position:', position);
       const sideLeaf = workspace.getRightLeaf(false);
+      console.log('[Smart Links] Right sidebar leaf:', sideLeaf ? 'found' : 'not found');
 
       if (sideLeaf) {
         leaf = sideLeaf;
@@ -390,12 +452,18 @@ export default class SmartLinksPlugin extends Plugin {
           type: SUGGESTION_PANEL_VIEW_TYPE,
           active: true
         });
+        console.log('[Smart Links] Panel view state set');
+      } else {
+        console.error('[Smart Links] Could not get right sidebar leaf');
       }
     }
 
     // Reveal the leaf
     if (leaf) {
       workspace.revealLeaf(leaf);
+      console.log('[Smart Links] Panel revealed');
+    } else {
+      console.error('[Smart Links] No leaf to reveal');
     }
   }
 
