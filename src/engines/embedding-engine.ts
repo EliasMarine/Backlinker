@@ -66,84 +66,8 @@ const DEFAULT_CONFIG: EmbeddingEngineConfig = {
 // Embedding dimension for all-MiniLM-L6-v2
 const EMBEDDING_DIMENSION = 384;
 
-// WASM CDN path for onnxruntime-web
-const ONNX_WASM_CDN = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/';
-
-/**
- * Configure ONNX Runtime environment for Obsidian/Electron
- * This MUST be called before any model loading
- */
-async function configureOnnxRuntime(): Promise<void> {
-  console.log('[EmbeddingEngine] Configuring ONNX Runtime for Obsidian...');
-
-  try {
-    // Import onnxruntime-web directly to configure it
-    const ort = await import('onnxruntime-web');
-
-    console.log('[EmbeddingEngine] onnxruntime-web imported successfully');
-
-    // Configure WASM settings
-    if (ort.env?.wasm) {
-      ort.env.wasm.wasmPaths = ONNX_WASM_CDN;
-      ort.env.wasm.numThreads = 1;  // Single thread for Electron compatibility
-      ort.env.wasm.proxy = false;   // Disable web worker proxy
-
-      console.log('[EmbeddingEngine] ONNX WASM configured:', {
-        wasmPaths: ort.env.wasm.wasmPaths,
-        numThreads: ort.env.wasm.numThreads,
-        proxy: ort.env.wasm.proxy
-      });
-    } else {
-      console.warn('[EmbeddingEngine] ort.env.wasm not found, trying alternative configuration');
-
-      // Try setting on the env object directly
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const ortAny = ort as any;
-      if (ortAny.env) {
-        ortAny.env.wasm = ortAny.env.wasm || {};
-        ortAny.env.wasm.wasmPaths = ONNX_WASM_CDN;
-        ortAny.env.wasm.numThreads = 1;
-        ortAny.env.wasm.proxy = false;
-        console.log('[EmbeddingEngine] Alternative WASM config applied');
-      }
-    }
-  } catch (error) {
-    console.warn('[EmbeddingEngine] Could not configure onnxruntime-web directly:', error);
-    // Continue anyway - transformers.js might handle it
-  }
-}
-
-/**
- * Configure Transformers.js environment
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function configureTransformersEnv(env: any): void {
-  console.log('[EmbeddingEngine] Configuring Transformers.js environment...');
-
-  // Use remote models only (no local file system)
-  env.allowLocalModels = false;
-  env.allowRemoteModels = true;
-  env.useBrowserCache = true;
-
-  // Disable file system usage
-  if ('useFS' in env) {
-    env.useFS = false;
-  }
-
-  // Try to configure ONNX backends if available
-  if (env.backends?.onnx?.wasm) {
-    env.backends.onnx.wasm.wasmPaths = ONNX_WASM_CDN;
-    env.backends.onnx.wasm.numThreads = 1;
-    env.backends.onnx.wasm.proxy = false;
-    console.log('[EmbeddingEngine] env.backends.onnx.wasm configured');
-  }
-
-  console.log('[EmbeddingEngine] Transformers env configured:', {
-    allowLocalModels: env.allowLocalModels,
-    allowRemoteModels: env.allowRemoteModels,
-    useBrowserCache: env.useBrowserCache,
-  });
-}
+// Note: WASM CDN paths are configured at build time via esbuild plugin (esbuild.config.mjs)
+// The bundled onnxruntime-web version is 1.14.0 (matching @xenova/transformers@2.17.2)
 
 /**
  * Neural Embedding Engine
@@ -154,7 +78,6 @@ export class EmbeddingEngine {
   private pipeline: Pipeline | null = null;
   private isLoading: boolean = false;
   private loadError: Error | null = null;
-  private static onnxConfigured: boolean = false;
 
   constructor(config: Partial<EmbeddingEngineConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -183,28 +106,40 @@ export class EmbeddingEngine {
       progressCallback?.({
         status: 'downloading',
         progress: 0,
-        message: 'Configuring ONNX runtime...'
+        message: 'Loading Transformers.js...'
       });
 
-      // IMPORTANT: Configure ONNX Runtime BEFORE importing transformers
-      // This must happen only once
-      if (!EmbeddingEngine.onnxConfigured) {
-        await configureOnnxRuntime();
-        EmbeddingEngine.onnxConfigured = true;
-      }
-
-      progressCallback?.({
-        status: 'downloading',
-        progress: 5,
-        message: 'Importing Transformers.js...'
-      });
-
-      // Dynamic import of transformers
+      // Import transformers.js
+      // ONNX runtime WASM paths are configured at build time via esbuild plugin
       console.log('[EmbeddingEngine] Importing @xenova/transformers...');
       const transformers = await import('@xenova/transformers');
 
       // Configure transformers environment
-      configureTransformersEnv(transformers.env);
+      const env = transformers.env;
+      env.allowLocalModels = false;
+      env.allowRemoteModels = true;
+      env.useBrowserCache = true;
+
+      // CRITICAL: Set WASM paths AFTER importing transformers
+      // Transformers' init_env() detects RUNNING_LOCALLY=true in Electron and
+      // overwrites wasmPaths with a local path like "/dist/". We must set the
+      // CDN path AFTER transformers initializes to override its local path.
+      // The version MUST match what @xenova/transformers expects (1.14.0 for v2.17.2)
+      const WASM_CDN_PATH = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/';
+      if (env.backends?.onnx?.wasm) {
+        env.backends.onnx.wasm.wasmPaths = WASM_CDN_PATH;
+        env.backends.onnx.wasm.numThreads = 1;
+        env.backends.onnx.wasm.proxy = false;
+        console.log('[EmbeddingEngine] WASM paths set to CDN:', WASM_CDN_PATH);
+      } else {
+        console.warn('[EmbeddingEngine] Could not set WASM paths - onnx backend not found');
+      }
+
+      console.log('[EmbeddingEngine] Transformers env configured:', {
+        allowLocalModels: env.allowLocalModels,
+        useBrowserCache: env.useBrowserCache,
+        wasmPaths: env.backends?.onnx?.wasm?.wasmPaths,
+      });
 
       console.log('[EmbeddingEngine] Loading model:', this.config.modelName);
 

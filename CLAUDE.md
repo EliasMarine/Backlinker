@@ -148,10 +148,14 @@ Automatically updates manifest.json and versions.json.
 
 ## Local Testing
 
+**Test Vault Location**: `/Volumes/ExtraStrg_RAID1/Mega Sync/Obsidian Plugin Testing/Test Vault`
+
+A symlink already exists at `.obsidian/plugins/smart-links` pointing to this development folder.
+
 1. Run `npm run dev` to start build watcher
-2. Create symbolic link to test vault:
+2. Create symbolic link to test vault (if not already set up):
    ```bash
-   ln -s "$(pwd)" "/path/to/test-vault/.obsidian/plugins/smart-links"
+   ln -s "$(pwd)" "/Volumes/ExtraStrg_RAID1/Mega Sync/Obsidian Plugin Testing/Test Vault/.obsidian/plugins/smart-links"
    ```
 3. Enable plugin in Obsidian Settings > Community Plugins
 4. Reload Obsidian (Cmd/Ctrl+R) after changes

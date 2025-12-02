@@ -159,9 +159,19 @@ export class EmbeddingCache {
       const binaryPath = this.getBinaryPath();
 
       // Ensure plugin data directory exists
+      // Note: getAbstractFileByPath may return null for .obsidian folders even when they exist
       const pluginDir = this.app.vault.getAbstractFileByPath(pluginDataPath);
       if (!pluginDir) {
-        await this.app.vault.createFolder(pluginDataPath);
+        try {
+          await this.app.vault.createFolder(pluginDataPath);
+        } catch (e) {
+          // Folder might already exist but not be detectable via getAbstractFileByPath
+          // This is common for .obsidian/plugins folders
+          if (!(e instanceof Error) || !e.message.includes('Folder already exists')) {
+            throw e;
+          }
+          // If folder already exists, that's fine - continue with save
+        }
       }
 
       // Build metadata and binary data

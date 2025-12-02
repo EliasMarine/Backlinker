@@ -1,6 +1,11 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const nodeModulesPath = path.join(__dirname, 'node_modules');
 
 const banner =
 `/*
@@ -11,27 +16,46 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = (process.argv[2] === 'production');
 
-// Plugin to replace onnxruntime-node with an empty module
-// This prevents errors when the require fails at runtime
-const onnxNodeShimPlugin = {
-	name: 'onnx-node-shim',
+// Path to onnxruntime-web browser bundle (version 1.14.0 to match @xenova/transformers)
+const onnxWebBrowserBundle = path.join(nodeModulesPath, 'onnxruntime-web', 'dist', 'ort.min.js');
+
+// CDN path for WASM files - MUST match the bundled onnxruntime-web version (1.14.0)
+const WASM_CDN_PATH = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/';
+
+// Plugin to intercept onnxruntime imports and inject WASM path configuration
+// This ensures wasmPaths is set BEFORE any code uses the ort module
+const onnxConfigPlugin = {
+	name: 'onnx-config',
 	setup(build) {
-		// Intercept requires for onnxruntime-node
-		build.onResolve({ filter: /^onnxruntime-node$/ }, args => {
+		// Intercept both onnxruntime-node and onnxruntime-web
+		build.onResolve({ filter: /^onnxruntime-(node|web)$/ }, (args) => {
 			return {
 				path: args.path,
-				namespace: 'onnx-node-shim'
+				namespace: 'onnx-configured'
 			};
 		});
 
-		// Return an empty module for onnxruntime-node
-		build.onLoad({ filter: /.*/, namespace: 'onnx-node-shim' }, () => {
+		// Return a wrapper module that configures WASM paths at load time
+		build.onLoad({ filter: /.*/, namespace: 'onnx-configured' }, () => {
 			return {
 				contents: `
-					// Shim for onnxruntime-node - returns empty to force WASM usage
-					module.exports = {};
+					// Import the actual onnxruntime-web browser bundle
+					const ort = require(${JSON.stringify(onnxWebBrowserBundle)});
+
+					// Configure WASM paths IMMEDIATELY at module load time
+					// This must happen before any inference session is created
+					if (ort.env && ort.env.wasm) {
+						ort.env.wasm.wasmPaths = ${JSON.stringify(WASM_CDN_PATH)};
+						ort.env.wasm.numThreads = 1;
+						ort.env.wasm.proxy = false;
+						console.log('[ONNX Config] wasmPaths set to:', ort.env.wasm.wasmPaths);
+					}
+
+					// Re-export everything
+					module.exports = ort;
 				`,
-				loader: 'js'
+				loader: 'js',
+				resolveDir: nodeModulesPath
 			};
 		});
 	}
@@ -132,7 +156,7 @@ const context = await esbuild.context({
 	},
 	entryPoints: ['main.ts'],
 	bundle: true,
-	plugins: [onnxNodeShimPlugin, sharpShimPlugin],
+	plugins: [onnxConfigPlugin, sharpShimPlugin],
 	external: [
 		'obsidian',
 		'electron',
