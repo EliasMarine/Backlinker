@@ -1,10 +1,15 @@
-import { App, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
 import { SmartLinksSettings } from './types';
 
 // Forward declaration to avoid circular dependency
 type SmartLinksPlugin = Plugin & {
   settings: SmartLinksSettings;
   saveSettings: () => Promise<void>;
+  enableNeuralEmbeddings?: () => Promise<void>;
+  disableNeuralEmbeddings?: () => void;
+  regenerateEmbeddings?: () => Promise<void>;
+  isEmbeddingModelLoaded?: () => boolean;
+  getEmbeddingCacheStats?: () => { totalEmbeddings: number; cacheSizeFormatted: string } | null;
 };
 
 /**
@@ -41,13 +46,106 @@ export class SmartLinksSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName('Enable semantic search')
-      .setDesc('Use semantic analysis for deeper conceptual understanding')
+      .setDesc('Use N-gram and context-based semantic analysis')
       .addToggle(toggle =>
         toggle
           .setValue(this.plugin.settings.enableSemanticSearch)
           .onChange(async (value) => {
             this.plugin.settings.enableSemanticSearch = value;
             await this.plugin.saveSettings();
+          })
+      );
+
+    // Neural Embeddings Section
+    containerEl.createEl('h3', { text: 'Neural Embeddings (Advanced)' });
+
+    const embeddingDesc = containerEl.createEl('p', {
+      cls: 'setting-item-description',
+      text: 'Neural embeddings provide the most accurate semantic understanding using AI. Requires downloading a 23MB model. All processing happens locally.'
+    });
+    embeddingDesc.style.marginBottom = '12px';
+
+    // Status display
+    const statusEl = containerEl.createDiv({ cls: 'smart-links-embedding-status' });
+    this.updateEmbeddingStatus(statusEl);
+
+    new Setting(containerEl)
+      .setName('Enable neural embeddings')
+      .setDesc('Use transformer-based embeddings for highest accuracy semantic matching')
+      .addToggle(toggle =>
+        toggle
+          .setValue(this.plugin.settings.enableNeuralEmbeddings)
+          .onChange(async (value) => {
+            if (value) {
+              // Enable embeddings - this will trigger model download
+              if (this.plugin.enableNeuralEmbeddings) {
+                try {
+                  await this.plugin.enableNeuralEmbeddings();
+                  this.plugin.settings.enableNeuralEmbeddings = true;
+                  await this.plugin.saveSettings();
+                  this.updateEmbeddingStatus(statusEl);
+                } catch (error) {
+                  console.error('[Settings] Failed to enable neural embeddings:', error);
+                  toggle.setValue(false);
+                  new Notice('Failed to enable neural embeddings. Check console for details.');
+                }
+              } else {
+                this.plugin.settings.enableNeuralEmbeddings = true;
+                await this.plugin.saveSettings();
+              }
+            } else {
+              // Disable embeddings
+              if (this.plugin.disableNeuralEmbeddings) {
+                this.plugin.disableNeuralEmbeddings();
+              }
+              this.plugin.settings.enableNeuralEmbeddings = false;
+              await this.plugin.saveSettings();
+              this.updateEmbeddingStatus(statusEl);
+            }
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Regenerate embeddings')
+      .setDesc('Re-process all notes to generate fresh embeddings')
+      .addButton(button =>
+        button
+          .setButtonText('Regenerate')
+          .setDisabled(!this.plugin.settings.enableNeuralEmbeddings)
+          .onClick(async () => {
+            if (this.plugin.regenerateEmbeddings) {
+              button.setDisabled(true);
+              button.setButtonText('Processing...');
+              try {
+                await this.plugin.regenerateEmbeddings();
+                this.updateEmbeddingStatus(statusEl);
+                new Notice('Embeddings regenerated successfully!');
+              } catch (error) {
+                console.error('[Settings] Failed to regenerate embeddings:', error);
+                new Notice('Failed to regenerate embeddings. Check console for details.');
+              } finally {
+                button.setDisabled(false);
+                button.setButtonText('Regenerate');
+              }
+            } else {
+              new Notice('Regenerate function not available');
+            }
+          })
+      );
+
+    new Setting(containerEl)
+      .setName('Embedding batch size')
+      .setDesc('Number of notes to process at once (lower = less memory)')
+      .addText(text =>
+        text
+          .setPlaceholder('8')
+          .setValue(String(this.plugin.settings.embeddingBatchSize))
+          .onChange(async (value) => {
+            const num = parseInt(value);
+            if (!isNaN(num) && num > 0 && num <= 32) {
+              this.plugin.settings.embeddingBatchSize = num;
+              await this.plugin.saveSettings();
+            }
           })
       );
 
@@ -287,5 +385,43 @@ export class SmartLinksSettingTab extends PluginSettingTab {
             }
           })
       );
+  }
+
+  /**
+   * Update the embedding status display
+   */
+  private updateEmbeddingStatus(statusEl: HTMLElement): void {
+    statusEl.empty();
+
+    if (!this.plugin.settings.enableNeuralEmbeddings) {
+      statusEl.createEl('span', {
+        text: 'Status: Disabled',
+        cls: 'smart-links-status-disabled'
+      });
+      return;
+    }
+
+    const isLoaded = this.plugin.isEmbeddingModelLoaded?.() || false;
+    const stats = this.plugin.getEmbeddingCacheStats?.();
+
+    if (!isLoaded) {
+      statusEl.createEl('span', {
+        text: 'Status: Model not loaded',
+        cls: 'smart-links-status-warning'
+      });
+      return;
+    }
+
+    const statusText = statusEl.createEl('span', {
+      text: 'Status: Ready',
+      cls: 'smart-links-status-ready'
+    });
+
+    if (stats) {
+      statusEl.createEl('span', {
+        text: ` | ${stats.totalEmbeddings} embeddings (${stats.cacheSizeFormatted})`,
+        cls: 'smart-links-status-info'
+      });
+    }
   }
 }

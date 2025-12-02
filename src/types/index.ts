@@ -108,8 +108,13 @@ export type ProgressCallback = (progress: number, message?: string) => void;
 export interface SmartLinksSettings {
   // Analysis modes
   enableRealTimeSuggestions: boolean;
-  enableSemanticSearch: boolean; // Renamed from enableEmbeddings
+  enableSemanticSearch: boolean; // N-gram + context vector semantic
   semanticModelVersion: string; // Track semantic model version
+
+  // Neural embeddings (Phase 3)
+  enableNeuralEmbeddings: boolean; // Use transformer-based embeddings
+  neuralModelName: string; // Model to use (default: Xenova/all-MiniLM-L6-v2)
+  embeddingBatchSize: number; // Notes to process at once
 
   // Thresholds
   tfidfThreshold: number; // 0-1, default 0.3
@@ -145,6 +150,11 @@ export const DEFAULT_SETTINGS: SmartLinksSettings = {
   enableRealTimeSuggestions: true,
   enableSemanticSearch: true, // Enabled by default (reliable!)
   semanticModelVersion: '1.0.0',
+
+  // Neural embeddings (opt-in, requires model download)
+  enableNeuralEmbeddings: false, // Disabled by default
+  neuralModelName: 'Xenova/all-MiniLM-L6-v2',
+  embeddingBatchSize: 8,
 
   // Thresholds
   tfidfThreshold: 0.3,

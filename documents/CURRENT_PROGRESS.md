@@ -1,25 +1,25 @@
 # Smart Links - Current Progress & Status
 
-**Last Updated**: November 30, 2025
+**Last Updated**: December 1, 2025
 **Version**: 1.0.0
 **Build Status**: ✅ Compiles Successfully
-**Test Status**: ✅ TESTED AND WORKING
+**Test Status**: Phase 3 implementation complete, needs testing
 
 ---
 
-## 📊 Executive Summary
+## Executive Summary
 
-**Current Phase**: Phase 2 - Real-Time Features (COMPLETE ✅)
+**Current Phase**: Phase 3 - Neural Embeddings (IMPLEMENTATION COMPLETE)
 
 **Overall Status**:
 - ✅ Core infrastructure is built and tested
 - ✅ Real-time features tested and working in Obsidian
-- ✅ Full validation completed in test vault
-- 🎯 **Next Step**: Phase 3 - Embeddings Integration
+- ✅ Phase 3 neural embeddings fully implemented
+- 🎯 **Next Step**: Test neural embeddings end-to-end in Obsidian
 
 ---
 
-## 🗺️ Phase Status
+## Phase Status
 
 ### ✅ Phase 1: Core Foundation - COMPLETE
 
@@ -32,7 +32,7 @@
 | Cache Manager | ✅ Complete | `src/cache/cache-manager.ts` | Persistence works |
 | Settings System | ✅ Complete | `src/settings.ts` | UI functional |
 
-**Confidence Level**: 🟢 HIGH - These components have been used and tested
+**Confidence Level**: HIGH - These components have been used and tested
 
 ---
 
@@ -47,28 +47,33 @@
 | Debouncing Logic | ✅ Complete | `main.ts` | ✅ Tested, working |
 | One-Click Insertion | ✅ Complete | `src/ui/suggestion-panel.ts` | ✅ Tested, working |
 
-**Confidence Level**: 🟢 HIGH - All components tested and validated in Obsidian
-
-**Validated Features**:
-- ✅ Suggestion panel renders correctly in sidebar
-- ✅ Event handlers fire correctly when typing
-- ✅ Debouncing works as expected (300ms delay)
-- ✅ Link insertion works at cursor position
-- ✅ Suggestions are relevant and useful
-- ✅ Performance is acceptable
+**Confidence Level**: HIGH - All components tested and validated in Obsidian
 
 ---
 
-### 🔴 Phase 3: Embeddings Integration - PARTIALLY IMPLEMENTED
+### ✅ Phase 3: Neural Embeddings - IMPLEMENTATION COMPLETE
 
 | Component | Status | File | Notes |
 |-----------|--------|------|-------|
-| Embedding Engine | 🟡 Basic | `src/engines/embedding-engine.ts` | Core logic exists |
-| Model Loading | ❌ Missing | N/A | No progress UI |
-| Batch Generation | 🟡 Basic | `src/engines/embedding-engine.ts` | Needs optimization |
-| Error Handling | ❌ Missing | N/A | No fallback logic |
+| Embedding Engine | ✅ Complete | `src/engines/embedding-engine.ts` | Uses @xenova/transformers |
+| Model Loading | ✅ Complete | `src/engines/embedding-engine.ts` | With progress callbacks |
+| Embedding Cache | ✅ Complete | `src/cache/embedding-cache.ts` | Binary persistence |
+| Progress Modal | ✅ Complete | `src/ui/embedding-progress-modal.ts` | Download + batch progress |
+| Batch Generation | ✅ Complete | `main.ts` | With progress tracking |
+| Settings UI | ✅ Complete | `src/settings.ts` | Enable/disable toggle |
+| HybridScorer Integration | ✅ Complete | `src/engines/hybrid-scorer.ts` | Neural + fallback |
 
-**Confidence Level**: 🔴 LOW - Not ready for use
+**Confidence Level**: MEDIUM - Needs end-to-end testing in Obsidian
+
+**New Features Implemented**:
+- Neural embeddings using `all-MiniLM-L6-v2` model (384 dimensions)
+- Progress modal for model download (~23MB)
+- Progress modal for batch embedding generation
+- Embedding persistence in binary format
+- Content hash-based cache invalidation
+- Enable/disable toggle in settings
+- Regenerate embeddings button
+- Graceful fallback to n-gram/context semantic when embeddings unavailable
 
 ---
 
@@ -82,248 +87,164 @@
 
 ---
 
-## 🐛 Known Issues & Blockers
+## New Files Created (Phase 3)
 
-### 🟡 Medium Priority Issues
+1. **`src/engines/embedding-engine.ts`** - Neural embedding generation
+   - Uses `@xenova/transformers` with `all-MiniLM-L6-v2` model
+   - Lazy model loading with progress callbacks
+   - Batch processing with ETA calculation
+   - Cosine similarity calculation
+   - Find similar notes functionality
 
-1. **No Progress UI for Model Loading**
-   - **Impact**: User doesn't know if embeddings are downloading
-   - **File**: `src/engines/embedding-engine.ts`
-   - **Priority**: P1 - Before enabling embeddings
+2. **`src/cache/embedding-cache.ts`** - Embedding persistence
+   - Binary format for efficient storage
+   - Content hash-based invalidation
+   - Load/save to plugin data folder
+   - Statistics and size reporting
 
-2. **No Error Recovery**
-   - **Impact**: Plugin might crash on errors
-   - **Next Step**: Add try/catch and user notifications
-   - **Priority**: P1
+3. **`src/ui/embedding-progress-modal.ts`** - Progress UI
+   - Model download progress modal
+   - Batch embedding progress modal
+   - ETA calculation display
+   - Cancel button support
+   - Error and success states
 
-### 🟢 Low Priority Issues
-
-3. **No Unit Tests**
-   - **Impact**: Hard to catch regressions
-   - **Priority**: P2 - After basic functionality works
-
-4. **No Performance Profiling**
-   - **Impact**: Might be slow on large vaults
-   - **Priority**: P2 - After basic functionality works
-
----
-
-## ✅ Testing Checklist
-
-### Phase 2 Validation (COMPLETED ✅)
-
-**Setup**:
-- [x] Create test Obsidian vault with 10-50 notes
-- [x] Create symlink to plugin directory
-- [x] Enable plugin in Obsidian settings
-- [x] Open Developer Console
-
-**Vault Indexing**:
-- [x] Run "Analyze entire vault" command
-- [x] Verify: No errors in console
-- [x] Verify: Cache file created
-- [x] Verify: Statistics show indexed notes
-- [x] Test: Reload Obsidian, cache persists
-
-**Real-Time Suggestions**:
-- [x] Open a note and start typing
-- [x] Verify: Suggestion panel appears in sidebar
-- [x] Verify: Panel shows "0 suggestions" or actual suggestions
-- [x] Type content that should match other notes
-- [x] Verify: Suggestions appear within 500ms of stopping
-- [x] Verify: Suggestions update as you type more
-- [x] Verify: Already-linked notes are filtered out
-
-**Link Insertion**:
-- [x] Click "Insert" on a suggestion
-- [x] Verify: Link `[[Note Title]]` appears at cursor
-- [x] Verify: Cursor position is correct
-- [x] Verify: Suggestion disappears after insertion
-- [x] Verify: Can undo the insertion (Cmd/Ctrl+Z)
-
-**Settings**:
-- [x] Change debounce delay → Verify: Takes effect
-- [x] Change max suggestions → Verify: Panel updates
-- [x] Disable real-time suggestions → Verify: Panel stops updating
-- [x] Re-enable → Verify: Panel works again
-- [x] Change threshold → Verify: Affects suggestions shown
-
-**Performance**:
-- [x] Test with 100 notes → Indexing time acceptable
-- [x] Test with 1000 notes → Indexing time acceptable
-- [x] Real-time analysis lag → Under 500ms ✅
-- [x] Memory usage → Under 100MB ✅
-
-**Edge Cases**:
-- [x] Empty vault → Graceful handling ✅
-- [x] Note with no matches → Shows "No suggestions" ✅
-- [x] Corrupted cache → Rebuilds correctly ✅
-- [x] Network offline (embeddings disabled) → Works ✅
+4. **`documents/PHASE3_PLAN.md`** - Implementation plan (for reference)
 
 ---
 
-## 🎯 Immediate Next Steps (Priority Order)
+## Modified Files (Phase 3)
 
-### 1. ✅ **COMPLETED: Test Phase 2 in Obsidian**
+1. **`main.ts`** - Plugin entry point
+   - Added embedding engine initialization
+   - Added embedding cache management
+   - Added enable/disable/regenerate methods
+   - Updated onunload for cleanup
 
-**Status**: All tests passed successfully
-- ✅ Plugin loads without errors
-- ✅ Suggestions appear when typing
-- ✅ Insert button works
-- ✅ No crashes or freezes
+2. **`src/engines/hybrid-scorer.ts`** - Scoring engine
+   - Added embedding engine integration
+   - Added `hybridSearchWithEmbeddings()` method
+   - Priority: Neural > Semantic > TF-IDF only
 
----
+3. **`src/settings.ts`** - Settings UI
+   - Added Neural Embeddings section
+   - Enable toggle
+   - Regenerate button
+   - Batch size configuration
+   - Status display
 
-### 2. **Add Model Loading UI (Phase 3)** (NEXT PRIORITY)
+4. **`src/types/index.ts`** - Type definitions
+   - Added `enableNeuralEmbeddings` setting
+   - Added `neuralModelName` setting
+   - Added `embeddingBatchSize` setting
 
-**Goal**: Users know when embeddings are loading
-
-**Tasks**:
-- Add progress modal
-- Show download progress
-- Add cancel button
-- Handle errors gracefully
-
----
-
-### 3. **Add Basic Error Handling**
-
-**Goal**: Plugin doesn't crash on errors
-
-**Tasks**:
-- Wrap async operations in try/catch
-- Show user-friendly error messages
-- Add fallback for failed operations
-- Log errors to console
+5. **`styles.css`** - Styles
+   - Added embedding status styles
 
 ---
 
-### 4. **Complete Embeddings Integration**
+## Testing Checklist (Phase 3)
 
-**Goal**: Enable semantic search alongside TF-IDF
+### Prerequisites
+- [ ] Phase 2 working (vault indexed)
+- [ ] Console open for debugging
 
-**Tasks**:
-- Test embedding generation
-- Validate hybrid scoring
-- Optimize batch processing
-- Add toggle UI
+### Model Download
+- [ ] Enable neural embeddings in settings
+- [ ] Confirmation modal appears
+- [ ] Progress modal shows during download
+- [ ] Model downloads successfully (~23MB)
+- [ ] "Model ready" message appears
+
+### Embedding Generation
+- [ ] After model loads, embedding progress modal appears
+- [ ] Progress bar updates during processing
+- [ ] ETA shows reasonable estimate
+- [ ] Can cancel generation
+- [ ] Completion message shows count
+
+### Cache Persistence
+- [ ] Embeddings persist after restart
+- [ ] `embedding-metadata.json` created in plugin folder
+- [ ] `embeddings.bin` created in plugin folder
+- [ ] Cache stats show in settings
+
+### Hybrid Search
+- [ ] Suggestions appear using embeddings
+- [ ] Console shows "Using hybrid search (TF-IDF + Neural Embeddings)"
+- [ ] Semantic scores appear in suggestions
+
+### Fallback
+- [ ] Disable embeddings in settings
+- [ ] Suggestions still work (TF-IDF + n-gram fallback)
+- [ ] No errors when embeddings disabled
+
+### Regenerate
+- [ ] Click "Regenerate" button in settings
+- [ ] Progress modal appears
+- [ ] Only stale notes are processed
+- [ ] Cache updates correctly
 
 ---
 
-## 📝 Development Notes
+## Immediate Next Steps
 
-### Recent Changes (Last 7 Days)
+### 1. **Test Phase 3 in Obsidian** (NEXT)
 
-**November 30, 2025**:
-- ✅ Re-aligned project to new PRD 2.0
-- ✅ Created all Phase 2 components
-- ✅ Updated CLAUDE.md and README.md
-- ✅ Fixed TypeScript compilation errors
-- ✅ Pushed to GitHub
-- ✅ **Completed Phase 2 testing in Obsidian**
-- ✅ Validated all real-time features working correctly
-- ✅ Confirmed performance meets targets
-- ✅ All testing checklist items passed
+**Goal**: Validate neural embeddings work end-to-end
 
-### Architecture Decisions
+**Steps**:
+1. Build plugin: `npm run build`
+2. Reload Obsidian
+3. Go to Settings > Smart Links
+4. Enable "Neural embeddings"
+5. Verify model downloads
+6. Verify embeddings generate
+7. Test suggestions with embeddings
 
-1. **Real-Time Analysis Approach**: Debounced editor events (300ms)
-2. **Suggestion Storage**: Temporary in LinkDiscovery, updated on each analysis
-3. **Link Insertion**: Direct editor manipulation via `editor.replaceSelection()`
-4. **Panel Position**: Configurable (left/right sidebar)
+### 2. **Performance Testing**
 
-### Known Limitations
+Test with various vault sizes:
+- 100 notes: Should be fast
+- 500 notes: Under 5 minutes for embeddings
+- 1000 notes: Under 10 minutes for embeddings
 
-1. **Desktop Only**: No mobile support yet
-2. **Single Vault**: Can't analyze across multiple vaults
-3. **No Auto-Insert**: All links require manual approval
-4. **English Only**: NLP optimized for English
+### 3. **Error Handling Refinement**
+
+- Handle network errors during download
+- Handle memory issues with large vaults
+- Add user-friendly error messages
 
 ---
 
-## 🔧 Build Information
+## Build Information
 
 **Build Command**: `npm run build`
-**Last Successful Build**: November 30, 2025
-**Output Size**: 1.4MB (includes transformers.js)
-**Target**: ES2020 (for BigInt support)
+**Last Successful Build**: December 1, 2025
+**Target**: ES2020
 
-**Dependencies Status**:
-- ✅ All dependencies installed
-- ✅ No security vulnerabilities (critical)
-- ⚠️ 2 moderate vulnerabilities (non-critical)
+**New Dependency**:
+- `@xenova/transformers` ^2.6.0 - WebAssembly transformers for embeddings
 
 ---
 
-## 📊 Metrics & Performance
+## Tips for Testing
 
-**Measured in Phase 2 Testing** ✅
-
-Actual performance (tested with up to 1000 notes):
-- Initial index (1000 notes): ✅ Meets target (<10s)
-- Real-time analysis: ✅ Under 500ms
-- Memory usage: ✅ Under 100MB
-- Debounce delay: 300ms (configurable)
-
-**Note**: Larger vaults (5000+ notes) not yet tested
+1. **Enable Console Logging**: Watch for `[EmbeddingEngine]` and `[HybridScorer]` logs
+2. **Check Network Tab**: Monitor model download progress
+3. **Monitor Memory**: Embeddings can use significant memory
+4. **Test Incrementally**: Enable embeddings on small vault first
+5. **Use Reload**: `Cmd+R` to reload Obsidian after changes
 
 ---
 
-## 🚨 Red Flags & Warnings
+## Known Considerations
 
-1. **No Error Handling**: Plugin might crash on unexpected inputs (P1 priority)
-2. **No User Feedback for Embeddings**: Users don't know what's happening during model download (Phase 3 task)
-3. **Limited Performance Testing**: Only tested with up to 1000 notes, larger vaults need validation
-
----
-
-## 📞 Support & Resources
-
-**Documentation**:
-- `CLAUDE.md` - Developer guide
-- `README.md` - User-facing documentation
-- This file - Current progress tracking
-
-**Key Files to Monitor**:
-- `main.ts` - Plugin entry point
-- `src/discovery/link-discovery.ts` - Core suggestion logic
-- `src/ui/suggestion-panel.ts` - User interface
+1. **Model Size**: ~23MB download on first enable
+2. **Processing Time**: ~1-2 seconds per note for embedding
+3. **Memory Usage**: Embeddings use ~1.5KB per note (384 floats)
+4. **Storage**: Binary cache grows with vault size
 
 ---
 
-## 🎯 Definition of "Done" for Phase 2
-
-Phase 2 is considered complete when:
-
-✅ **Functional**:
-- [x] Plugin loads in Obsidian without errors
-- [x] Vault analysis completes successfully
-- [x] Suggestions appear while typing
-- [x] Insert button adds links correctly
-- [x] Settings can be changed
-
-✅ **Stable**:
-- [x] No crashes during normal use
-- [x] Errors handled gracefully
-- [x] Performance is acceptable
-
-✅ **Usable**:
-- [x] Suggestions are relevant
-- [x] UI is intuitive
-- [x] Response time is acceptable
-
-**Current Status**: 11/11 criteria met ✅ **PHASE 2 COMPLETE**
-
----
-
-## 💡 Tips for Next Developer
-
-1. **Phase 2 Works**: Real-time suggestions are tested and functional
-2. **Focus on Phase 3**: Embeddings integration is next priority
-3. **Check Console**: Most issues will show in Developer Console
-4. **Test Incrementally**: Add features one at a time, test after each
-5. **Update This File**: Keep progress current after each session
-
----
-
-**Remember**: Phase 2 is validated and working. Focus now shifts to Phase 3 (embeddings) and error handling!
+**Remember**: Phase 3 implementation is complete but needs end-to-end testing in Obsidian!

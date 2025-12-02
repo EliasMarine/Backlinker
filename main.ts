@@ -5,9 +5,12 @@ import { VaultIndexer } from './src/indexing/vault-indexer';
 import { CacheManager } from './src/cache/cache-manager';
 import { TFIDFEngine } from './src/engines/tfidf-engine';
 import { SemanticEngine } from './src/engines/semantic-engine';
+import { EmbeddingEngine } from './src/engines/embedding-engine';
+import { EmbeddingCache, calculateContentHash } from './src/cache/embedding-cache';
 import { HybridScorer } from './src/engines/hybrid-scorer';
 import { LinkDiscovery } from './src/discovery/link-discovery';
 import { SuggestionPanelView, SUGGESTION_PANEL_VIEW_TYPE } from './src/ui/suggestion-panel';
+import { EmbeddingProgressModal, EnableEmbeddingsModal } from './src/ui/embedding-progress-modal';
 
 /**
  * Smart Links - Intelligent Backlinking for Obsidian
@@ -25,6 +28,8 @@ export default class SmartLinksPlugin extends Plugin {
   // Engines
   private tfidfEngine: TFIDFEngine;
   private semanticEngine: SemanticEngine | null = null;
+  private embeddingEngine: EmbeddingEngine | null = null;
+  private embeddingCache: EmbeddingCache | null = null;
   private hybridScorer: HybridScorer;
 
   // Discovery & UI
@@ -34,6 +39,7 @@ export default class SmartLinksPlugin extends Plugin {
   // State
   private statusBarItem: HTMLElement;
   private isIndexing: boolean = false;
+  private isGeneratingEmbeddings: boolean = false;
   private debounceTimer: NodeJS.Timeout | null = null;
 
   async onload() {
@@ -88,6 +94,22 @@ export default class SmartLinksPlugin extends Plugin {
       this.settings
     );
     console.log('[Smart Links] ✓ Hybrid scorer initialized');
+
+    // Initialize embedding cache
+    console.log('[Smart Links] Initializing embedding cache...');
+    this.embeddingCache = new EmbeddingCache(
+      this.app,
+      this.manifest.id,
+      this.settings.neuralModelName
+    );
+    await this.embeddingCache.load();
+    console.log('[Smart Links] ✓ Embedding cache initialized:', this.embeddingCache.size(), 'cached embeddings');
+
+    // Initialize embedding engine if enabled
+    if (this.settings.enableNeuralEmbeddings) {
+      console.log('[Smart Links] Neural embeddings enabled, initializing engine...');
+      await this.initializeEmbeddingEngine();
+    }
 
     console.log('[Smart Links] Initializing vault indexer...');
     this.vaultIndexer = new VaultIndexer(
@@ -157,12 +179,24 @@ export default class SmartLinksPlugin extends Plugin {
     console.log('[Smart Links] ========================================');
   }
 
-  onunload() {
+  async onunload() {
     console.log('[Smart Links] Unloading plugin...');
 
     // Cleanup debounce timer
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
+    }
+
+    // Save embedding cache
+    if (this.embeddingCache?.needsSave()) {
+      console.log('[Smart Links] Saving embedding cache...');
+      await this.embeddingCache.save();
+    }
+
+    // Unload embedding engine
+    if (this.embeddingEngine) {
+      console.log('[Smart Links] Unloading embedding engine...');
+      this.embeddingEngine.unloadModel();
     }
 
     // Detach suggestion panel
@@ -510,5 +544,195 @@ export default class SmartLinksPlugin extends Plugin {
     if (leaves.length > 0 && leaves[0].view instanceof SuggestionPanelView) {
       leaves[0].view.updateSettings(this.settings);
     }
+  }
+
+  // ========================================
+  // Neural Embedding Management
+  // ========================================
+
+  /**
+   * Initialize the embedding engine (internal method)
+   */
+  private async initializeEmbeddingEngine(): Promise<void> {
+    if (this.embeddingEngine?.isModelLoaded()) {
+      console.log('[Smart Links] Embedding engine already loaded');
+      return;
+    }
+
+    try {
+      // Create engine if needed
+      if (!this.embeddingEngine) {
+        this.embeddingEngine = new EmbeddingEngine({
+          modelName: this.settings.neuralModelName,
+          batchSize: this.settings.embeddingBatchSize
+        });
+      }
+
+      // Show progress modal
+      const progressModal = new EmbeddingProgressModal(this.app, 'download');
+      progressModal.open();
+
+      // Load model with progress
+      await this.embeddingEngine.loadModel((info) => {
+        progressModal.updateDownloadProgress(info);
+      });
+
+      // Update hybrid scorer with embedding engine
+      this.hybridScorer.setEmbeddingEngine(this.embeddingEngine, this.embeddingCache);
+
+      console.log('[Smart Links] ✓ Embedding engine initialized');
+
+    } catch (error) {
+      console.error('[Smart Links] Failed to initialize embedding engine:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enable neural embeddings (called from settings)
+   * Shows confirmation dialog and downloads model
+   */
+  async enableNeuralEmbeddings(): Promise<void> {
+    console.log('[Smart Links] Enabling neural embeddings...');
+
+    // Show confirmation modal
+    return new Promise((resolve, reject) => {
+      const confirmModal = new EnableEmbeddingsModal(this.app);
+      confirmModal.onConfirm(async () => {
+        try {
+          await this.initializeEmbeddingEngine();
+
+          // Generate embeddings for all notes
+          await this.regenerateEmbeddings();
+
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      });
+      confirmModal.open();
+    });
+  }
+
+  /**
+   * Disable neural embeddings
+   */
+  disableNeuralEmbeddings(): void {
+    console.log('[Smart Links] Disabling neural embeddings...');
+
+    if (this.embeddingEngine) {
+      this.embeddingEngine.unloadModel();
+    }
+
+    // Update hybrid scorer
+    this.hybridScorer.setEmbeddingEngine(null, null);
+
+    console.log('[Smart Links] ✓ Neural embeddings disabled');
+  }
+
+  /**
+   * Regenerate embeddings for all notes
+   */
+  async regenerateEmbeddings(): Promise<void> {
+    if (this.isGeneratingEmbeddings) {
+      new Notice('Embedding generation already in progress...');
+      return;
+    }
+
+    if (!this.embeddingEngine?.isModelLoaded()) {
+      throw new Error('Embedding model not loaded');
+    }
+
+    this.isGeneratingEmbeddings = true;
+    const progressModal = new EmbeddingProgressModal(this.app, 'embedding');
+    progressModal.open();
+
+    try {
+      // Get all notes from cache
+      const notes = Array.from(this.cache.notes.values());
+      const totalNotes = notes.length;
+
+      if (totalNotes === 0) {
+        new Notice('No notes to process. Run "Analyze entire vault" first.');
+        progressModal.close();
+        return;
+      }
+
+      console.log(`[Smart Links] Generating embeddings for ${totalNotes} notes...`);
+
+      // Filter notes that need embedding (not cached or stale)
+      const notesToProcess = notes.filter(note => {
+        const contentHash = calculateContentHash(note.cleanContent || note.content);
+        return !this.embeddingCache?.isValid(note.path, contentHash);
+      });
+
+      console.log(`[Smart Links] ${notesToProcess.length} notes need embedding generation`);
+
+      if (notesToProcess.length === 0) {
+        progressModal.showComplete(0);
+        new Notice('All embeddings are up to date!');
+        return;
+      }
+
+      // Generate embeddings in batches
+      const embeddings = await this.embeddingEngine.generateBatchEmbeddings(
+        notesToProcess,
+        (info) => {
+          progressModal.updateBatchProgress(info);
+
+          if (progressModal.wasCancelled()) {
+            throw new Error('Cancelled by user');
+          }
+        }
+      );
+
+      // Save to cache
+      for (const note of notesToProcess) {
+        const embedding = embeddings.get(note.path);
+        if (embedding) {
+          const contentHash = calculateContentHash(note.cleanContent || note.content);
+          this.embeddingCache?.set(note.path, embedding, contentHash);
+        }
+      }
+
+      // Persist cache
+      await this.embeddingCache?.save();
+
+      progressModal.showComplete(embeddings.size);
+      console.log(`[Smart Links] ✓ Generated ${embeddings.size} embeddings`);
+
+    } catch (error) {
+      if ((error as Error).message === 'Cancelled by user') {
+        console.log('[Smart Links] Embedding generation cancelled');
+        progressModal.close();
+      } else {
+        console.error('[Smart Links] Failed to generate embeddings:', error);
+        progressModal.showError('Generation Failed', (error as Error).message);
+        throw error;
+      }
+    } finally {
+      this.isGeneratingEmbeddings = false;
+    }
+  }
+
+  /**
+   * Check if embedding model is loaded
+   */
+  isEmbeddingModelLoaded(): boolean {
+    return this.embeddingEngine?.isModelLoaded() || false;
+  }
+
+  /**
+   * Get embedding cache statistics
+   */
+  getEmbeddingCacheStats(): { totalEmbeddings: number; cacheSizeFormatted: string } | null {
+    if (!this.embeddingCache) {
+      return null;
+    }
+
+    return {
+      totalEmbeddings: this.embeddingCache.size(),
+      cacheSizeFormatted: this.embeddingCache.getCacheSizeFormatted()
+    };
   }
 }

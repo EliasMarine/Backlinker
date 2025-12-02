@@ -401,3 +401,29 @@
   color: var(--text-normal);
   line-height: 1.4;
 }
+
+/* Embedding Status in Settings */
+.smart-links-embedding-status {
+  padding: 8px 12px;
+  background-color: var(--background-secondary);
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.smart-links-status-disabled {
+  color: var(--text-muted);
+}
+
+.smart-links-status-warning {
+  color: var(--text-warning);
+}
+
+.smart-links-status-ready {
+  color: var(--text-accent);
+  font-weight: 500;
+}
+
+.smart-links-status-info {
+  color: var(--text-muted);
+}

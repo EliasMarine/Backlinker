@@ -169,6 +169,13 @@ export class TFIDFEngine {
   }
 
   /**
+   * Get a note by path from the cache
+   */
+  getNote(path: string): NoteIndex | undefined {
+    return this.cache.notes.get(path);
+  }
+
+  /**
    * Calculate IDF (Inverse Document Frequency) for a term
    */
   calculateIDF(term: string): number {

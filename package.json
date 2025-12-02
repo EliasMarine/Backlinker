@@ -22,6 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "@xenova/transformers": "^2.17.2",
+    "onnxruntime-web": "^1.14.0",
     "compromise": "^14.0.0",
     "fuzzysort": "^2.0.0",
     "natural": "^6.0.0",

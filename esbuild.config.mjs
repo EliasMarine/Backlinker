@@ -11,12 +11,128 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = (process.argv[2] === 'production');
 
+// Plugin to replace onnxruntime-node with an empty module
+// This prevents errors when the require fails at runtime
+const onnxNodeShimPlugin = {
+	name: 'onnx-node-shim',
+	setup(build) {
+		// Intercept requires for onnxruntime-node
+		build.onResolve({ filter: /^onnxruntime-node$/ }, args => {
+			return {
+				path: args.path,
+				namespace: 'onnx-node-shim'
+			};
+		});
+
+		// Return an empty module for onnxruntime-node
+		build.onLoad({ filter: /.*/, namespace: 'onnx-node-shim' }, () => {
+			return {
+				contents: `
+					// Shim for onnxruntime-node - returns empty to force WASM usage
+					module.exports = {};
+				`,
+				loader: 'js'
+			};
+		});
+	}
+};
+
+// Plugin to replace 'sharp' with a stub module
+// sharp is only needed for image processing pipelines, not text embeddings
+// @xenova/transformers tries to load it but we don't use image features
+const sharpShimPlugin = {
+	name: 'sharp-shim',
+	setup(build) {
+		// Intercept requires for sharp
+		build.onResolve({ filter: /^sharp$/ }, args => {
+			return {
+				path: args.path,
+				namespace: 'sharp-shim'
+			};
+		});
+
+		// Return a stub module that satisfies sharp's interface enough to not crash
+		build.onLoad({ filter: /.*/, namespace: 'sharp-shim' }, () => {
+			return {
+				contents: `
+					// Stub for sharp - we don't use image pipelines, only text embeddings
+					// This provides a chainable no-op interface
+					const sharpStub = function(input) {
+						const instance = {
+							resize: () => instance,
+							extend: () => instance,
+							extract: () => instance,
+							trim: () => instance,
+							rotate: () => instance,
+							flip: () => instance,
+							flop: () => instance,
+							sharpen: () => instance,
+							blur: () => instance,
+							flatten: () => instance,
+							gamma: () => instance,
+							negate: () => instance,
+							normalise: () => instance,
+							normalize: () => instance,
+							clahe: () => instance,
+							convolve: () => instance,
+							threshold: () => instance,
+							linear: () => instance,
+							recomb: () => instance,
+							modulate: () => instance,
+							tint: () => instance,
+							greyscale: () => instance,
+							grayscale: () => instance,
+							toColourspace: () => instance,
+							toColorspace: () => instance,
+							removeAlpha: () => instance,
+							ensureAlpha: () => instance,
+							extractChannel: () => instance,
+							joinChannel: () => instance,
+							bandbool: () => instance,
+							composite: () => instance,
+							toFormat: () => instance,
+							jpeg: () => instance,
+							png: () => instance,
+							webp: () => instance,
+							gif: () => instance,
+							tiff: () => instance,
+							avif: () => instance,
+							heif: () => instance,
+							raw: () => instance,
+							tile: () => instance,
+							clone: () => instance,
+							stats: () => Promise.resolve({}),
+							metadata: () => Promise.resolve({ width: 0, height: 0, channels: 3 }),
+							toBuffer: () => Promise.resolve(Buffer.from([])),
+							toFile: () => Promise.resolve({}),
+						};
+						return instance;
+					};
+
+					// Static methods
+					sharpStub.cache = () => {};
+					sharpStub.concurrency = () => 1;
+					sharpStub.counters = () => ({});
+					sharpStub.simd = () => false;
+					sharpStub.format = {};
+					sharpStub.versions = {};
+
+					module.exports = sharpStub;
+					module.exports.default = sharpStub;
+				`,
+				loader: 'js'
+			};
+		});
+	}
+};
+
 const context = await esbuild.context({
 	banner: {
 		js: banner,
 	},
 	entryPoints: ['main.ts'],
 	bundle: true,
+	plugins: [onnxNodeShimPlugin, sharpShimPlugin],
 	external: [
 		'obsidian',
 		'electron',
@@ -32,12 +148,21 @@ const context = await esbuild.context({
 		'@lezer/highlight',
 		'@lezer/lr',
 		...builtins],
+	// Use neutral platform for Obsidian (hybrid browser/node environment)
+	platform: 'neutral',
+	// Ensure main fields are resolved correctly for browser-compatible packages
+	mainFields: ['browser', 'module', 'main'],
 	format: 'cjs',
 	target: 'es2020',
 	logLevel: "info",
 	sourcemap: prod ? false : 'inline',
 	treeShaking: true,
 	outfile: 'main.js',
+	// Provide a valid import.meta.url for @xenova/transformers
+	// The library uses this to determine its cache path, but we override it anyway
+	define: {
+		'import.meta.url': JSON.stringify('file:///transformers-cache/'),
+	},
 });
 
 if (prod) {
