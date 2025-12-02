@@ -138,13 +138,15 @@ export default class SmartLinksPlugin extends Plugin {
     );
     console.log('[Smart Links] ✓ Link discovery initialized');
 
-    // Initialize batch linker
+    // Initialize batch linker with embedding support
     console.log('[Smart Links] Initializing batch linker...');
     this.batchLinker = new BatchLinker(
       this.app,
       this.cache,
       this.hybridScorer,
-      this.settings
+      this.settings,
+      this.embeddingEngine,
+      this.embeddingCache
     );
     console.log('[Smart Links] ✓ Batch linker initialized');
 
@@ -615,6 +617,11 @@ export default class SmartLinksPlugin extends Plugin {
 
       // Update hybrid scorer with embedding engine
       this.hybridScorer.setEmbeddingEngine(this.embeddingEngine, this.embeddingCache);
+
+      // Update batch linker with embedding engine for context verification
+      if (this.batchLinker) {
+        this.batchLinker.setEmbeddingEngine(this.embeddingEngine, this.embeddingCache);
+      }
 
       console.log('[Smart Links] ✓ Embedding engine initialized');
 

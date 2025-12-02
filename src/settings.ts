@@ -758,6 +758,50 @@ export class SmartLinksSettingTab extends PluginSettingTab {
           })
       );
 
+    // Smart Matching Section
+    settingsEl.createEl('h4', { text: 'Smart Matching', cls: 'smart-links-subheading' });
+
+    // Exact title match only
+    new Setting(settingsEl)
+      .setName('Exact title match only')
+      .setDesc('Only create links when the exact note title is found in text (recommended). Disabling allows partial matches but may create incorrect links.')
+      .addToggle(toggle =>
+        toggle
+          .setValue(this.plugin.settings.batchLinkSettings.exactTitleMatchOnly ?? true)
+          .onChange(async (value) => {
+            this.plugin.settings.batchLinkSettings.exactTitleMatchOnly = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // Context verification
+    new Setting(settingsEl)
+      .setName('Context verification')
+      .setDesc('Use neural embeddings to verify that the surrounding text is related to the target note. Requires neural embeddings to be enabled.')
+      .addToggle(toggle =>
+        toggle
+          .setValue(this.plugin.settings.batchLinkSettings.enableContextVerification ?? true)
+          .onChange(async (value) => {
+            this.plugin.settings.batchLinkSettings.enableContextVerification = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // Max document frequency
+    new Setting(settingsEl)
+      .setName('Word uniqueness threshold')
+      .setDesc('Skip words that appear in more than X% of notes (they\'re too common to be meaningful links)')
+      .addSlider(slider =>
+        slider
+          .setLimits(5, 50, 5)
+          .setValue(this.plugin.settings.batchLinkSettings.maxDocFrequencyPercent ?? 20)
+          .setDynamicTooltip()
+          .onChange(async (value) => {
+            this.plugin.settings.batchLinkSettings.maxDocFrequencyPercent = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
     // Separator
     containerEl.createEl('hr', { cls: 'smart-links-separator' });
   }

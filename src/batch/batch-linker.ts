@@ -3,24 +3,32 @@
  *
  * Coordinates between:
  * - HybridScorer for finding similar notes
- * - KeywordMatcher for mapping keywords to notes
+ * - SmartKeywordMatcher for intelligent keyword matching (replaces basic KeywordMatcher)
  * - InlineReplacer for safe text replacement
  * - BackupManager for backup/restore
+ *
+ * The SmartKeywordMatcher uses:
+ * 1. Strict title matching (only match actual note titles)
+ * 2. Domain stopword filtering (skip generic terms like "data", "layer")
+ * 3. Word uniqueness analysis (skip words appearing in >20% of notes)
+ * 4. Optional embedding-based context verification
  */
 
 import { App, TFile } from 'obsidian';
 import { NoteIndex, VaultCache, SmartLinksSettings } from '../types';
 import { HybridScorer } from '../engines/hybrid-scorer';
+import { EmbeddingEngine } from '../engines/embedding-engine';
+import { EmbeddingCache } from '../cache/embedding-cache';
 import {
   processContent,
   Replacement,
   KeywordToReplace
 } from './inline-replacer';
 import {
-  processHybridResults,
-  flattenToKeywords,
-  HybridResultForMatching
-} from './keyword-matcher';
+  SmartKeywordMatcher,
+  SmartMatcherConfig,
+  HybridResultForSmartMatching
+} from './smart-keyword-matcher';
 import { BackupManager, BackupEntry } from './backup-manager';
 
 export interface BatchLinkNoteResult {
@@ -68,17 +76,71 @@ export class BatchLinker {
   private backupManager: BackupManager;
   private isCancelled: boolean = false;
 
+  // Smart matching components
+  private smartMatcher: SmartKeywordMatcher | null = null;
+  private embeddingEngine: EmbeddingEngine | null = null;
+  private embeddingCache: EmbeddingCache | null = null;
+
   constructor(
     app: App,
     cache: VaultCache,
     hybridScorer: HybridScorer,
-    settings: SmartLinksSettings
+    settings: SmartLinksSettings,
+    embeddingEngine?: EmbeddingEngine | null,
+    embeddingCache?: EmbeddingCache | null
   ) {
     this.app = app;
     this.cache = cache;
     this.hybridScorer = hybridScorer;
     this.settings = settings;
+    this.embeddingEngine = embeddingEngine || null;
+    this.embeddingCache = embeddingCache || null;
     this.backupManager = new BackupManager(app);
+
+    // Initialize smart matcher with embedding support if available
+    this.initializeSmartMatcher();
+  }
+
+  /**
+   * Initialize or reinitialize the smart keyword matcher
+   */
+  private initializeSmartMatcher(): void {
+    const batchSettings = this.settings.batchLinkSettings;
+
+    const smartMatcherConfig: Partial<SmartMatcherConfig> = {
+      minKeywordLength: 4,
+      maxDocumentFrequencyPercent: batchSettings.maxDocFrequencyPercent ?? 20,
+      enableContextVerification: (batchSettings.enableContextVerification ?? true) &&
+                                  (this.embeddingEngine?.isModelLoaded() ?? false),
+      minContextSimilarity: 0.4,
+      exactTitleMatchOnly: batchSettings.exactTitleMatchOnly ?? true
+    };
+
+    this.smartMatcher = new SmartKeywordMatcher(
+      this.cache,
+      smartMatcherConfig,
+      this.embeddingEngine,
+      this.embeddingCache
+    );
+
+    console.log('[BatchLinker] Smart matcher initialized:', {
+      contextVerification: smartMatcherConfig.enableContextVerification,
+      exactTitleMatchOnly: smartMatcherConfig.exactTitleMatchOnly,
+      maxDocFrequencyPercent: smartMatcherConfig.maxDocumentFrequencyPercent
+    });
+  }
+
+  /**
+   * Update embedding engine and cache references
+   * Call this when embeddings become available after initial construction
+   */
+  setEmbeddingEngine(
+    embeddingEngine: EmbeddingEngine | null,
+    embeddingCache: EmbeddingCache | null
+  ): void {
+    this.embeddingEngine = embeddingEngine;
+    this.embeddingCache = embeddingCache;
+    this.initializeSmartMatcher();
   }
 
   /**
@@ -104,6 +166,7 @@ export class BatchLinker {
 
   /**
    * Process a single note and find replacements
+   * Uses SmartKeywordMatcher for intelligent, context-aware matching
    */
   async processNote(
     noteIndex: NoteIndex,
@@ -131,11 +194,16 @@ export class BatchLinker {
       // Find similar notes using hybrid scorer
       const hybridResults = await this.hybridScorer.findSimilarNotes(
         noteIndex,
-        options.maxLinksPerNote * 2 // Get extra to account for filtering
+        options.maxLinksPerNote * 3 // Get extra candidates for smart filtering
       );
 
-      // Convert to the format expected by keyword matcher
-      const resultsForMatching: HybridResultForMatching[] = hybridResults.map(r => ({
+      if (hybridResults.length === 0) {
+        result.modifiedContent = content;
+        return result;
+      }
+
+      // Convert to the format expected by smart keyword matcher
+      const resultsForMatching: HybridResultForSmartMatching[] = hybridResults.map(r => ({
         note: r.note,
         tfidfScore: r.tfidfScore,
         semanticScore: r.semanticScore,
@@ -144,30 +212,39 @@ export class BatchLinker {
         matchedPhrases: r.matchedPhrases
       }));
 
-      // Process hybrid results to find keyword matches
-      const matchResults = processHybridResults(
-        resultsForMatching,
-        noteIndex,
-        options.confidenceThreshold
-      );
+      // Use smart matcher for intelligent keyword matching
+      // This filters out generic words, checks word uniqueness, and optionally
+      // verifies context using embeddings
+      let keywordsToReplace: KeywordToReplace[] = [];
 
-      // Flatten to a list of keywords to replace
-      const keywordsToReplace = flattenToKeywords(
-        matchResults,
-        options.maxLinksPerNote
-      );
+      if (this.smartMatcher) {
+        const matchResults = await this.smartMatcher.processHybridResults(
+          resultsForMatching,
+          noteIndex,
+          options.confidenceThreshold
+        );
 
-      // Debug logging
-      if (hybridResults.length > 0) {
-        console.log(`[BatchLinker] Note "${noteIndex.title}":`, {
-          hybridResults: hybridResults.length,
-          matchResults: matchResults.length,
-          keywordsToReplace: keywordsToReplace.map(k => ({
-            keyword: k.keyword,
-            target: k.targetTitle,
-            confidence: k.confidence.toFixed(3)
-          }))
-        });
+        keywordsToReplace = this.smartMatcher.flattenToKeywords(
+          matchResults,
+          options.maxLinksPerNote
+        );
+
+        // Debug logging for smart matcher
+        if (matchResults.length > 0) {
+          console.log(`[BatchLinker] Smart matching for "${noteIndex.title}":`, {
+            hybridCandidates: hybridResults.length,
+            smartMatches: matchResults.length,
+            keywords: keywordsToReplace.map(k => ({
+              keyword: k.keyword,
+              target: k.targetTitle,
+              confidence: k.confidence.toFixed(3)
+            }))
+          });
+        }
+      } else {
+        console.warn('[BatchLinker] Smart matcher not initialized, skipping note');
+        result.modifiedContent = content;
+        return result;
       }
 
       if (keywordsToReplace.length === 0) {

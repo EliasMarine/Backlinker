@@ -235,6 +235,11 @@ export interface BatchLinkSettings {
   confidenceThreshold: number;    // Minimum score for auto-linking (default: 0.3)
   maxLinksPerNote: number;        // Maximum links to add per note (default: 10)
   lastRunTimestamp?: number;      // Timestamp of last batch run
+
+  // Smart matching settings
+  exactTitleMatchOnly: boolean;   // Only link when exact note title is found (default: true)
+  enableContextVerification: boolean; // Use embeddings to verify link context (default: true)
+  maxDocFrequencyPercent: number; // Skip words appearing in >X% of notes (default: 20)
 }
 
 /** Default settings values */
@@ -281,6 +286,11 @@ export const DEFAULT_SETTINGS: SmartLinksSettings = {
     enablePreviewMode: true,
     confidenceThreshold: 0.3,
     maxLinksPerNote: 10,
-    lastRunTimestamp: undefined
+    lastRunTimestamp: undefined,
+
+    // Smart matching (conservative defaults)
+    exactTitleMatchOnly: true,  // Only match exact note titles by default
+    enableContextVerification: true,  // Use embeddings when available
+    maxDocFrequencyPercent: 20  // Skip words in >20% of notes
   }
 };
