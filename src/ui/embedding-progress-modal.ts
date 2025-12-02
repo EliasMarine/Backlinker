@@ -136,26 +136,31 @@ export class EmbeddingProgressModal extends Modal {
     switch (info.status) {
       case 'downloading':
         this.updateProgress(info.progress || 0);
-        if (info.file) {
-          this.statusText?.setText(`Downloading: ${info.file}`);
-        } else if (info.message) {
+        // Use the message from the engine if available
+        if (info.message) {
           this.statusText?.setText(info.message);
+        } else if (info.file) {
+          this.statusText?.setText(`Downloading: ${info.file}`);
         }
+        // Show download size if available
         if (info.loaded && info.total) {
           const loadedMB = (info.loaded / (1024 * 1024)).toFixed(1);
           const totalMB = (info.total / (1024 * 1024)).toFixed(1);
           this.etaText?.setText(`${loadedMB} MB / ${totalMB} MB`);
+        } else {
+          this.etaText?.setText('');
         }
         break;
 
       case 'loading':
-        this.updateProgress(100);
-        this.statusText?.setText('Loading model into memory...');
-        this.etaText?.setText('');
+        this.updateProgress(info.progress || 95);
+        // Show the specific loading message from the engine
+        this.statusText?.setText(info.message || 'Loading model into memory...');
+        this.etaText?.setText('Please wait, this may take a moment...');
         break;
 
       case 'ready':
-        this.showSuccess('Model loaded successfully!', 'Neural embeddings are now enabled.');
+        this.showSuccess('Model Ready!', 'Neural embeddings are now enabled. Your notes will be processed next.');
         break;
 
       case 'error':
@@ -173,16 +178,19 @@ export class EmbeddingProgressModal extends Modal {
     const percentage = Math.round((info.current / info.total) * 100);
     this.updateProgress(percentage);
 
-    this.statusText?.setText(`Processing: ${info.current} / ${info.total} notes`);
+    // Show which note is being processed
+    const noteName = info.notePath.split('/').pop()?.replace('.md', '') || 'note';
+    const truncatedName = noteName.length > 30 ? noteName.substring(0, 27) + '...' : noteName;
+    this.statusText?.setText(`Analyzing: ${truncatedName}`);
 
-    if (info.eta !== undefined) {
+    // Show progress count and ETA
+    if (info.eta !== undefined && info.eta > 0) {
       const etaMinutes = Math.floor(info.eta / 60);
       const etaSeconds = info.eta % 60;
-      if (etaMinutes > 0) {
-        this.etaText?.setText(`ETA: ${etaMinutes}m ${etaSeconds}s remaining`);
-      } else {
-        this.etaText?.setText(`ETA: ${etaSeconds}s remaining`);
-      }
+      const etaStr = etaMinutes > 0 ? `${etaMinutes}m ${etaSeconds}s` : `${etaSeconds}s`;
+      this.etaText?.setText(`${info.current}/${info.total} notes • ${etaStr} remaining`);
+    } else {
+      this.etaText?.setText(`${info.current}/${info.total} notes processed`);
     }
   }
 

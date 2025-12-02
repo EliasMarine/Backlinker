@@ -559,6 +559,10 @@ export default class SmartLinksPlugin extends Plugin {
       return;
     }
 
+    // Show progress modal
+    const progressModal = new EmbeddingProgressModal(this.app, 'download');
+    progressModal.open();
+
     try {
       // Create engine if needed
       if (!this.embeddingEngine) {
@@ -567,10 +571,6 @@ export default class SmartLinksPlugin extends Plugin {
           batchSize: this.settings.embeddingBatchSize
         });
       }
-
-      // Show progress modal
-      const progressModal = new EmbeddingProgressModal(this.app, 'download');
-      progressModal.open();
 
       // Load model with progress
       await this.embeddingEngine.loadModel((info) => {
@@ -582,8 +582,13 @@ export default class SmartLinksPlugin extends Plugin {
 
       console.log('[Smart Links] ✓ Embedding engine initialized');
 
+      // Brief pause to show success message, then close
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      progressModal.close();
+
     } catch (error) {
       console.error('[Smart Links] Failed to initialize embedding engine:', error);
+      progressModal.showError('Failed to Load Model', (error as Error).message);
       throw error;
     }
   }
@@ -658,6 +663,13 @@ export default class SmartLinksPlugin extends Plugin {
         return;
       }
 
+      // Show initial status
+      progressModal.updateBatchProgress({
+        current: 0,
+        total: totalNotes,
+        notePath: 'Preparing...'
+      });
+
       console.log(`[Smart Links] Generating embeddings for ${totalNotes} notes...`);
 
       // Filter notes that need embedding (not cached or stale)
@@ -686,6 +698,13 @@ export default class SmartLinksPlugin extends Plugin {
         }
       );
 
+      // Update status: saving
+      progressModal.updateBatchProgress({
+        current: embeddings.size,
+        total: embeddings.size,
+        notePath: 'Saving to cache...'
+      });
+
       // Save to cache
       for (const note of notesToProcess) {
         const embedding = embeddings.get(note.path);
@@ -698,6 +717,8 @@ export default class SmartLinksPlugin extends Plugin {
       // Persist cache
       await this.embeddingCache?.save();
 
+      // Brief pause before showing complete
+      await new Promise(resolve => setTimeout(resolve, 300));
       progressModal.showComplete(embeddings.size);
       console.log(`[Smart Links] ✓ Generated ${embeddings.size} embeddings`);
 

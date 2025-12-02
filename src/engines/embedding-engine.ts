@@ -106,13 +106,19 @@ export class EmbeddingEngine {
       progressCallback?.({
         status: 'downloading',
         progress: 0,
-        message: 'Loading Transformers.js...'
+        message: 'Initializing neural processing library...'
       });
 
       // Import transformers.js
       // ONNX runtime WASM paths are configured at build time via esbuild plugin
       console.log('[EmbeddingEngine] Importing @xenova/transformers...');
       const transformers = await import('@xenova/transformers');
+
+      progressCallback?.({
+        status: 'downloading',
+        progress: 5,
+        message: 'Configuring WASM runtime...'
+      });
 
       // Configure transformers environment
       const env = transformers.env;
@@ -146,34 +152,74 @@ export class EmbeddingEngine {
       progressCallback?.({
         status: 'downloading',
         progress: 10,
-        message: 'Downloading model files...'
+        message: 'Connecting to model repository...'
       });
+
+      // Track which files we've seen to show better messages
+      let lastFile = '';
+      let filesDownloaded = 0;
 
       // Wrap progress callback to translate library format to our format
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const wrappedProgressCallback = (data: any) => {
-        if (data.status === 'progress' && data.progress !== undefined) {
-          // Map 0-100 to 10-90 range to leave room for setup/finalization
-          const mappedProgress = 10 + (data.progress * 0.8);
+        if (data.status === 'initiate') {
+          // New file starting
+          const fileName = data.file || 'model component';
+          progressCallback?.({
+            status: 'downloading',
+            progress: 10 + (filesDownloaded * 5),
+            message: `Fetching ${fileName}...`
+          });
+        } else if (data.status === 'progress' && data.progress !== undefined) {
+          // Download progress for current file
+          if (data.file && data.file !== lastFile) {
+            lastFile = data.file;
+            filesDownloaded++;
+          }
+
+          // Map progress: 10-85% for downloads
+          const baseProgress = 10 + (filesDownloaded * 5);
+          const fileProgress = data.progress * 0.15; // Each file gets ~15% of total
+          const mappedProgress = Math.min(85, baseProgress + fileProgress);
+
+          const fileName = data.file || 'model';
+          let message = `Downloading ${fileName}`;
+
+          if (data.loaded && data.total) {
+            const loadedMB = (data.loaded / (1024 * 1024)).toFixed(1);
+            const totalMB = (data.total / (1024 * 1024)).toFixed(1);
+            message = `Downloading ${fileName} (${loadedMB}/${totalMB} MB)`;
+          } else {
+            message = `Downloading ${fileName} (${Math.round(data.progress)}%)`;
+          }
+
           progressCallback?.({
             status: 'downloading',
             progress: Math.round(mappedProgress),
             loaded: data.loaded,
             total: data.total,
             file: data.file,
-            message: `Downloading: ${data.file || 'model files'} (${Math.round(data.progress)}%)`
+            message
           });
         } else if (data.status === 'done') {
+          // File complete
+          filesDownloaded++;
           progressCallback?.({
             status: 'loading',
-            progress: 95,
-            message: 'Loading model into memory...'
+            progress: 88,
+            message: 'Download complete, initializing ONNX runtime...'
           });
         }
       };
 
       // Load the feature extraction pipeline
       console.log('[EmbeddingEngine] Creating pipeline...');
+
+      progressCallback?.({
+        status: 'loading',
+        progress: 90,
+        message: 'Creating inference pipeline...'
+      });
 
       // Use type assertion to access pipeline function
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -188,8 +234,17 @@ export class EmbeddingEngine {
         }
       );
 
+      progressCallback?.({
+        status: 'loading',
+        progress: 98,
+        message: 'Warming up neural network...'
+      });
+
+      // Yield to allow UI to update before final message
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       console.log('[EmbeddingEngine] Model loaded successfully!');
-      progressCallback?.({ status: 'ready', progress: 100, message: 'Model ready!' });
+      progressCallback?.({ status: 'ready', progress: 100, message: 'Neural model ready!' });
 
     } catch (error) {
       this.loadError = error instanceof Error ? error : new Error(String(error));
