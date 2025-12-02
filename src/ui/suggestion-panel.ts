@@ -116,19 +116,73 @@ export class SuggestionPanelView extends ItemView {
   private renderSuggestion(container: HTMLElement, suggestion: LinkSuggestion) {
     const itemEl = container.createDiv('smart-links-item');
 
+    // Header row with title and score
+    const headerEl = itemEl.createDiv('smart-links-item-header');
+
     // Note title
-    const titleEl = itemEl.createDiv('smart-links-item-title');
-    titleEl.setText(`📄 ${this.getNoteName(suggestion.targetNote)}`);
+    const titleEl = headerEl.createDiv('smart-links-item-title');
+    titleEl.setText(suggestion.targetTitle || this.getNoteName(suggestion.targetNote));
 
-    // Explanation (keywords/score)
-    const explanationEl = itemEl.createDiv('smart-links-item-explanation');
-    explanationEl.setText(suggestion.explanation);
-
-    // Show confidence score if enabled
+    // Score badge
     if (this.settings.showConfidenceScores) {
-      const scoreEl = itemEl.createDiv('smart-links-item-score');
       const scorePercent = Math.round(suggestion.finalScore * 100);
-      scoreEl.setText(`${scorePercent}% match`);
+      const scoreEl = headerEl.createDiv('smart-links-item-score-badge');
+      scoreEl.setText(`${scorePercent}%`);
+      // Add color class based on score
+      if (scorePercent >= 70) {
+        scoreEl.addClass('score-high');
+      } else if (scorePercent >= 40) {
+        scoreEl.addClass('score-medium');
+      } else {
+        scoreEl.addClass('score-low');
+      }
+    }
+
+    // Folder path (if exists)
+    if (suggestion.targetFolder) {
+      const folderEl = itemEl.createDiv('smart-links-item-folder');
+      folderEl.setText(`📁 ${suggestion.targetFolder}`);
+    }
+
+    // Content preview
+    if (suggestion.contentPreview) {
+      const previewEl = itemEl.createDiv('smart-links-item-preview');
+      previewEl.setText(suggestion.contentPreview);
+    }
+
+    // Matched keywords
+    if (suggestion.matchedKeywords && suggestion.matchedKeywords.length > 0) {
+      const keywordsEl = itemEl.createDiv('smart-links-item-keywords');
+      const label = keywordsEl.createSpan('smart-links-label');
+      label.setText('Keywords: ');
+      const keywords = keywordsEl.createSpan('smart-links-keyword-list');
+      keywords.setText(suggestion.matchedKeywords.slice(0, 5).join(', '));
+    }
+
+    // Matched phrases (for semantic matches)
+    if (suggestion.matchedPhrases && suggestion.matchedPhrases.length > 0) {
+      const phrasesEl = itemEl.createDiv('smart-links-item-phrases');
+      const label = phrasesEl.createSpan('smart-links-label');
+      label.setText('Phrases: ');
+      const phrases = phrasesEl.createSpan('smart-links-phrase-list');
+      phrases.setText(suggestion.matchedPhrases.slice(0, 3).join(', '));
+    }
+
+    // Score breakdown (only show if both scores exist)
+    if (this.settings.showConfidenceScores && suggestion.tfidfScore > 0 && suggestion.semanticScore && suggestion.semanticScore > 0) {
+      const breakdownEl = itemEl.createDiv('smart-links-item-breakdown');
+      const tfidfPercent = Math.round(suggestion.tfidfScore * 100);
+      const semanticPercent = Math.round(suggestion.semanticScore * 100);
+      breakdownEl.setText(`📊 TF-IDF: ${tfidfPercent}% | Semantic: ${semanticPercent}%`);
+    }
+
+    // Tags
+    if (suggestion.targetTags && suggestion.targetTags.length > 0) {
+      const tagsEl = itemEl.createDiv('smart-links-item-tags');
+      for (const tag of suggestion.targetTags.slice(0, 3)) {
+        const tagSpan = tagsEl.createSpan('smart-links-tag');
+        tagSpan.setText(tag);
+      }
     }
 
     // Action buttons
@@ -136,11 +190,10 @@ export class SuggestionPanelView extends ItemView {
 
     // Insert button
     const insertBtn = actionsEl.createEl('button', {
-      text: 'Insert',
+      text: '+ Insert Link',
       cls: 'smart-links-btn-insert'
     });
 
-    // Use click handler - now safe since we fixed the race condition in main.ts
     insertBtn.addEventListener('click', (e) => {
       console.log('[Smart Links] Insert button clicked');
       e.preventDefault();
@@ -150,7 +203,7 @@ export class SuggestionPanelView extends ItemView {
 
     // Open note button (preview)
     const openBtn = actionsEl.createEl('button', {
-      text: 'Open',
+      text: 'Preview',
       cls: 'smart-links-btn-open'
     });
     openBtn.addEventListener('click', (e) => {

@@ -55,7 +55,7 @@
 /* Suggestion Item */
 .smart-links-item {
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 12px;
   background-color: var(--background-secondary);
   transition: background-color 0.2s ease;
@@ -63,15 +63,123 @@
 
 .smart-links-item:hover {
   background-color: var(--background-secondary-alt);
+  border-color: var(--interactive-accent);
+}
+
+/* Header with title and score */
+.smart-links-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .smart-links-item-title {
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
-  margin-bottom: 6px;
   color: var(--text-normal);
+  flex: 1;
+  line-height: 1.3;
 }
 
+/* Score badge */
+.smart-links-item-score-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.smart-links-item-score-badge.score-high {
+  background-color: var(--background-modifier-success);
+  color: var(--text-accent);
+}
+
+.smart-links-item-score-badge.score-medium {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-accent);
+}
+
+.smart-links-item-score-badge.score-low {
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+/* Folder path */
+.smart-links-item-folder {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Content preview */
+.smart-links-item-preview {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 8px;
+  padding: 8px;
+  background-color: var(--background-primary);
+  border-radius: 4px;
+  border-left: 3px solid var(--interactive-accent);
+  max-height: 60px;
+  overflow: hidden;
+}
+
+/* Keywords and phrases */
+.smart-links-item-keywords,
+.smart-links-item-phrases {
+  font-size: 11px;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.smart-links-label {
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.smart-links-keyword-list {
+  color: var(--text-accent);
+  font-weight: 500;
+}
+
+.smart-links-phrase-list {
+  color: var(--text-normal);
+  font-style: italic;
+}
+
+/* Score breakdown */
+.smart-links-item-breakdown {
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+/* Tags */
+.smart-links-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+.smart-links-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+  border-radius: 10px;
+}
+
+/* Legacy - keeping for backwards compatibility */
 .smart-links-item-explanation {
   font-size: 12px;
   color: var(--text-muted);
@@ -139,4 +247,157 @@
   font-size: 11px;
   color: var(--text-faint);
   text-align: center;
+}
+
+/* Progress Modal */
+.smart-links-progress-modal {
+  max-width: 500px;
+  padding: 24px;
+}
+
+.smart-links-modal-title {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-normal);
+  text-align: center;
+}
+
+.smart-links-status-text {
+  font-size: 14px;
+  color: var(--text-normal);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.smart-links-eta-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  text-align: center;
+  min-height: 18px;
+}
+
+/* Progress Bar */
+.smart-links-progress-bar {
+  width: 100%;
+  height: 24px;
+  background: var(--background-modifier-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.smart-links-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--interactive-accent), var(--interactive-accent-hover));
+  transition: width 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  border-radius: 12px;
+}
+
+.smart-links-progress-fill::after {
+  content: attr(data-percentage) '%';
+  color: var(--text-on-accent);
+  font-size: 11px;
+  font-weight: 600;
+  position: absolute;
+  right: 8px;
+}
+
+.smart-links-percentage-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+/* Button Container */
+.smart-links-button-container {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.smart-links-cancel-button,
+.smart-links-close-button {
+  padding: 8px 24px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.smart-links-cancel-button:hover,
+.smart-links-close-button:hover {
+  background-color: var(--interactive-hover);
+}
+
+.smart-links-cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.smart-links-close-button {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+}
+
+.smart-links-close-button:hover {
+  background-color: var(--interactive-accent-hover);
+}
+
+/* Error Container */
+.smart-links-error-container {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: var(--background-modifier-error);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-error-hover);
+}
+
+.smart-links-error-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-error);
+  margin-bottom: 6px;
+}
+
+.smart-links-error-message {
+  font-size: 13px;
+  color: var(--text-normal);
+  line-height: 1.4;
+}
+
+/* Success Container */
+.smart-links-success-container {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: var(--background-modifier-success);
+  border-radius: 6px;
+  border: 1px solid var(--text-accent);
+}
+
+.smart-links-success-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-accent);
+  margin-bottom: 6px;
+}
+
+.smart-links-success-message {
+  font-size: 13px;
+  color: var(--text-normal);
+  line-height: 1.4;
 }

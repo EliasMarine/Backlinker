@@ -128,7 +128,11 @@ export class ContentParser {
 
     let match;
     while ((match = tagRegex.exec(content)) !== null) {
-      tags.add('#' + match[1]);
+      const tag = match[1];
+      // Filter out hex color codes and other invalid tags
+      if (!this.isInvalidTag(tag)) {
+        tags.add('#' + tag);
+      }
     }
 
     // Also check frontmatter for tags
@@ -141,7 +145,7 @@ export class ContentParser {
       if (yamlTagsMatch) {
         const tagList = yamlTagsMatch[1].split(',').map(t => t.trim());
         tagList.forEach(tag => {
-          if (tag) {
+          if (tag && !this.isInvalidTag(tag.replace(/^#/, ''))) {
             tags.add(tag.startsWith('#') ? tag : '#' + tag);
           }
         });
@@ -149,6 +153,28 @@ export class ContentParser {
     }
 
     return Array.from(tags);
+  }
+
+  /**
+   * Check if a tag is invalid (hex color, header ID, etc.)
+   */
+  private isInvalidTag(tag: string): boolean {
+    // Hex color codes: 3 or 6 hex characters
+    if (/^[0-9a-fA-F]{3}$/.test(tag) || /^[0-9a-fA-F]{6}$/.test(tag)) {
+      return true;
+    }
+
+    // Too short to be meaningful
+    if (tag.length < 2) {
+      return true;
+    }
+
+    // Purely numeric (not a real tag)
+    if (/^\d+$/.test(tag)) {
+      return true;
+    }
+
+    return false;
   }
 
   /**

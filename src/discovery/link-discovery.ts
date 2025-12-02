@@ -118,19 +118,35 @@ export class LinkDiscovery {
     // Create temporary note index for current content
     const tempNote = await this.createTempNoteIndex(file, content);
 
+    console.log('[LinkDiscovery] Calling hybridScorer.findSimilarNotes()...');
     // Find similar notes using hybrid scoring
     const similarNotes = await this.hybridScorer.findSimilarNotes(
       tempNote,
       this.settings.maxRealtimeSuggestions
     );
 
+    console.log('[LinkDiscovery] HybridScorer returned', similarNotes.length, 'similar notes');
+    if (similarNotes.length > 0) {
+      console.log('[LinkDiscovery] Top 3 results:', similarNotes.slice(0, 3).map(r => ({
+        title: r.note.title,
+        finalScore: r.finalScore,
+        tfidfScore: r.tfidfScore,
+        semanticScore: r.semanticScore
+      })));
+    }
+
+    console.log('[LinkDiscovery] TempNote has', tempNote.existingLinks.length, 'existing links');
     // Filter out already-linked notes
     const filteredNotes = this.filterAlreadyLinked(similarNotes, tempNote);
+
+    console.log('[LinkDiscovery] After filtering already-linked:', filteredNotes.length, 'notes remain');
 
     // Convert to LinkSuggestion format
     const suggestions = filteredNotes.map((result) =>
       this.createLinkSuggestion(file.path, result)
     );
+
+    console.log('[LinkDiscovery] Final suggestions:', suggestions.length);
 
     return suggestions;
   }
@@ -178,8 +194,7 @@ export class LinkDiscovery {
       lastModified: file.stat.mtime,
       tfidfVector: tfidfVector,
       wordFrequency: wordFrequency,
-      embedding: cachedNote?.embedding,
-      embeddingVersion: cachedNote?.embeddingVersion
+      semanticVersion: cachedNote?.semanticVersion
     };
   }
 
@@ -229,18 +244,56 @@ export class LinkDiscovery {
     // Generate explanation
     const explanation = this.generateExplanation(result);
 
+    // Extract folder path
+    const pathParts = result.note.path.split('/');
+    const targetFolder = pathParts.length > 1
+      ? pathParts.slice(0, -1).join('/')
+      : '';
+
+    // Generate content preview (first ~150 chars, cleaned)
+    const contentPreview = this.generateContentPreview(result.note.cleanContent);
+
     return {
       id: `${sourcePath}-${result.note.path}-${Date.now()}`,
       sourceNote: sourcePath,
       targetNote: result.note.path,
+      targetTitle: result.note.title,
       tfidfScore: result.tfidfScore,
-      embeddingScore: result.embeddingScore,
+      semanticScore: result.semanticScore,
       finalScore: result.finalScore,
       matchedKeywords: result.matchedKeywords,
+      matchedPhrases: result.matchedPhrases,
       explanation,
+      contentPreview,
+      targetFolder,
+      targetTags: result.note.tags || [],
       status: 'pending',
       createdAt: Date.now()
     };
+  }
+
+  /**
+   * Generate a clean content preview for display
+   */
+  private generateContentPreview(cleanContent: string): string {
+    if (!cleanContent) return '';
+
+    // Take first 200 chars, then trim to last complete word
+    let preview = cleanContent.slice(0, 200).trim();
+
+    // Remove newlines and extra spaces
+    preview = preview.replace(/\s+/g, ' ');
+
+    // Trim to last complete word if we hit the limit
+    if (cleanContent.length > 200) {
+      const lastSpace = preview.lastIndexOf(' ');
+      if (lastSpace > 100) {
+        preview = preview.slice(0, lastSpace);
+      }
+      preview += '...';
+    }
+
+    return preview;
   }
 
   /**
@@ -252,7 +305,7 @@ export class LinkDiscovery {
 
     if (keywords.length > 0) {
       return `${scorePercent}% match - ${keywords.join(', ')}`;
-    } else if (result.embeddingScore) {
+    } else if (result.semanticScore) {
       return `${scorePercent}% semantic match`;
     } else {
       return `${scorePercent}% similarity`;

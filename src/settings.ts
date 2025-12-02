@@ -40,13 +40,13 @@ export class SmartLinksSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Enable semantic embeddings')
-      .setDesc('Use AI embeddings for deeper conceptual understanding (requires ~200MB memory)')
+      .setName('Enable semantic search')
+      .setDesc('Use semantic analysis for deeper conceptual understanding')
       .addToggle(toggle =>
         toggle
-          .setValue(this.plugin.settings.enableEmbeddings)
+          .setValue(this.plugin.settings.enableSemanticSearch)
           .onChange(async (value) => {
-            this.plugin.settings.enableEmbeddings = value;
+            this.plugin.settings.enableSemanticSearch = value;
             await this.plugin.saveSettings();
           })
       );
@@ -69,15 +69,15 @@ export class SmartLinksSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Embedding threshold')
+      .setName('Semantic threshold')
       .setDesc('Minimum similarity score for semantic matching (0.0-1.0)')
       .addSlider(slider =>
         slider
           .setLimits(0, 1, 0.05)
-          .setValue(this.plugin.settings.embeddingThreshold)
+          .setValue(this.plugin.settings.semanticThreshold)
           .setDynamicTooltip()
           .onChange(async (value) => {
-            this.plugin.settings.embeddingThreshold = value;
+            this.plugin.settings.semanticThreshold = value;
             await this.plugin.saveSettings();
           })
       );
@@ -114,15 +114,15 @@ export class SmartLinksSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName('Embedding weight')
+      .setName('Semantic weight')
       .setDesc('Weight for semantic scoring (0.0-1.0)')
       .addSlider(slider =>
         slider
           .setLimits(0, 1, 0.1)
-          .setValue(this.plugin.settings.embeddingWeight)
+          .setValue(this.plugin.settings.semanticWeight)
           .setDynamicTooltip()
           .onChange(async (value) => {
-            this.plugin.settings.embeddingWeight = value;
+            this.plugin.settings.semanticWeight = value;
             await this.plugin.saveSettings();
           })
       );

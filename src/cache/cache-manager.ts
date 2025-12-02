@@ -91,7 +91,7 @@ export class CacheManager {
       documentFrequency: new Map(),
       totalDocuments: 0,
       lastFullAnalysis: 0,
-      embeddingsEnabled: false,
+      semanticEnabled: false,
       version: '1.0.0'
     };
   }
@@ -115,7 +115,7 @@ export class CacheManager {
         lastModified: note.lastModified,
         tfidfVector: Object.fromEntries(note.tfidfVector),
         wordFrequency: Object.fromEntries(note.wordFrequency),
-        embeddingVersion: note.embeddingVersion
+        semanticVersion: note.semanticVersion
       };
     }
 
@@ -124,7 +124,7 @@ export class CacheManager {
       documentFrequency: Object.fromEntries(cache.documentFrequency),
       totalDocuments: cache.totalDocuments,
       lastFullAnalysis: cache.lastFullAnalysis,
-      embeddingsEnabled: cache.embeddingsEnabled,
+      semanticEnabled: cache.semanticEnabled,
       version: cache.version
     };
   }
@@ -148,7 +148,7 @@ export class CacheManager {
         lastModified: serializedNote.lastModified,
         tfidfVector: new Map(Object.entries(serializedNote.tfidfVector)),
         wordFrequency: new Map(Object.entries(serializedNote.wordFrequency)),
-        embeddingVersion: serializedNote.embeddingVersion
+        semanticVersion: serializedNote.semanticVersion
       });
     }
 
@@ -157,7 +157,7 @@ export class CacheManager {
       documentFrequency: new Map(Object.entries(serialized.documentFrequency)),
       totalDocuments: serialized.totalDocuments,
       lastFullAnalysis: serialized.lastFullAnalysis,
-      embeddingsEnabled: serialized.embeddingsEnabled,
+      semanticEnabled: serialized.semanticEnabled || false, // Default to false for old caches
       version: serialized.version
     };
   }

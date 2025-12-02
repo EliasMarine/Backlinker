@@ -4,7 +4,7 @@ import { SmartLinksSettingTab } from './src/settings';
 import { VaultIndexer } from './src/indexing/vault-indexer';
 import { CacheManager } from './src/cache/cache-manager';
 import { TFIDFEngine } from './src/engines/tfidf-engine';
-// import { EmbeddingEngine } from './src/engines/embedding-engine'; // Disabled for Phase 2 - will re-enable in Phase 3
+import { SemanticEngine } from './src/engines/semantic-engine';
 import { HybridScorer } from './src/engines/hybrid-scorer';
 import { LinkDiscovery } from './src/discovery/link-discovery';
 import { SuggestionPanelView, SUGGESTION_PANEL_VIEW_TYPE } from './src/ui/suggestion-panel';
@@ -24,7 +24,7 @@ export default class SmartLinksPlugin extends Plugin {
 
   // Engines
   private tfidfEngine: TFIDFEngine;
-  // private embeddingEngine: EmbeddingEngine; // Disabled for Phase 2 - will re-enable in Phase 3
+  private semanticEngine: SemanticEngine | null = null;
   private hybridScorer: HybridScorer;
 
   // Discovery & UI
@@ -76,11 +76,15 @@ export default class SmartLinksPlugin extends Plugin {
     this.tfidfEngine = new TFIDFEngine(this.cache);
     console.log('[Smart Links] ✓ TF-IDF engine initialized');
 
-    // this.embeddingEngine = new EmbeddingEngine(this.cache); // Disabled for Phase 2 - will re-enable in Phase 3
+    // Initialize semantic engine
+    console.log('[Smart Links] Initializing semantic engine...');
+    this.semanticEngine = new SemanticEngine(this.cache);
+    console.log('[Smart Links] ✓ Semantic engine initialized');
+
     console.log('[Smart Links] Initializing hybrid scorer...');
     this.hybridScorer = new HybridScorer(
       this.tfidfEngine,
-      null, // Embeddings disabled for Phase 2 testing
+      this.semanticEngine, // Semantic engine (will build models during vault analysis)
       this.settings
     );
     console.log('[Smart Links] ✓ Hybrid scorer initialized');
@@ -186,9 +190,20 @@ export default class SmartLinksPlugin extends Plugin {
           new Notice('Starting vault analysis...');
           this.updateStatusBar('Analyzing...');
 
+          // Step 1: Index vault with TF-IDF
           await this.vaultIndexer.analyzeVault((progress, message) => {
-            this.updateStatusBar(`Analyzing: ${Math.round(progress)}%`);
+            this.updateStatusBar(`Analyzing: ${Math.round(progress * 0.6)}%`);
           });
+
+          // Step 2: Build semantic models (if enabled)
+          if (this.settings.enableSemanticSearch && this.semanticEngine) {
+            this.updateStatusBar('Building semantic models...');
+            await this.semanticEngine.buildModels((progress, message) => {
+              const totalProgress = 60 + (progress * 0.4);
+              this.updateStatusBar(`${message}: ${Math.round(totalProgress)}%`);
+            });
+            this.cache.semanticEnabled = true;
+          }
 
           const duration = ((Date.now() - startTime) / 1000).toFixed(1);
           const stats = this.vaultIndexer.getStatistics();
@@ -315,6 +330,7 @@ export default class SmartLinksPlugin extends Plugin {
         }
       }
     });
+
   }
 
   /**

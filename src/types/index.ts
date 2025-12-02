@@ -18,9 +18,9 @@ export interface NoteIndex {
   tfidfVector: Map<string, number>;
   wordFrequency: Map<string, number>;
 
-  // Embedding data (computed on demand)
-  embedding?: Float32Array; // 384-dim vector
-  embeddingVersion?: string; // track which model version
+  // Semantic data (computed on demand)
+  // Note: Semantic vectors are managed by SemanticEngine, not stored per-note
+  semanticVersion?: string; // track which semantic model version
 }
 
 /** Reference to a link within a note */
@@ -36,15 +36,20 @@ export interface LinkSuggestion {
   id: string; // unique identifier
   sourceNote: string;
   targetNote: string;
+  targetTitle: string; // Display title of target note
 
   // Scoring
   tfidfScore: number; // 0-1
-  embeddingScore?: number; // 0-1 (null if embeddings disabled)
+  semanticScore?: number; // 0-1 (null if semantic disabled)
   finalScore: number; // combined/weighted score
 
   // Context
   matchedKeywords: string[];
+  matchedPhrases?: string[]; // Matched n-gram phrases
   explanation: string;
+  contentPreview: string; // First ~150 chars of target note content
+  targetFolder: string; // Folder path of target note
+  targetTags: string[]; // Tags from target note
 
   // Metadata
   status: 'pending' | 'accepted' | 'rejected' | 'applied';
@@ -57,7 +62,7 @@ export interface VaultCache {
   documentFrequency: Map<string, number>; // IDF calculation
   totalDocuments: number;
   lastFullAnalysis: number;
-  embeddingsEnabled: boolean;
+  semanticEnabled: boolean;
   version: string;
 }
 
@@ -67,7 +72,7 @@ export interface SerializedVaultCache {
   documentFrequency: Record<string, number>;
   totalDocuments: number;
   lastFullAnalysis: number;
-  embeddingsEnabled: boolean;
+  semanticEnabled: boolean;
   version: string;
 }
 
@@ -84,7 +89,7 @@ export interface SerializedNoteIndex {
   lastModified: number;
   tfidfVector: Record<string, number>;
   wordFrequency: Record<string, number>;
-  embeddingVersion?: string;
+  semanticVersion?: string;
 }
 
 /** Result of parsing markdown content */
@@ -103,17 +108,17 @@ export type ProgressCallback = (progress: number, message?: string) => void;
 export interface SmartLinksSettings {
   // Analysis modes
   enableRealTimeSuggestions: boolean;
-  enableEmbeddings: boolean;
-  embeddingModel: 'sentence-transformers' | 'none';
+  enableSemanticSearch: boolean; // Renamed from enableEmbeddings
+  semanticModelVersion: string; // Track semantic model version
 
   // Thresholds
   tfidfThreshold: number; // 0-1, default 0.3
-  embeddingThreshold: number; // 0-1, default 0.6
-  combinedThreshold: number; // 0-1, default 0.5
+  semanticThreshold: number; // 0-1, default 0.3 (renamed from embeddingThreshold)
+  combinedThreshold: number; // 0-1, default 0.4
 
   // Weights for hybrid scoring
-  tfidfWeight: number; // default 0.4
-  embeddingWeight: number; // default 0.6
+  tfidfWeight: number; // default 0.6
+  semanticWeight: number; // default 0.4 (renamed from embeddingWeight)
 
   // Performance
   maxSuggestionsPerNote: number; // default 10
@@ -138,17 +143,17 @@ export interface SmartLinksSettings {
 export const DEFAULT_SETTINGS: SmartLinksSettings = {
   // Analysis modes
   enableRealTimeSuggestions: true,
-  enableEmbeddings: false,
-  embeddingModel: 'sentence-transformers',
+  enableSemanticSearch: true, // Enabled by default (reliable!)
+  semanticModelVersion: '1.0.0',
 
   // Thresholds
   tfidfThreshold: 0.3,
-  embeddingThreshold: 0.6,
-  combinedThreshold: 0.5,
+  semanticThreshold: 0.3, // Lower threshold since semantic is reliable
+  combinedThreshold: 0.4, // Slightly lower for better recall
 
-  // Weights
-  tfidfWeight: 0.4,
-  embeddingWeight: 0.6,
+  // Weights (favor TF-IDF slightly for speed)
+  tfidfWeight: 0.6,
+  semanticWeight: 0.4,
 
   // Performance
   maxSuggestionsPerNote: 10,
