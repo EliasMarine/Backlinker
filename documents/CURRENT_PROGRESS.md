@@ -1,21 +1,26 @@
 # Smart Links - Current Progress & Status
 
-**Last Updated**: December 1, 2025
+**Last Updated**: December 2, 2025
 **Version**: 1.0.0
 **Build Status**: ✅ Compiles Successfully
-**Test Status**: Phase 3 implementation complete, needs testing
+**Test Status**: Phase 3 tested and working with model selection feature
+**Git Branch**: `fix/neural-embeddings-wasm-paths`
 
 ---
 
 ## Executive Summary
 
-**Current Phase**: Phase 3 - Neural Embeddings (IMPLEMENTATION COMPLETE)
+**Current Phase**: Phase 3 - Neural Embeddings (TESTED & WORKING + MODEL SELECTION)
 
 **Overall Status**:
 - ✅ Core infrastructure is built and tested
 - ✅ Real-time features tested and working in Obsidian
-- ✅ Phase 3 neural embeddings fully implemented
-- 🎯 **Next Step**: Test neural embeddings end-to-end in Obsidian
+- ✅ Phase 3 neural embeddings tested and working
+- ✅ Critical WASM loading bug fixed for Electron/Obsidian
+- ✅ UI freeze bug fixed with event loop yielding
+- ✅ Cache persistence bugs fixed
+- ✅ **NEW**: Model selection feature added - users can choose between 4 models
+- 🎯 **Next Step**: Test model selection feature in Obsidian
 
 ---
 
@@ -51,29 +56,48 @@
 
 ---
 
-### ✅ Phase 3: Neural Embeddings - IMPLEMENTATION COMPLETE
+### ✅ Phase 3: Neural Embeddings - TESTED & WORKING
 
 | Component | Status | File | Notes |
 |-----------|--------|------|-------|
-| Embedding Engine | ✅ Complete | `src/engines/embedding-engine.ts` | Uses @xenova/transformers |
-| Model Loading | ✅ Complete | `src/engines/embedding-engine.ts` | With progress callbacks |
-| Embedding Cache | ✅ Complete | `src/cache/embedding-cache.ts` | Binary persistence |
-| Progress Modal | ✅ Complete | `src/ui/embedding-progress-modal.ts` | Download + batch progress |
-| Batch Generation | ✅ Complete | `main.ts` | With progress tracking |
+| Embedding Engine | ✅ Tested | `src/engines/embedding-engine.ts` | WASM CDN fix applied |
+| Model Loading | ✅ Tested | `src/engines/embedding-engine.ts` | Downloads successfully (~23MB) |
+| Embedding Cache | ✅ Fixed | `src/cache/embedding-cache.ts` | File exists errors fixed |
+| Progress Modal | ✅ Tested | `src/ui/embedding-progress-modal.ts` | Detailed status messages |
+| Batch Generation | ✅ Tested | `main.ts` | 121 notes in 20.8s, UI responsive |
 | Settings UI | ✅ Complete | `src/settings.ts` | Enable/disable toggle |
 | HybridScorer Integration | ✅ Complete | `src/engines/hybrid-scorer.ts` | Neural + fallback |
 
-**Confidence Level**: MEDIUM - Needs end-to-end testing in Obsidian
+**Confidence Level**: HIGH - Core functionality tested in Obsidian
 
-**New Features Implemented**:
+**Features Implemented & Tested**:
 - Neural embeddings using `all-MiniLM-L6-v2` model (384 dimensions)
-- Progress modal for model download (~23MB)
-- Progress modal for batch embedding generation
+- Progress modal for model download (~23MB) with detailed status
+- Progress modal for batch embedding with note names and ETA
 - Embedding persistence in binary format
 - Content hash-based cache invalidation
 - Enable/disable toggle in settings
 - Regenerate embeddings button
 - Graceful fallback to n-gram/context semantic when embeddings unavailable
+- Event loop yielding to prevent UI freeze during batch processing
+
+**Model Selection Feature (NEW)**:
+- Dropdown in settings to choose embedding model
+- 4 available models:
+  1. **MiniLM-L6** (Recommended) - 384 dim, ~23MB, fast, good quality
+  2. **MiniLM-L12** - 384 dim, ~33MB, medium speed, better quality
+  3. **BGE Small** - 384 dim, ~33MB, modern architecture, better quality
+  4. **BGE Base** - 768 dim, ~110MB, highest quality, slower
+- Model info display showing description, speed, dimensions, size
+- Automatic cache clearing when model changes
+- Automatic embedding regeneration after model switch
+- Confirmation dialog before changing models
+
+**Bugs Fixed (December 2, 2025)**:
+- WASM loading in Electron: CDN paths set AFTER transformers import
+- UI freeze: Added `yieldToEventLoop()` after each embedding
+- Folder already exists: Wrapped in try/catch with fallback
+- File already exists: Using `adapter.write()` fallback
 
 ---
 
@@ -146,28 +170,29 @@
 ## Testing Checklist (Phase 3)
 
 ### Prerequisites
-- [ ] Phase 2 working (vault indexed)
-- [ ] Console open for debugging
+- [x] Phase 2 working (vault indexed)
+- [x] Console open for debugging
 
 ### Model Download
-- [ ] Enable neural embeddings in settings
-- [ ] Confirmation modal appears
-- [ ] Progress modal shows during download
-- [ ] Model downloads successfully (~23MB)
-- [ ] "Model ready" message appears
+- [x] Enable neural embeddings in settings
+- [x] Confirmation modal appears
+- [x] Progress modal shows during download
+- [x] Model downloads successfully (~23MB)
+- [x] "Model ready" message appears
 
 ### Embedding Generation
-- [ ] After model loads, embedding progress modal appears
-- [ ] Progress bar updates during processing
-- [ ] ETA shows reasonable estimate
-- [ ] Can cancel generation
-- [ ] Completion message shows count
+- [x] After model loads, embedding progress modal appears
+- [x] Progress bar updates during processing
+- [x] ETA shows reasonable estimate
+- [ ] Can cancel generation (not tested)
+- [x] Completion message shows count (121 notes in 20.8s)
 
 ### Cache Persistence
-- [ ] Embeddings persist after restart
-- [ ] `embedding-metadata.json` created in plugin folder
-- [ ] `embeddings.bin` created in plugin folder
-- [ ] Cache stats show in settings
+- [x] Cache files created in plugin folder (after fix)
+- [x] `embedding-metadata.json` created (after fix)
+- [x] `embeddings.bin` created (after fix)
+- [ ] Embeddings load from cache on restart (needs verification)
+- [ ] Cache stats show in settings (needs verification)
 
 ### Hybrid Search
 - [ ] Suggestions appear using embeddings
@@ -180,51 +205,57 @@
 - [ ] No errors when embeddings disabled
 
 ### Regenerate
-- [ ] Click "Regenerate" button in settings
-- [ ] Progress modal appears
+- [x] Click "Regenerate" button in settings
+- [x] Progress modal appears
 - [ ] Only stale notes are processed
-- [ ] Cache updates correctly
+- [x] Cache updates correctly (after fix)
 
 ---
 
 ## Immediate Next Steps
 
-### 1. **Test Phase 3 in Obsidian** (NEXT)
+### 1. **Merge Bug Fixes** (NEXT)
 
-**Goal**: Validate neural embeddings work end-to-end
+**Goal**: Merge `fix/neural-embeddings-wasm-paths` branch to main
+
+**Commits in branch**:
+1. Fix: Neural embeddings WASM loading in Obsidian/Electron
+2. Fix: UI freeze during batch embedding generation
+3. Improve: Detailed progress feedback during model loading
+4. Fix: Handle 'File already exists' error in embedding cache
+
+### 2. **Test Hybrid Search with Embeddings**
+
+**Goal**: Verify suggestions improve with neural embeddings
 
 **Steps**:
-1. Build plugin: `npm run build`
-2. Reload Obsidian
-3. Go to Settings > Smart Links
-4. Enable "Neural embeddings"
-5. Verify model downloads
-6. Verify embeddings generate
-7. Test suggestions with embeddings
+1. Reload Obsidian after latest cache fix
+2. Verify embeddings load from cache
+3. Type in a note to trigger suggestions
+4. Check console for "Using hybrid search (TF-IDF + Neural Embeddings)"
+5. Compare suggestion quality with embeddings enabled vs disabled
 
-### 2. **Performance Testing**
+### 3. **Performance Baseline**
 
-Test with various vault sizes:
-- 100 notes: Should be fast
-- 500 notes: Under 5 minutes for embeddings
-- 1000 notes: Under 10 minutes for embeddings
+**Results so far**:
+- 121 notes: 20.8 seconds (~0.17s per note)
 
-### 3. **Error Handling Refinement**
-
-- Handle network errors during download
-- Handle memory issues with large vaults
-- Add user-friendly error messages
+**Still need to test**:
+- Larger vaults (500+ notes)
+- Memory usage profiling
+- Cache load time on restart
 
 ---
 
 ## Build Information
 
 **Build Command**: `npm run build`
-**Last Successful Build**: December 1, 2025
+**Last Successful Build**: December 2, 2025
 **Target**: ES2020
 
-**New Dependency**:
-- `@xenova/transformers` ^2.6.0 - WebAssembly transformers for embeddings
+**Dependencies**:
+- `@xenova/transformers` ^2.17.2 - WebAssembly transformers for embeddings
+- `onnxruntime-web` 1.14.0 - ONNX runtime (must match transformers version)
 
 ---
 
@@ -240,11 +271,23 @@ Test with various vault sizes:
 
 ## Known Considerations
 
-1. **Model Size**: ~23MB download on first enable
-2. **Processing Time**: ~1-2 seconds per note for embedding
-3. **Memory Usage**: Embeddings use ~1.5KB per note (384 floats)
+1. **Model Size**: ~23MB download on first enable (cached by browser)
+2. **Processing Time**: ~0.17 seconds per note (measured: 121 notes in 20.8s)
+3. **Memory Usage**: Embeddings use ~1.5KB per note (384 floats × 4 bytes)
 4. **Storage**: Binary cache grows with vault size
+5. **Electron Environment**: WASM paths must be set AFTER transformers import
 
 ---
 
-**Remember**: Phase 3 implementation is complete but needs end-to-end testing in Obsidian!
+## Known Issues Fixed
+
+| Issue | Root Cause | Fix |
+|-------|------------|-----|
+| WASM files not loading | Transformers detects `RUNNING_LOCALLY=true` in Electron | Set CDN paths AFTER import |
+| UI freeze during batch | CPU-bound inference blocks main thread | `yieldToEventLoop()` after each note |
+| "Folder already exists" | `getAbstractFileByPath()` returns null for .obsidian | Try/catch with continue |
+| "File already exists" | Same API quirk | Fallback to `adapter.write()` |
+
+---
+
+**Status**: Phase 3 core functionality tested and working. Hybrid search testing pending.

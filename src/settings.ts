@@ -1,5 +1,5 @@
 import { App, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
-import { SmartLinksSettings } from './types';
+import { SmartLinksSettings, EMBEDDING_MODELS, getModelConfig, EmbeddingModelConfig } from './types';
 
 // Forward declaration to avoid circular dependency
 type SmartLinksPlugin = Plugin & {
@@ -8,8 +8,10 @@ type SmartLinksPlugin = Plugin & {
   enableNeuralEmbeddings?: () => Promise<void>;
   disableNeuralEmbeddings?: () => void;
   regenerateEmbeddings?: () => Promise<void>;
+  changeEmbeddingModel?: (modelName: string) => Promise<void>;
   isEmbeddingModelLoaded?: () => boolean;
-  getEmbeddingCacheStats?: () => { totalEmbeddings: number; cacheSizeFormatted: string } | null;
+  getEmbeddingCacheStats?: () => { totalEmbeddings: number; cacheSizeFormatted: string; embeddingDimension?: number } | null;
+  getCurrentModelConfig?: () => EmbeddingModelConfig | null;
 };
 
 /**
@@ -61,7 +63,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
 
     const embeddingDesc = containerEl.createEl('p', {
       cls: 'setting-item-description',
-      text: 'Neural embeddings provide the most accurate semantic understanding using AI. Requires downloading a 23MB model. All processing happens locally.'
+      text: 'Neural embeddings provide the most accurate semantic understanding using AI. Requires downloading a model (size varies by choice). All processing happens locally.'
     });
     embeddingDesc.style.marginBottom = '12px';
 
@@ -104,6 +106,56 @@ export class SmartLinksSettingTab extends PluginSettingTab {
             }
           })
       );
+
+    // Model selection dropdown
+    const modelInfoEl = containerEl.createDiv({ cls: 'smart-links-model-info' });
+    this.updateModelInfo(modelInfoEl, this.plugin.settings.neuralModelName);
+
+    new Setting(containerEl)
+      .setName('Embedding model')
+      .setDesc('Choose the model for generating embeddings. Larger models are more accurate but slower.')
+      .addDropdown(dropdown => {
+        // Add all available models
+        for (const model of EMBEDDING_MODELS) {
+          dropdown.addOption(model.name, `${model.displayName} (${model.size})`);
+        }
+        dropdown.setValue(this.plugin.settings.neuralModelName);
+        dropdown.onChange(async (value) => {
+          const currentModel = this.plugin.settings.neuralModelName;
+          if (value !== currentModel) {
+            // Warn user that changing models will clear the cache
+            const confirmed = confirm(
+              `Changing models will clear your existing embeddings cache.\n\n` +
+              `You will need to regenerate embeddings for all notes.\n\n` +
+              `Continue?`
+            );
+
+            if (confirmed) {
+              // Update model info display
+              this.updateModelInfo(modelInfoEl, value);
+
+              if (this.plugin.changeEmbeddingModel) {
+                try {
+                  await this.plugin.changeEmbeddingModel(value);
+                  this.updateEmbeddingStatus(statusEl);
+                  new Notice('Model changed. Regenerating embeddings...');
+                } catch (error) {
+                  console.error('[Settings] Failed to change model:', error);
+                  dropdown.setValue(currentModel);
+                  new Notice('Failed to change model. Check console for details.');
+                }
+              } else {
+                // Just save the setting if plugin method not available
+                this.plugin.settings.neuralModelName = value;
+                await this.plugin.saveSettings();
+              }
+            } else {
+              // Revert selection
+              dropdown.setValue(currentModel);
+            }
+          }
+        });
+      });
 
     new Setting(containerEl)
       .setName('Regenerate embeddings')
@@ -412,7 +464,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
       return;
     }
 
-    const statusText = statusEl.createEl('span', {
+    statusEl.createEl('span', {
       text: 'Status: Ready',
       cls: 'smart-links-status-ready'
     });
@@ -423,5 +475,56 @@ export class SmartLinksSettingTab extends PluginSettingTab {
         cls: 'smart-links-status-info'
       });
     }
+  }
+
+  /**
+   * Update the model info display
+   */
+  private updateModelInfo(infoEl: HTMLElement, modelName: string): void {
+    infoEl.empty();
+
+    const modelConfig = getModelConfig(modelName);
+    if (!modelConfig) {
+      return;
+    }
+
+    // Create info container
+    infoEl.addClass('smart-links-model-info');
+    infoEl.style.marginBottom = '12px';
+    infoEl.style.padding = '8px 12px';
+    infoEl.style.backgroundColor = 'var(--background-secondary)';
+    infoEl.style.borderRadius = '4px';
+    infoEl.style.fontSize = '12px';
+
+    // Model description
+    const descEl = infoEl.createEl('div', {
+      text: modelConfig.description,
+      cls: 'smart-links-model-desc'
+    });
+    descEl.style.marginBottom = '4px';
+
+    // Model stats
+    const statsEl = infoEl.createEl('div', {
+      cls: 'smart-links-model-stats'
+    });
+    statsEl.style.color = 'var(--text-muted)';
+
+    // Quality badge
+    const qualityColors: Record<string, string> = {
+      'good': 'var(--text-success)',
+      'better': 'var(--text-accent)',
+      'best': 'var(--color-purple)'
+    };
+    const qualityBadge = statsEl.createEl('span', {
+      text: modelConfig.quality.toUpperCase()
+    });
+    qualityBadge.style.color = qualityColors[modelConfig.quality] || 'var(--text-normal)';
+    qualityBadge.style.fontWeight = 'bold';
+    qualityBadge.style.marginRight = '8px';
+
+    // Speed and dimension info
+    statsEl.createEl('span', {
+      text: `Speed: ${modelConfig.speed} | Dimensions: ${modelConfig.dimension} | Size: ${modelConfig.size}`
+    });
   }
 }

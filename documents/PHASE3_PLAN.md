@@ -1,11 +1,12 @@
 # Phase 3: Neural Embeddings Implementation Plan
 
-**Status**: ✅ IMPLEMENTATION COMPLETE (December 1, 2025)
-**Testing Status**: 🔄 Needs end-to-end testing in Obsidian
+**Status**: ✅ TESTED & WORKING + MODEL SELECTION (December 2, 2025)
+**Testing Status**: ✅ Core functionality tested, model selection added
+**Git Branch**: `fix/neural-embeddings-wasm-paths`
 
 ## Overview
 
-Implement neural embeddings using `@xenova/transformers` with the `all-MiniLM-L6-v2` model for high-quality semantic similarity matching.
+Implement neural embeddings using `@xenova/transformers` with configurable models for high-quality semantic similarity matching. Users can choose between 4 different models based on their speed/quality preferences.
 
 ---
 
@@ -24,16 +25,43 @@ Implement neural embeddings using `@xenova/transformers` with the `all-MiniLM-L6
 | Type Definitions | `src/types/index.ts` | ✅ Complete | New settings fields |
 | Styles | `styles.css` | ✅ Complete | Status display styles |
 
-### 🔄 Needs Testing
+### ✅ Tested & Fixed
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Model download flow | 🔄 Untested | Need to verify ~23MB download works |
-| Batch embedding generation | 🔄 Untested | Need to test with real vault |
-| Cache persistence | 🔄 Untested | Need to verify binary format works |
-| Hybrid scoring with embeddings | 🔄 Untested | Need to verify suggestions improve |
-| Memory usage | 🔄 Untested | Need to profile with large vaults |
-| Error handling | 🔄 Untested | Need to test failure scenarios |
+| Model download flow | ✅ Working | Fixed WASM CDN paths for Electron |
+| Batch embedding generation | ✅ Working | 121 notes in 20.8s, UI responsive |
+| Cache persistence | ✅ Fixed | Fixed "file already exists" errors |
+| Progress feedback | ✅ Enhanced | Detailed status messages, note names |
+
+### ✅ Model Selection Feature (NEW)
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Model registry | ✅ Complete | 4 models defined with metadata |
+| Settings dropdown | ✅ Complete | User can select from available models |
+| Model info display | ✅ Complete | Shows description, speed, quality, dimensions |
+| Dynamic dimensions | ✅ Complete | Engine and cache support 384 or 768 dim |
+| Cache invalidation | ✅ Complete | Auto-clears on model change |
+| Model switching | ✅ Complete | Auto-regenerates embeddings |
+
+**Available Models:**
+| Model | Dimensions | Size | Speed | Quality |
+|-------|------------|------|-------|---------|
+| MiniLM-L6 (default) | 384 | ~23MB | Fast | Good |
+| MiniLM-L12 | 384 | ~33MB | Medium | Better |
+| BGE Small | 384 | ~33MB | Medium | Better |
+| BGE Base | 768 | ~110MB | Slow | Best |
+
+### 🔄 Still Needs Testing
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Hybrid scoring with embeddings | 🔄 Pending | Need to verify suggestions improve |
+| Cache load on restart | 🔄 Pending | Need to verify embeddings persist |
+| Memory usage | 🔄 Pending | Need to profile with large vaults |
+| Cancel generation | 🔄 Pending | Not tested yet |
+| Model switching flow | 🔄 Pending | Need to test in Obsidian |
 
 ### ❌ Not Implemented (Deferred)
 
@@ -166,60 +194,60 @@ main.ts                          # ✅ UPDATED: Embedding lifecycle management
 
 ## Testing Checklist
 
-### Model Download
-- [ ] Enable neural embeddings in settings
-- [ ] Confirmation modal appears with explanation
-- [ ] Click "Enable & Download" starts download
-- [ ] Progress modal shows download progress
-- [ ] Model downloads successfully (~23MB)
-- [ ] "Model ready" message appears
-- [ ] Progress modal closes or shows success
+### Model Download ✅ COMPLETE
+- [x] Enable neural embeddings in settings
+- [x] Confirmation modal appears with explanation
+- [x] Click "Enable & Download" starts download
+- [x] Progress modal shows download progress with detailed status
+- [x] Model downloads successfully (~23MB)
+- [x] "Model ready" message appears
+- [x] Progress modal closes after success
 
-### Embedding Generation
-- [ ] After model loads, embedding progress modal appears
-- [ ] Progress bar updates during processing
-- [ ] ETA shows and updates realistically
-- [ ] Notes processed counter increments
-- [ ] Can cancel generation mid-process
-- [ ] Completion message shows correct count
+### Embedding Generation ✅ COMPLETE
+- [x] After model loads, embedding progress modal appears
+- [x] Progress bar updates during processing
+- [x] ETA shows and updates realistically
+- [x] Notes processed counter increments
+- [ ] Can cancel generation mid-process (not tested)
+- [x] Completion message shows correct count (121 notes in 20.8s)
+- [x] UI stays responsive during processing (fixed with event loop yielding)
 
-### Cache Persistence
-- [ ] After generation, reload Obsidian
-- [ ] Check: `embedding-metadata.json` exists in plugin folder
-- [ ] Check: `embeddings.bin` exists in plugin folder
-- [ ] Embeddings load from cache on restart
-- [ ] Cache stats show in settings
+### Cache Persistence ✅ FIXED
+- [x] Cache files created in plugin folder (fixed "file already exists" error)
+- [x] `embedding-metadata.json` created
+- [x] `embeddings.bin` created
+- [ ] Embeddings load from cache on restart (needs verification)
+- [ ] Cache stats show in settings (needs verification)
 
-### Hybrid Search with Embeddings
+### Hybrid Search with Embeddings 🔄 PENDING
 - [ ] Type in a note to trigger suggestions
 - [ ] Console shows "Using hybrid search (TF-IDF + Neural Embeddings)"
 - [ ] Suggestions appear with semantic scores
 - [ ] Suggestions quality improves vs TF-IDF only
 
-### Fallback Behavior
+### Fallback Behavior 🔄 PENDING
 - [ ] Disable neural embeddings in settings
 - [ ] Suggestions still work (TF-IDF + n-gram fallback)
 - [ ] Console shows appropriate fallback message
 - [ ] No errors when embeddings disabled
 
-### Regenerate Function
-- [ ] Click "Regenerate" button in settings
-- [ ] Progress modal appears
-- [ ] Only stale/missing embeddings are processed
-- [ ] Cache updates correctly
-- [ ] "All embeddings up to date" if nothing to process
+### Regenerate Function ✅ PARTIAL
+- [x] Click "Regenerate" button in settings
+- [x] Progress modal appears
+- [ ] Only stale/missing embeddings are processed (not tested)
+- [x] Cache updates correctly (fixed)
 
-### Error Handling
+### Error Handling 🔄 PENDING
 - [ ] Simulate network error during download
 - [ ] Error message displays in modal
 - [ ] Can close modal and retry
 - [ ] Plugin continues working without embeddings
 
-### Performance
-- [ ] Test with 100 notes - embedding generation time
-- [ ] Test with 500 notes - embedding generation time
+### Performance ✅ BASELINE
+- [x] 121 notes: 20.8 seconds (~0.17s per note)
+- [ ] Test with 500 notes
 - [ ] Monitor memory usage during generation
-- [ ] Verify real-time suggestions stay responsive
+- [x] Real-time suggestions stay responsive (fixed with event loop yielding)
 
 ---
 
@@ -233,12 +261,31 @@ main.ts                          # ✅ UPDATED: Embedding lifecycle management
 
 ---
 
+## Bugs Fixed (December 2, 2025)
+
+| Bug | Root Cause | Fix Applied |
+|-----|------------|-------------|
+| WASM files not loading from CDN | `@xenova/transformers` detects `RUNNING_LOCALLY=true` in Electron and overwrites wasmPaths with `/dist/` | Set `env.backends.onnx.wasm.wasmPaths` to CDN URL AFTER importing transformers |
+| UI freeze during batch processing | ONNX inference is CPU-bound and blocks main thread | Added `yieldToEventLoop()` using `setTimeout(0)` after each embedding |
+| "Folder already exists" error | `getAbstractFileByPath()` returns null for .obsidian folders | Wrapped `createFolder()` in try/catch, continue on "already exists" |
+| "File already exists" error | Same Obsidian API quirk for files | Fallback to `adapter.write()` and `adapter.writeBinary()` |
+| Poor progress feedback | Status messages too generic | Added detailed step-by-step messages and note names |
+
+**Git Commits**:
+1. `Fix: Neural embeddings WASM loading in Obsidian/Electron`
+2. `Fix: UI freeze during batch embedding generation`
+3. `Improve: Detailed progress feedback during model loading`
+4. `Fix: Handle 'File already exists' error in embedding cache`
+
+---
+
 ## Known Limitations
 
 1. **First-time download**: Requires ~23MB download (cached by browser after)
-2. **Processing time**: ~1-2 seconds per note for embedding generation
+2. **Processing time**: ~0.17 seconds per note (measured with 121 notes)
 3. **Memory usage**: Model uses ~100-200MB RAM when loaded
 4. **Storage**: Binary cache grows with vault size (~1.5KB per note)
+5. **Electron quirk**: WASM paths must be set after library import
 
 ---
 
@@ -272,4 +319,4 @@ main.ts                          # ✅ UPDATED: Embedding lifecycle management
 
 ---
 
-**Phase 3 implementation is complete. Ready for end-to-end testing in Obsidian!**
+**Phase 3 Status**: Core functionality + model selection complete. Users can now choose between 4 models. Next: test model switching flow in Obsidian and verify hybrid search improvements.

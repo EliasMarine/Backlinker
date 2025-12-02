@@ -10,6 +10,7 @@
  */
 
 import { App, TFile } from 'obsidian';
+import { getModelConfig, getDefaultModelConfig } from '../types';
 
 export interface CachedEmbeddingMetadata {
   notePath: string;
@@ -32,11 +33,11 @@ export interface EmbeddingCacheStats {
   totalEmbeddings: number;
   cacheSizeBytes: number;
   modelName: string;
+  embeddingDimension: number;
   lastSaved: number | null;
 }
 
 const CACHE_VERSION = '1.0.0';
-const EMBEDDING_DIMENSION = 384;  // all-MiniLM-L6-v2
 
 /**
  * Embedding Cache Manager
@@ -49,6 +50,7 @@ export class EmbeddingCache {
   private contentHashes: Map<string, string> = new Map();
   private generatedTimes: Map<string, number> = new Map();
   private modelName: string;
+  private embeddingDimension: number;
   private isDirty: boolean = false;
   private lastSaved: number | null = null;
 
@@ -56,6 +58,16 @@ export class EmbeddingCache {
     this.app = app;
     this.pluginId = pluginId;
     this.modelName = modelName;
+    // Get dimension from model config
+    const modelConfig = getModelConfig(modelName);
+    this.embeddingDimension = modelConfig?.dimension ?? getDefaultModelConfig().dimension;
+  }
+
+  /**
+   * Get the current embedding dimension
+   */
+  getEmbeddingDimension(): number {
+    return this.embeddingDimension;
   }
 
   /**
@@ -113,6 +125,13 @@ export class EmbeddingCache {
         return;
       }
 
+      // Check dimension matches - if not, cache is incompatible
+      if (metadata.embeddingDimension !== this.embeddingDimension) {
+        console.warn(`[EmbeddingCache] Embedding dimension mismatch (${metadata.embeddingDimension} vs ${this.embeddingDimension}), clearing cache`);
+        await this.clear();
+        return;
+      }
+
       // Load binary data
       const binaryData = await this.app.vault.readBinary(binaryFile as TFile);
       const embeddingsArray = new Float32Array(binaryData);
@@ -120,7 +139,7 @@ export class EmbeddingCache {
       // Reconstruct embeddings map
       for (const entry of metadata.entries) {
         const startIndex = entry.offset / 4;  // Convert byte offset to float index
-        const endIndex = startIndex + EMBEDDING_DIMENSION;
+        const endIndex = startIndex + this.embeddingDimension;
 
         if (endIndex <= embeddingsArray.length) {
           const embedding = embeddingsArray.slice(startIndex, endIndex);
@@ -176,7 +195,7 @@ export class EmbeddingCache {
 
       // Build metadata and binary data
       const entries: CachedEmbeddingMetadata[] = [];
-      const totalFloats = this.embeddings.size * EMBEDDING_DIMENSION;
+      const totalFloats = this.embeddings.size * this.embeddingDimension;
       const binaryArray = new Float32Array(totalFloats);
       let offset = 0;
 
@@ -192,13 +211,13 @@ export class EmbeddingCache {
           offset
         });
 
-        offset += EMBEDDING_DIMENSION * 4;  // 4 bytes per float
+        offset += this.embeddingDimension * 4;  // 4 bytes per float
       }
 
       const metadata: EmbeddingCacheMetadata = {
         version: CACHE_VERSION,
         modelName: this.modelName,
-        embeddingDimension: EMBEDDING_DIMENSION,
+        embeddingDimension: this.embeddingDimension,
         totalEmbeddings: this.embeddings.size,
         lastSaved: Date.now(),
         entries
@@ -359,12 +378,13 @@ export class EmbeddingCache {
    * Get cache statistics
    */
   getStats(): EmbeddingCacheStats {
-    const cacheSizeBytes = this.embeddings.size * EMBEDDING_DIMENSION * 4;
+    const cacheSizeBytes = this.embeddings.size * this.embeddingDimension * 4;
 
     return {
       totalEmbeddings: this.embeddings.size,
       cacheSizeBytes,
       modelName: this.modelName,
+      embeddingDimension: this.embeddingDimension,
       lastSaved: this.lastSaved
     };
   }
@@ -373,7 +393,7 @@ export class EmbeddingCache {
    * Get human-readable cache size
    */
   getCacheSizeFormatted(): string {
-    const bytes = this.embeddings.size * EMBEDDING_DIMENSION * 4;
+    const bytes = this.embeddings.size * this.embeddingDimension * 4;
 
     if (bytes < 1024) {
       return `${bytes} B`;
@@ -385,14 +405,27 @@ export class EmbeddingCache {
   }
 
   /**
-   * Update model name (will invalidate cache if different)
+   * Update model name and dimension (will invalidate cache if different)
+   * @returns true if model changed
    */
-  updateModelName(modelName: string): void {
+  updateModelName(modelName: string): boolean {
     if (modelName !== this.modelName) {
       console.log(`[EmbeddingCache] Model name changed from ${this.modelName} to ${modelName}`);
       this.modelName = modelName;
-      // Note: Cache will be cleared on next load due to model mismatch
+      // Update dimension from model config
+      const modelConfig = getModelConfig(modelName);
+      this.embeddingDimension = modelConfig?.dimension ?? getDefaultModelConfig().dimension;
+      console.log(`[EmbeddingCache] Embedding dimension updated to ${this.embeddingDimension}`);
+      return true;
     }
+    return false;
+  }
+
+  /**
+   * Get the current model name
+   */
+  getModelName(): string {
+    return this.modelName;
   }
 
   /**

@@ -1,5 +1,5 @@
 import { App, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
-import { SmartLinksSettings, DEFAULT_SETTINGS, VaultCache } from './src/types';
+import { SmartLinksSettings, DEFAULT_SETTINGS, VaultCache, getModelConfig, EmbeddingModelConfig } from './src/types';
 import { SmartLinksSettingTab } from './src/settings';
 import { VaultIndexer } from './src/indexing/vault-indexer';
 import { CacheManager } from './src/cache/cache-manager';
@@ -746,14 +746,76 @@ export default class SmartLinksPlugin extends Plugin {
   /**
    * Get embedding cache statistics
    */
-  getEmbeddingCacheStats(): { totalEmbeddings: number; cacheSizeFormatted: string } | null {
+  getEmbeddingCacheStats(): { totalEmbeddings: number; cacheSizeFormatted: string; embeddingDimension: number } | null {
     if (!this.embeddingCache) {
       return null;
     }
 
     return {
       totalEmbeddings: this.embeddingCache.size(),
-      cacheSizeFormatted: this.embeddingCache.getCacheSizeFormatted()
+      cacheSizeFormatted: this.embeddingCache.getCacheSizeFormatted(),
+      embeddingDimension: this.embeddingCache.getEmbeddingDimension()
     };
+  }
+
+  /**
+   * Get the current model configuration
+   */
+  getCurrentModelConfig(): EmbeddingModelConfig | null {
+    return getModelConfig(this.settings.neuralModelName) || null;
+  }
+
+  /**
+   * Change the embedding model
+   * This will clear the cache and regenerate embeddings
+   */
+  async changeEmbeddingModel(modelName: string): Promise<void> {
+    console.log(`[Smart Links] Changing embedding model to: ${modelName}`);
+
+    const currentModel = this.settings.neuralModelName;
+    if (modelName === currentModel) {
+      console.log('[Smart Links] Same model selected, no change needed');
+      return;
+    }
+
+    // Update settings
+    this.settings.neuralModelName = modelName;
+    await this.saveSettings();
+
+    // Update embedding cache (this will update dimension)
+    if (this.embeddingCache) {
+      const modelChanged = this.embeddingCache.updateModelName(modelName);
+      if (modelChanged) {
+        // Clear old embeddings since they're incompatible
+        console.log('[Smart Links] Clearing old embeddings due to model change');
+        await this.embeddingCache.clear();
+      }
+    }
+
+    // Update embedding engine
+    if (this.embeddingEngine) {
+      const needsReload = this.embeddingEngine.updateConfig({ modelName });
+      if (needsReload) {
+        console.log('[Smart Links] Unloading old model');
+        this.embeddingEngine.unloadModel();
+      }
+    }
+
+    // If embeddings are enabled, load new model and regenerate
+    if (this.settings.enableNeuralEmbeddings) {
+      console.log('[Smart Links] Loading new model and regenerating embeddings...');
+
+      // Create new engine with new model
+      this.embeddingEngine = new EmbeddingEngine({
+        modelName: modelName,
+        batchSize: this.settings.embeddingBatchSize
+      });
+
+      // Initialize and regenerate
+      await this.initializeEmbeddingEngine();
+      await this.regenerateEmbeddings();
+
+      console.log('[Smart Links] ✓ Model changed and embeddings regenerated');
+    }
   }
 }

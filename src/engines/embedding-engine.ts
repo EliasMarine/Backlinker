@@ -11,7 +11,7 @@
  * - Graceful error handling and fallback
  */
 
-import { NoteIndex } from '../types';
+import { NoteIndex, getModelConfig, getDefaultModelConfig, EmbeddingModelConfig } from '../types';
 
 // Type definitions for @xenova/transformers pipeline
 interface Pipeline {
@@ -24,6 +24,15 @@ export interface EmbeddingEngineConfig {
   modelName: string;
   maxSequenceLength: number;
   batchSize: number;
+}
+
+/**
+ * Get the embedding dimension for a model
+ * Falls back to 384 if model not found in registry
+ */
+export function getModelDimension(modelName: string): number {
+  const config = getModelConfig(modelName);
+  return config?.dimension ?? 384;
 }
 
 export interface EmbeddingResult {
@@ -58,13 +67,10 @@ export interface BatchProgressInfo {
 export type BatchProgressCallback = (info: BatchProgressInfo) => void;
 
 const DEFAULT_CONFIG: EmbeddingEngineConfig = {
-  modelName: 'Xenova/all-MiniLM-L6-v2',
+  modelName: getDefaultModelConfig().name,
   maxSequenceLength: 256,
   batchSize: 8
 };
-
-// Embedding dimension for all-MiniLM-L6-v2
-const EMBEDDING_DIMENSION = 384;
 
 // Note: WASM CDN paths are configured at build time via esbuild plugin (esbuild.config.mjs)
 // The bundled onnxruntime-web version is 1.14.0 (matching @xenova/transformers@2.17.2)
@@ -78,9 +84,18 @@ export class EmbeddingEngine {
   private pipeline: Pipeline | null = null;
   private isLoading: boolean = false;
   private loadError: Error | null = null;
+  private currentModelConfig: EmbeddingModelConfig | null = null;
 
   constructor(config: Partial<EmbeddingEngineConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
+    this.currentModelConfig = getModelConfig(this.config.modelName) || getDefaultModelConfig();
+  }
+
+  /**
+   * Get the current model configuration
+   */
+  getModelConfig(): EmbeddingModelConfig {
+    return this.currentModelConfig || getDefaultModelConfig();
   }
 
   /**
@@ -293,7 +308,7 @@ export class EmbeddingEngine {
   /**
    * Generate embedding for a single text
    * @param text - Text to embed (will be truncated if too long)
-   * @returns 384-dimensional Float32Array
+   * @returns Float32Array with dimension based on current model
    */
   async generateEmbedding(text: string): Promise<Float32Array> {
     if (!this.pipeline) {
@@ -317,9 +332,10 @@ export class EmbeddingEngine {
       const embedding = new Float32Array(output.data);
 
       // Validate dimension
-      if (embedding.length !== EMBEDDING_DIMENSION) {
+      const expectedDimension = this.getEmbeddingDimension();
+      if (embedding.length !== expectedDimension) {
         console.warn(
-          `[EmbeddingEngine] Unexpected embedding dimension: ${embedding.length}, expected ${EMBEDDING_DIMENSION}`
+          `[EmbeddingEngine] Unexpected embedding dimension: ${embedding.length}, expected ${expectedDimension}`
         );
       }
 
@@ -395,8 +411,13 @@ export class EmbeddingEngine {
           await this.yieldToEventLoop();
 
         } catch (error) {
+          // Check if this is a cancellation - if so, stop processing immediately
+          if (error instanceof Error && error.message === 'Cancelled by user') {
+            console.log('[EmbeddingEngine] Batch embedding cancelled by user');
+            throw error; // Re-throw to stop the batch
+          }
           console.error(`[EmbeddingEngine] Failed to embed ${note.path}:`, error);
-          // Continue with other notes
+          // Continue with other notes for non-cancellation errors
         }
       }
     }
@@ -462,10 +483,10 @@ export class EmbeddingEngine {
   }
 
   /**
-   * Get the embedding dimension (384 for all-MiniLM-L6-v2)
+   * Get the embedding dimension for the current model
    */
   getEmbeddingDimension(): number {
-    return EMBEDDING_DIMENSION;
+    return this.currentModelConfig?.dimension ?? 384;
   }
 
   /**
@@ -477,15 +498,30 @@ export class EmbeddingEngine {
 
   /**
    * Update configuration (requires model reload to take effect for modelName)
+   * @returns true if model changed and reload is needed
    */
-  updateConfig(config: Partial<EmbeddingEngineConfig>): void {
+  updateConfig(config: Partial<EmbeddingEngineConfig>): boolean {
     const oldModelName = this.config.modelName;
     this.config = { ...this.config, ...config };
 
-    // If model name changed, unload the old model
-    if (config.modelName && config.modelName !== oldModelName && this.pipeline) {
-      console.log('[EmbeddingEngine] Model name changed, unloading old model');
-      this.unloadModel();
+    // If model name changed, update model config and unload old model
+    if (config.modelName && config.modelName !== oldModelName) {
+      console.log(`[EmbeddingEngine] Model changed from ${oldModelName} to ${config.modelName}`);
+      this.currentModelConfig = getModelConfig(config.modelName) || getDefaultModelConfig();
+
+      if (this.pipeline) {
+        console.log('[EmbeddingEngine] Unloading old model');
+        this.unloadModel();
+      }
+      return true;
     }
+    return false;
+  }
+
+  /**
+   * Get the current model name
+   */
+  getModelName(): string {
+    return this.config.modelName;
   }
 }

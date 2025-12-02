@@ -104,6 +104,88 @@ export interface ParsedContent {
 /** Progress callback for long-running operations */
 export type ProgressCallback = (progress: number, message?: string) => void;
 
+/**
+ * Available embedding model configuration
+ */
+export interface EmbeddingModelConfig {
+  id: string;           // Unique identifier (e.g., 'minilm-l6')
+  name: string;         // HuggingFace model name (e.g., 'Xenova/all-MiniLM-L6-v2')
+  displayName: string;  // User-friendly name
+  dimension: number;    // Embedding vector dimension (384 or 768)
+  size: string;         // Approximate download size (e.g., '~23MB')
+  description: string;  // Brief description of the model
+  speed: 'fast' | 'medium' | 'slow';  // Relative inference speed
+  quality: 'good' | 'better' | 'best';  // Relative quality
+}
+
+/**
+ * Registry of available embedding models
+ * These are all from @xenova/transformers and work in the browser
+ */
+export const EMBEDDING_MODELS: EmbeddingModelConfig[] = [
+  {
+    id: 'minilm-l6',
+    name: 'Xenova/all-MiniLM-L6-v2',
+    displayName: 'MiniLM-L6 (Recommended)',
+    dimension: 384,
+    size: '~23MB',
+    description: 'Fast and efficient. Best balance of speed and quality.',
+    speed: 'fast',
+    quality: 'good'
+  },
+  {
+    id: 'minilm-l12',
+    name: 'Xenova/all-MiniLM-L12-v2',
+    displayName: 'MiniLM-L12',
+    dimension: 384,
+    size: '~33MB',
+    description: 'Deeper model with better understanding. Slightly slower.',
+    speed: 'medium',
+    quality: 'better'
+  },
+  {
+    id: 'bge-small',
+    name: 'Xenova/bge-small-en-v1.5',
+    displayName: 'BGE Small',
+    dimension: 384,
+    size: '~33MB',
+    description: 'Modern architecture. Excellent for semantic similarity.',
+    speed: 'medium',
+    quality: 'better'
+  },
+  {
+    id: 'bge-base',
+    name: 'Xenova/bge-base-en-v1.5',
+    displayName: 'BGE Base (High Quality)',
+    dimension: 768,
+    size: '~110MB',
+    description: 'Highest quality. Larger download and more memory usage.',
+    speed: 'slow',
+    quality: 'best'
+  }
+];
+
+/**
+ * Get model config by model name
+ */
+export function getModelConfig(modelName: string): EmbeddingModelConfig | undefined {
+  return EMBEDDING_MODELS.find(m => m.name === modelName);
+}
+
+/**
+ * Get model config by model ID
+ */
+export function getModelConfigById(id: string): EmbeddingModelConfig | undefined {
+  return EMBEDDING_MODELS.find(m => m.id === id);
+}
+
+/**
+ * Get the default model config
+ */
+export function getDefaultModelConfig(): EmbeddingModelConfig {
+  return EMBEDDING_MODELS[0]; // MiniLM-L6
+}
+
 /** Settings for the Smart Links plugin */
 export interface SmartLinksSettings {
   // Analysis modes
