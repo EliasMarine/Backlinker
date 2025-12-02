@@ -205,21 +205,43 @@ export class EmbeddingCache {
       };
 
       // Write files
-      const metadataFile = this.app.vault.getAbstractFileByPath(metadataPath);
-      const binaryFile = this.app.vault.getAbstractFileByPath(binaryPath);
+      // Note: getAbstractFileByPath may return null for .obsidian files even when they exist
+      // So we try to create first, and fall back to modify if file already exists
 
       // Write metadata
-      if (metadataFile) {
-        await this.app.vault.modify(metadataFile as TFile, JSON.stringify(metadata, null, 2));
-      } else {
-        await this.app.vault.create(metadataPath, JSON.stringify(metadata, null, 2));
+      try {
+        const metadataFile = this.app.vault.getAbstractFileByPath(metadataPath);
+        if (metadataFile) {
+          await this.app.vault.modify(metadataFile as TFile, JSON.stringify(metadata, null, 2));
+        } else {
+          await this.app.vault.create(metadataPath, JSON.stringify(metadata, null, 2));
+        }
+      } catch (e) {
+        // File might exist but not be detectable - try to get it by adapter
+        if (e instanceof Error && e.message.includes('File already exists')) {
+          // Use adapter to write directly
+          await this.app.vault.adapter.write(metadataPath, JSON.stringify(metadata, null, 2));
+        } else {
+          throw e;
+        }
       }
 
       // Write binary data
-      if (binaryFile) {
-        await this.app.vault.modifyBinary(binaryFile as TFile, binaryArray.buffer);
-      } else {
-        await this.app.vault.createBinary(binaryPath, binaryArray.buffer);
+      try {
+        const binaryFile = this.app.vault.getAbstractFileByPath(binaryPath);
+        if (binaryFile) {
+          await this.app.vault.modifyBinary(binaryFile as TFile, binaryArray.buffer);
+        } else {
+          await this.app.vault.createBinary(binaryPath, binaryArray.buffer);
+        }
+      } catch (e) {
+        // File might exist but not be detectable - try to get it by adapter
+        if (e instanceof Error && e.message.includes('File already exists')) {
+          // Use adapter to write directly
+          await this.app.vault.adapter.writeBinary(binaryPath, binaryArray.buffer);
+        } else {
+          throw e;
+        }
       }
 
       this.lastSaved = metadata.lastSaved;
