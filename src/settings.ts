@@ -12,6 +12,15 @@ type SmartLinksPlugin = Plugin & {
   isEmbeddingModelLoaded?: () => boolean;
   getEmbeddingCacheStats?: () => { totalEmbeddings: number; cacheSizeFormatted: string; embeddingDimension?: number } | null;
   getCurrentModelConfig?: () => EmbeddingModelConfig | null;
+  // Vault indexing methods
+  analyzeVault?: () => Promise<void>;
+  clearCache?: () => Promise<void>;
+  getIndexStats?: () => { notesIndexed: number; termsIndexed: number; lastAnalysis?: number };
+  getIsIndexing?: () => boolean;
+  // Batch auto-link methods
+  runBatchAutoLink?: () => Promise<void>;
+  restoreFromBackup?: () => Promise<void>;
+  hasBackupAvailable?: () => Promise<boolean>;
 };
 
 /**
@@ -30,6 +39,12 @@ export class SmartLinksSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     containerEl.createEl('h2', { text: 'Smart Links Settings' });
+
+    // Vault Index Section (most important - required for everything else)
+    this.renderVaultIndexSection(containerEl);
+
+    // Featured: Auto-Link Section
+    this.renderAutoLinkSection(containerEl);
 
     // Analysis Mode Section
     containerEl.createEl('h3', { text: 'Analysis Mode' });
@@ -526,5 +541,280 @@ export class SmartLinksSettingTab extends PluginSettingTab {
     statsEl.createEl('span', {
       text: `Speed: ${modelConfig.speed} | Dimensions: ${modelConfig.dimension} | Size: ${modelConfig.size}`
     });
+  }
+
+  /**
+   * Render the Vault Index section - required for all other features
+   */
+  private renderVaultIndexSection(containerEl: HTMLElement): void {
+    // Featured container
+    const sectionEl = containerEl.createDiv('smart-links-vault-index-section');
+
+    // Header
+    sectionEl.createEl('h3', { text: 'Vault Index' });
+    sectionEl.createEl('p', {
+      text: 'Index your vault to enable link suggestions. This is required before using any other features.',
+      cls: 'smart-links-section-desc'
+    });
+
+    // Status display
+    const statusEl = sectionEl.createDiv('smart-links-index-status');
+    this.updateIndexStatus(statusEl);
+
+    // Button container
+    const buttonContainer = sectionEl.createDiv('smart-links-index-buttons');
+
+    // Analyze Vault button
+    const analyzeButton = buttonContainer.createEl('button', {
+      text: 'Analyze Vault',
+      cls: 'mod-cta smart-links-analyze-button'
+    });
+
+    // Check if currently indexing
+    if (this.plugin.getIsIndexing?.()) {
+      analyzeButton.addClass('smart-links-button-disabled');
+      analyzeButton.setAttribute('disabled', 'true');
+      analyzeButton.setText('Analyzing...');
+    }
+
+    analyzeButton.addEventListener('click', async () => {
+      if (this.plugin.getIsIndexing?.()) {
+        new Notice('Analysis already in progress...');
+        return;
+      }
+      if (this.plugin.analyzeVault) {
+        analyzeButton.addClass('smart-links-button-disabled');
+        analyzeButton.setAttribute('disabled', 'true');
+        analyzeButton.setText('Analyzing...');
+        try {
+          await this.plugin.analyzeVault();
+          // Refresh the display after analysis
+          this.display();
+        } catch (error) {
+          console.error('[Settings] Failed to analyze vault:', error);
+          new Notice(`Analysis failed: ${(error as Error).message}`);
+          analyzeButton.removeClass('smart-links-button-disabled');
+          analyzeButton.removeAttribute('disabled');
+          analyzeButton.setText('Analyze Vault');
+        }
+      } else {
+        new Notice('Vault analysis not available');
+      }
+    });
+
+    // Clear Cache button
+    const clearButton = buttonContainer.createEl('button', {
+      text: 'Clear Cache',
+      cls: 'smart-links-clear-cache-button'
+    });
+    clearButton.addEventListener('click', async () => {
+      const confirmed = confirm(
+        'This will delete all indexed data. You will need to re-analyze the vault. Continue?'
+      );
+      if (confirmed && this.plugin.clearCache) {
+        try {
+          await this.plugin.clearCache();
+          new Notice('Cache cleared. Please analyze vault again.');
+          this.display();
+        } catch (error) {
+          console.error('[Settings] Failed to clear cache:', error);
+          new Notice(`Clear cache failed: ${(error as Error).message}`);
+        }
+      }
+    });
+
+    // Separator
+    containerEl.createEl('hr', { cls: 'smart-links-separator' });
+  }
+
+  /**
+   * Update the index status display
+   */
+  private updateIndexStatus(statusEl: HTMLElement): void {
+    statusEl.empty();
+
+    const stats = this.plugin.getIndexStats?.();
+
+    if (!stats || stats.notesIndexed === 0) {
+      const warningEl = statusEl.createDiv('smart-links-index-warning');
+      warningEl.createSpan({ text: '⚠️ ' });
+      warningEl.createSpan({
+        text: 'Vault not indexed. Click "Analyze Vault" to enable features.',
+        cls: 'smart-links-warning-text'
+      });
+    } else {
+      const infoEl = statusEl.createDiv('smart-links-index-info');
+      infoEl.createSpan({
+        text: `✓ ${stats.notesIndexed} notes indexed`,
+        cls: 'smart-links-success-text'
+      });
+      infoEl.createSpan({ text: ' | ' });
+      infoEl.createSpan({
+        text: `${stats.termsIndexed.toLocaleString()} unique terms`,
+        cls: 'smart-links-muted'
+      });
+
+      if (stats.lastAnalysis) {
+        const date = new Date(stats.lastAnalysis);
+        const formatted = date.toLocaleString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        infoEl.createSpan({ text: ' | ' });
+        infoEl.createSpan({
+          text: `Last: ${formatted}`,
+          cls: 'smart-links-muted'
+        });
+      }
+    }
+  }
+
+  /**
+   * Render the featured Auto-Link section at the top of settings
+   */
+  private renderAutoLinkSection(containerEl: HTMLElement): void {
+    // Featured container
+    const featureEl = containerEl.createDiv('smart-links-autolink-feature');
+
+    // Header with icon
+    const headerEl = featureEl.createDiv('smart-links-autolink-header');
+    headerEl.createEl('h3', { text: 'Auto-Link Your Vault' });
+    headerEl.createEl('p', {
+      text: 'Automatically find and create links across all your notes',
+      cls: 'smart-links-autolink-desc'
+    });
+
+    // Main action button
+    const buttonContainer = featureEl.createDiv('smart-links-autolink-buttons');
+
+    const mainButton = buttonContainer.createEl('button', {
+      text: 'Link My Vault',
+      cls: 'mod-cta smart-links-autolink-button'
+    });
+    mainButton.addEventListener('click', async () => {
+      if (this.plugin.runBatchAutoLink) {
+        await this.plugin.runBatchAutoLink();
+        // Refresh the display after batch linking
+        this.display();
+      } else {
+        new Notice('Batch auto-link not available');
+      }
+    });
+
+    // Status info
+    const statusEl = featureEl.createDiv('smart-links-autolink-status');
+    this.updateAutoLinkStatus(statusEl);
+
+    // Restore button (if backup available)
+    this.renderRestoreButton(buttonContainer);
+
+    // Settings section
+    const settingsEl = featureEl.createDiv('smart-links-autolink-settings');
+    settingsEl.createEl('h4', { text: 'Options' });
+
+    // Preview mode toggle
+    new Setting(settingsEl)
+      .setName('Preview before applying')
+      .setDesc('Show what will be linked before making changes')
+      .addToggle(toggle =>
+        toggle
+          .setValue(this.plugin.settings.batchLinkSettings.enablePreviewMode)
+          .onChange(async (value) => {
+            this.plugin.settings.batchLinkSettings.enablePreviewMode = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // Confidence threshold
+    new Setting(settingsEl)
+      .setName('Confidence threshold')
+      .setDesc('Minimum similarity score to create a link (0.1 = more links, 0.5 = fewer but higher quality)')
+      .addSlider(slider =>
+        slider
+          .setLimits(0.1, 0.7, 0.05)
+          .setValue(this.plugin.settings.batchLinkSettings.confidenceThreshold)
+          .setDynamicTooltip()
+          .onChange(async (value) => {
+            this.plugin.settings.batchLinkSettings.confidenceThreshold = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // Max links per note
+    new Setting(settingsEl)
+      .setName('Maximum links per note')
+      .setDesc('Limit how many links to add to each note')
+      .addText(text =>
+        text
+          .setValue(String(this.plugin.settings.batchLinkSettings.maxLinksPerNote))
+          .onChange(async (value) => {
+            const num = parseInt(value);
+            if (!isNaN(num) && num > 0 && num <= 50) {
+              this.plugin.settings.batchLinkSettings.maxLinksPerNote = num;
+              await this.plugin.saveSettings();
+            }
+          })
+      );
+
+    // Separator
+    containerEl.createEl('hr', { cls: 'smart-links-separator' });
+  }
+
+  /**
+   * Update the auto-link status display
+   */
+  private updateAutoLinkStatus(statusEl: HTMLElement): void {
+    statusEl.empty();
+
+    const lastRun = this.plugin.settings.batchLinkSettings.lastRunTimestamp;
+    if (lastRun) {
+      const date = new Date(lastRun);
+      const formatted = date.toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      statusEl.createEl('span', {
+        text: `Last run: ${formatted}`,
+        cls: 'smart-links-autolink-lastrun'
+      });
+    } else {
+      statusEl.createEl('span', {
+        text: 'Never run',
+        cls: 'smart-links-autolink-lastrun smart-links-muted'
+      });
+    }
+  }
+
+  /**
+   * Render the restore button if backup is available
+   */
+  private async renderRestoreButton(container: HTMLElement): Promise<void> {
+    const hasBackup = await this.plugin.hasBackupAvailable?.() || false;
+
+    const restoreButton = container.createEl('button', {
+      text: 'Restore from Backup',
+      cls: 'smart-links-restore-button'
+    });
+
+    if (!hasBackup) {
+      restoreButton.addClass('smart-links-button-disabled');
+      restoreButton.setAttribute('disabled', 'true');
+      restoreButton.setAttribute('title', 'No backup available');
+    } else {
+      restoreButton.addEventListener('click', async () => {
+        const confirmed = confirm(
+          'This will restore your notes to their state before the last batch auto-link. Continue?'
+        );
+        if (confirmed && this.plugin.restoreFromBackup) {
+          await this.plugin.restoreFromBackup();
+          new Notice('Notes restored from backup');
+          this.display();
+        }
+      });
+    }
   }
 }

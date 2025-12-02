@@ -427,3 +427,412 @@
 .smart-links-status-info {
   color: var(--text-muted);
 }
+
+/* ========================================
+   Batch Auto-Link Styles
+   ======================================== */
+
+/* Batch Preview Modal */
+.smart-links-batch-preview-modal {
+  max-width: 600px;
+}
+
+.smart-links-batch-summary {
+  padding: 1em;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  margin-bottom: 1em;
+}
+
+.smart-links-batch-summary-main {
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.smart-links-batch-stats {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  margin-top: 0.5em;
+}
+
+.smart-links-error-count {
+  color: var(--text-error);
+}
+
+.smart-links-batch-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+}
+
+.smart-links-batch-note {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.smart-links-batch-note:last-child {
+  border-bottom: none;
+}
+
+.smart-links-batch-note-header {
+  padding: 0.75em 1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.smart-links-batch-note-header:hover {
+  background: var(--background-modifier-hover);
+}
+
+.smart-links-batch-expand-icon {
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.smart-links-batch-note-title {
+  flex: 1;
+  font-weight: 500;
+}
+
+.smart-links-batch-link-count {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  padding: 0.2em 0.6em;
+  border-radius: 12px;
+  font-size: 0.85em;
+}
+
+.smart-links-batch-replacements {
+  padding: 0.5em 1em 1em 2em;
+  background: var(--background-secondary);
+}
+
+.smart-links-batch-replacement {
+  margin-bottom: 0.75em;
+}
+
+.smart-links-batch-mapping {
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+}
+
+.smart-links-batch-keyword {
+  color: var(--text-accent);
+}
+
+.smart-links-batch-arrow {
+  color: var(--text-muted);
+}
+
+.smart-links-batch-target {
+  color: var(--color-green);
+}
+
+.smart-links-batch-context {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-top: 0.25em;
+  padding: 0.25em 0.5em;
+  background: var(--background-primary);
+  border-radius: 4px;
+}
+
+.smart-links-batch-highlight {
+  background: var(--text-highlight-bg);
+  padding: 0 0.25em;
+}
+
+.smart-links-batch-warning {
+  padding: 0.75em;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  margin: 1em 0;
+  font-size: 0.9em;
+  border-left: 3px solid var(--color-green);
+}
+
+.smart-links-batch-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75em;
+  margin-top: 1em;
+}
+
+.smart-links-batch-empty {
+  padding: 2em;
+  text-align: center;
+}
+
+.smart-links-batch-more {
+  padding: 0.75em;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.smart-links-muted {
+  color: var(--text-muted);
+}
+
+/* Batch Progress Modal - Phase Text */
+.smart-links-phase-text {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 0.5em;
+  text-align: center;
+}
+
+.smart-links-error-text {
+  color: var(--text-error);
+}
+
+/* Apply Button */
+.smart-links-apply-button {
+  background-color: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+  border: none !important;
+  font-weight: 500;
+}
+
+.smart-links-apply-button:hover {
+  background-color: var(--interactive-accent-hover) !important;
+}
+
+/* Confirm Restore Modal */
+.smart-links-confirm-modal {
+  max-width: 450px;
+}
+
+.smart-links-confirm-info {
+  margin-bottom: 1em;
+}
+
+.smart-links-confirm-info p {
+  margin: 0.5em 0;
+}
+
+.smart-links-confirm-warning {
+  padding: 0.75em;
+  background: var(--background-modifier-error);
+  border-radius: 8px;
+  margin: 1em 0;
+  border-left: 3px solid var(--text-error);
+}
+
+.smart-links-confirm-warning p {
+  margin: 0;
+  color: var(--text-normal);
+}
+
+.smart-links-confirm-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75em;
+  margin-top: 1.5em;
+}
+
+/* Featured Auto-Link Section in Settings */
+.smart-links-featured-section {
+  background: var(--background-secondary);
+  border-radius: 12px;
+  padding: 1.5em;
+  margin-bottom: 2em;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.smart-links-featured-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  margin-bottom: 0.5em;
+}
+
+.smart-links-featured-header h3 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.smart-links-featured-description {
+  color: var(--text-muted);
+  margin-bottom: 1em;
+}
+
+.smart-links-featured-button {
+  width: 100%;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 1em;
+}
+
+.smart-links-featured-stats {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  display: flex;
+  gap: 1em;
+  flex-wrap: wrap;
+}
+
+/* Auto-Link Feature Section */
+.smart-links-autolink-feature {
+  background: var(--background-secondary);
+  border-radius: 12px;
+  padding: 1.5em;
+  margin-bottom: 2em;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.smart-links-autolink-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0 0 0.5em 0;
+  font-size: 1.2em;
+}
+
+.smart-links-autolink-desc {
+  color: var(--text-muted);
+  margin-bottom: 1em;
+  font-size: 0.9em;
+}
+
+.smart-links-autolink-buttons {
+  display: flex;
+  gap: 0.75em;
+  margin-bottom: 1em;
+}
+
+.smart-links-autolink-button {
+  flex: 1;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.smart-links-restore-button {
+  padding: 12px 20px;
+  font-size: 14px;
+  border-radius: var(--radius-m);
+  background-color: var(--background-modifier-border);
+  color: var(--text-normal);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.smart-links-restore-button:hover:not(:disabled) {
+  background-color: var(--interactive-hover);
+}
+
+.smart-links-restore-button.smart-links-button-disabled,
+.smart-links-restore-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
+.smart-links-autolink-status {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-bottom: 1em;
+}
+
+.smart-links-autolink-lastrun {
+  display: inline-block;
+}
+
+.smart-links-autolink-settings {
+  padding-top: 1em;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.smart-links-autolink-settings h4 {
+  margin: 0 0 0.75em 0;
+  font-size: 1em;
+  color: var(--text-muted);
+}
+
+/* Separator */
+.smart-links-separator {
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
+  margin: 2em 0;
+}
+
+/* Vault Index Section */
+.smart-links-vault-index-section {
+  background: var(--background-secondary);
+  border-radius: 12px;
+  padding: 1.5em;
+  margin-bottom: 1.5em;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.smart-links-vault-index-section h3 {
+  margin: 0 0 0.5em 0;
+  font-size: 1.1em;
+}
+
+.smart-links-section-desc {
+  color: var(--text-muted);
+  margin: 0 0 1em 0;
+  font-size: 0.9em;
+}
+
+.smart-links-index-status {
+  margin-bottom: 1em;
+  padding: 0.75em;
+  background: var(--background-primary);
+  border-radius: 8px;
+}
+
+.smart-links-index-warning {
+  color: var(--text-warning);
+}
+
+.smart-links-warning-text {
+  color: var(--text-warning);
+}
+
+.smart-links-index-info {
+  color: var(--text-normal);
+}
+
+.smart-links-success-text {
+  color: var(--text-success);
+  font-weight: 500;
+}
+
+.smart-links-index-buttons {
+  display: flex;
+  gap: 0.75em;
+}
+
+.smart-links-analyze-button {
+  flex: 1;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.smart-links-clear-cache-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: var(--radius-m);
+  background-color: var(--background-modifier-border);
+  color: var(--text-normal);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.smart-links-clear-cache-button:hover {
+  background-color: var(--interactive-hover);
+}
+
+.smart-links-button-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

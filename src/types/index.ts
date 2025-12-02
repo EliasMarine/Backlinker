@@ -224,6 +224,17 @@ export interface SmartLinksSettings {
   // UI
   suggestionPanelPosition: 'right' | 'left';
   maxRealtimeSuggestions: number; // default 5
+
+  // Batch auto-link settings
+  batchLinkSettings: BatchLinkSettings;
+}
+
+/** Settings for batch auto-link feature */
+export interface BatchLinkSettings {
+  enablePreviewMode: boolean;     // Show preview before applying (default: true)
+  confidenceThreshold: number;    // Minimum score for auto-linking (default: 0.3)
+  maxLinksPerNote: number;        // Maximum links to add per note (default: 10)
+  lastRunTimestamp?: number;      // Timestamp of last batch run
 }
 
 /** Default settings values */
@@ -263,5 +274,13 @@ export const DEFAULT_SETTINGS: SmartLinksSettings = {
 
   // UI
   suggestionPanelPosition: 'right',
-  maxRealtimeSuggestions: 5
+  maxRealtimeSuggestions: 5,
+
+  // Batch auto-link
+  batchLinkSettings: {
+    enablePreviewMode: true,
+    confidenceThreshold: 0.3,
+    maxLinksPerNote: 10,
+    lastRunTimestamp: undefined
+  }
 };

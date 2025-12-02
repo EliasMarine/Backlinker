@@ -3,14 +3,14 @@
 **Last Updated**: December 2, 2025
 **Version**: 1.0.0
 **Build Status**: ✅ Compiles Successfully
-**Test Status**: Phase 3 tested and working with model selection feature
-**Git Branch**: `fix/neural-embeddings-wasm-paths`
+**Test Status**: Phase 3 tested + Batch Auto-Link feature integrated
+**Git Branch**: `feature/model-selection`
 
 ---
 
 ## Executive Summary
 
-**Current Phase**: Phase 3 - Neural Embeddings (TESTED & WORKING + MODEL SELECTION)
+**Current Phase**: Phase 3+ - Neural Embeddings + Batch Auto-Link
 
 **Overall Status**:
 - ✅ Core infrastructure is built and tested
@@ -19,8 +19,9 @@
 - ✅ Critical WASM loading bug fixed for Electron/Obsidian
 - ✅ UI freeze bug fixed with event loop yielding
 - ✅ Cache persistence bugs fixed
-- ✅ **NEW**: Model selection feature added - users can choose between 4 models
-- 🎯 **Next Step**: Test model selection feature in Obsidian
+- ✅ Model selection feature added - users can choose between 4 models
+- ✅ **NEW**: Batch Auto-Link feature fully integrated
+- 🎯 **Next Step**: Test batch auto-link in Obsidian
 
 ---
 
@@ -98,6 +99,49 @@
 - UI freeze: Added `yieldToEventLoop()` after each embedding
 - Folder already exists: Wrapped in try/catch with fallback
 - File already exists: Using `adapter.write()` fallback
+- **Keyword matching bug (CRITICAL)**: Complete rewrite of keyword-matcher.ts
+  - Root cause: TF-IDF matchedKeywords were just similarity indicators, not text to replace
+  - Fix: Now searches for target note's title (or parts of it) in source note's content
+  - Added 4 strategies: full title match, title words, target keywords, TF-IDF keywords
+- **Backup manager resilience**: Improved error handling, validation, logging
+- **Vault Index UI**: Added settings UI section for vault analysis
+  - "Analyze Vault" button in settings (no longer command-palette only)
+  - "Clear Cache" button in settings
+  - Status display showing indexed notes/terms count
+  - All "Analyze entire vault" messages now point to Settings UI
+
+---
+
+### ✅ Batch Auto-Link Feature - INTEGRATED (December 2, 2025)
+
+| Component | Status | File | Notes |
+|-----------|--------|------|-------|
+| Batch Linker | ✅ Complete | `src/batch/batch-linker.ts` | Core orchestrator |
+| Keyword Matcher | ✅ Complete | `src/batch/keyword-matcher.ts` | Maps keywords to targets |
+| Inline Replacer | ✅ Complete | `src/batch/inline-replacer.ts` | Safe text replacement |
+| Backup Manager | ✅ Complete | `src/batch/backup-manager.ts` | Backup/restore system |
+| Preview Modal | ✅ Complete | `src/ui/batch-preview-modal.ts` | Shows changes before apply |
+| Progress Modal | ✅ Complete | `src/ui/batch-progress-modal.ts` | Progress during operation |
+| main.ts Integration | ✅ Complete | `main.ts` | Commands, methods, modals |
+| Settings UI | ✅ Complete | `src/settings.ts` | Featured button, options |
+| Types | ✅ Complete | `src/types/index.ts` | BatchLinkSettings interface |
+| CSS Styles | ✅ Complete | `styles.css` | All batch modal styles |
+
+**Confidence Level**: MEDIUM - Code integrated, needs testing in Obsidian
+
+**Features**:
+- **Auto-Link Vault command**: Available in command palette (`Ctrl/Cmd+P` → "Auto-link vault")
+- **Featured Settings Button**: Prominent "Auto-Link My Vault" button at top of settings
+- **Preview Mode**: Shows all proposed changes before applying (default: enabled)
+- **Progress Tracking**: Real-time progress during analysis and application
+- **Backup System**: Creates backup before changes, supports restore
+- **Protected Zones**: Skips code blocks, frontmatter, existing links, headings
+- **Confidence Threshold**: Configurable (default: 0.3)
+- **Max Links Per Note**: Configurable (default: 10)
+
+**Commands Added**:
+1. `Smart Links: Auto-link vault` - Runs batch auto-link
+2. `Smart Links: Restore notes from batch link backup` - Restores from backup
 
 ---
 
@@ -108,6 +152,43 @@
 - ❌ Error recovery
 - ❌ Performance profiling
 - ❌ Community plugin prep
+
+---
+
+## New Files Created (Batch Auto-Link)
+
+1. **`src/batch/batch-linker.ts`** - Core batch orchestration
+   - Coordinates analysis and application phases
+   - Progress callbacks for UI updates
+   - Cancellation support
+
+2. **`src/batch/keyword-matcher.ts`** - Keyword to note mapping
+   - Matches TF-IDF keywords to note titles
+   - Handles aliases and variations
+   - Confidence scoring
+
+3. **`src/batch/inline-replacer.ts`** - Safe text replacement
+   - Protected zone detection (frontmatter, code, links)
+   - Word boundary matching
+   - Context extraction for preview
+
+4. **`src/batch/backup-manager.ts`** - Backup/restore system
+   - Creates timestamped backups
+   - Stores in plugin folder
+   - Supports multiple backup history
+
+5. **`src/ui/batch-preview-modal.ts`** - Preview modal
+   - Summary statistics
+   - Expandable note list
+   - Context snippets per replacement
+   - Apply/Cancel buttons
+
+6. **`src/ui/batch-progress-modal.ts`** - Progress modal
+   - Phase indicators (analyzing, backup, applying)
+   - Progress bar with current note
+   - Cancel button
+
+7. **`documents/BATCH_AUTOLINK_PLAN.md`** - Feature plan document
 
 ---
 
@@ -290,4 +371,47 @@
 
 ---
 
-**Status**: Phase 3 core functionality tested and working. Hybrid search testing pending.
+## Testing Checklist (Batch Auto-Link)
+
+### Prerequisites
+- [ ] Vault is indexed (run "Analyze entire vault" first)
+- [ ] Console open for debugging
+
+### Command Access
+- [ ] "Auto-link vault" appears in command palette
+- [ ] "Restore notes from batch link backup" appears in command palette
+- [ ] Settings UI has "Auto-Link My Vault" button at top
+
+### Analysis Phase
+- [ ] Progress modal appears when running batch auto-link
+- [ ] Progress bar updates with note names
+- [ ] Can cancel during analysis
+- [ ] Cancelled message appears if cancelled
+
+### Preview Modal
+- [ ] Preview modal shows summary (X links in Y notes)
+- [ ] Notes are listed with expand/collapse
+- [ ] Context snippets show for each replacement
+- [ ] Cancel button works
+- [ ] Apply button works
+
+### Apply Phase
+- [ ] Backup is created before applying
+- [ ] Progress modal shows "Applying Changes"
+- [ ] Files are actually modified
+- [ ] Wikilinks are correctly formatted `[[Note Title]]`
+- [ ] Protected zones are skipped (code, frontmatter, existing links)
+
+### Restore
+- [ ] "Restore from Backup" works
+- [ ] Confirmation modal appears
+- [ ] Notes are restored to original state
+
+### Settings Options
+- [ ] Preview mode toggle works
+- [ ] Confidence threshold slider works
+- [ ] Max links per note slider works
+
+---
+
+**Status**: Phase 3 core functionality tested and working. Batch Auto-Link integrated, needs testing.

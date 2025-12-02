@@ -1,4 +1,4 @@
-import { App, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
+import { App, Modal, Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 import { SmartLinksSettings, DEFAULT_SETTINGS, VaultCache, getModelConfig, EmbeddingModelConfig } from './src/types';
 import { SmartLinksSettingTab } from './src/settings';
 import { VaultIndexer } from './src/indexing/vault-indexer';
@@ -11,6 +11,10 @@ import { HybridScorer } from './src/engines/hybrid-scorer';
 import { LinkDiscovery } from './src/discovery/link-discovery';
 import { SuggestionPanelView, SUGGESTION_PANEL_VIEW_TYPE } from './src/ui/suggestion-panel';
 import { EmbeddingProgressModal, EnableEmbeddingsModal } from './src/ui/embedding-progress-modal';
+import { BatchLinker, BatchLinkOptions, BatchLinkSummary } from './src/batch/batch-linker';
+import { BatchPreviewModal, PreviewResult } from './src/ui/batch-preview-modal';
+import { BatchProgressModal } from './src/ui/batch-progress-modal';
+import { BackupManifest, formatBackupDate } from './src/batch/backup-manager';
 
 /**
  * Smart Links - Intelligent Backlinking for Obsidian
@@ -36,10 +40,14 @@ export default class SmartLinksPlugin extends Plugin {
   private linkDiscovery: LinkDiscovery;
   private suggestionPanel: SuggestionPanelView | null = null;
 
+  // Batch Auto-Link
+  private batchLinker: BatchLinker | null = null;
+
   // State
   private statusBarItem: HTMLElement;
   private isIndexing: boolean = false;
   private isGeneratingEmbeddings: boolean = false;
+  private isBatchLinking: boolean = false;
   private debounceTimer: NodeJS.Timeout | null = null;
 
   async onload() {
@@ -69,8 +77,8 @@ export default class SmartLinksPlugin extends Plugin {
       // Warn if cache has notes but no document frequency data
       if (this.cache.documentFrequency.size === 0 && this.cache.notes.size > 0) {
         console.warn('[Smart Links] ⚠️  Cache has notes but no term frequencies!');
-        console.warn('[Smart Links] ⚠️  Suggestions will not work until you run "Analyze entire vault"');
-        new Notice('Smart Links: Please run "Analyze entire vault" to enable suggestions', 10000);
+        console.warn('[Smart Links] ⚠️  Suggestions will not work until you analyze the vault');
+        new Notice('Smart Links: Go to Settings → Smart Links → Analyze Vault to enable suggestions', 10000);
       }
     } else {
       this.cache = this.cacheManager.createEmptyCache();
@@ -129,6 +137,16 @@ export default class SmartLinksPlugin extends Plugin {
       this.hybridScorer
     );
     console.log('[Smart Links] ✓ Link discovery initialized');
+
+    // Initialize batch linker
+    console.log('[Smart Links] Initializing batch linker...');
+    this.batchLinker = new BatchLinker(
+      this.app,
+      this.cache,
+      this.hybridScorer,
+      this.settings
+    );
+    console.log('[Smart Links] ✓ Batch linker initialized');
 
     // Register suggestion panel view
     console.log('[Smart Links] Registering suggestion panel view...');
@@ -286,7 +304,7 @@ export default class SmartLinksPlugin extends Plugin {
         try {
           await this.cacheManager.clearCache();
           this.cache = this.cacheManager.createEmptyCache();
-          new Notice('Cache cleared. Run "Analyze entire vault" to rebuild.');
+          new Notice('Cache cleared. Go to Settings → Smart Links → Analyze Vault to rebuild.');
           this.updateStatusBar('Cache cleared');
         } catch (error) {
           console.error('[Smart Links] Failed to clear cache:', error);
@@ -330,7 +348,7 @@ export default class SmartLinksPlugin extends Plugin {
 
         const sourceNote = this.cache.notes.get(activeFile.path);
         if (!sourceNote) {
-          new Notice('Current note not indexed. Run "Analyze entire vault" first.');
+          new Notice('Current note not indexed. Go to Settings → Smart Links → Analyze Vault first.');
           return;
         }
 
@@ -362,6 +380,24 @@ export default class SmartLinksPlugin extends Plugin {
           console.error('[Smart Links] Failed to find similar notes:', error);
           new Notice('Failed to find similar notes');
         }
+      }
+    });
+
+    // Command: Batch auto-link vault
+    this.addCommand({
+      id: 'batch-auto-link',
+      name: 'Auto-link vault',
+      callback: async () => {
+        await this.runBatchAutoLink();
+      }
+    });
+
+    // Command: Restore from batch backup
+    this.addCommand({
+      id: 'restore-batch-backup',
+      name: 'Restore notes from batch link backup',
+      callback: async () => {
+        await this.restoreFromBackup();
       }
     });
 
@@ -658,7 +694,7 @@ export default class SmartLinksPlugin extends Plugin {
       const totalNotes = notes.length;
 
       if (totalNotes === 0) {
-        new Notice('No notes to process. Run "Analyze entire vault" first.');
+        new Notice('No notes to process. Go to Settings → Smart Links → Analyze Vault first.');
         progressModal.close();
         return;
       }
@@ -817,5 +853,377 @@ export default class SmartLinksPlugin extends Plugin {
 
       console.log('[Smart Links] ✓ Model changed and embeddings regenerated');
     }
+  }
+
+  // ========================================
+  // Vault Index Management (for Settings UI)
+  // ========================================
+
+  /**
+   * Analyze the entire vault - callable from settings UI
+   */
+  async analyzeVault(): Promise<void> {
+    if (this.isIndexing) {
+      new Notice('Analysis already in progress...');
+      return;
+    }
+
+    this.isIndexing = true;
+    console.log('[Smart Links] Starting vault analysis from settings UI...');
+    new Notice('Analyzing vault...', 3000);
+    this.updateStatusBar('Analyzing...');
+
+    try {
+      // Step 1: Index vault with TF-IDF
+      await this.vaultIndexer.analyzeVault((progress, message) => {
+        this.updateStatusBar(`Analyzing: ${Math.round(progress * 0.6)}%`);
+      });
+
+      // Step 2: Save cache
+      await this.cacheManager.saveCache(this.cache);
+      console.log('[Smart Links] ✓ Analysis complete and cache saved');
+
+      // Step 3: Generate embeddings if enabled
+      if (this.settings.enableNeuralEmbeddings && this.embeddingEngine) {
+        this.updateStatusBar('Generating embeddings...');
+        await this.regenerateEmbeddings();
+      }
+
+      const noteCount = this.cache.notes.size;
+      const termCount = this.cache.documentFrequency.size;
+      new Notice(`Vault analysis complete: ${noteCount} notes, ${termCount.toLocaleString()} terms`, 5000);
+      this.updateStatusBar(`${noteCount} notes indexed`);
+    } catch (error) {
+      console.error('[Smart Links] Vault analysis failed:', error);
+      new Notice(`Analysis failed: ${(error as Error).message}`);
+      this.updateStatusBar('Analysis failed');
+      throw error;
+    } finally {
+      this.isIndexing = false;
+    }
+  }
+
+  /**
+   * Clear the cache - callable from settings UI
+   */
+  async clearCache(): Promise<void> {
+    try {
+      await this.cacheManager.clearCache();
+      this.cache = this.cacheManager.createEmptyCache();
+      console.log('[Smart Links] Cache cleared');
+      this.updateStatusBar('Cache cleared');
+    } catch (error) {
+      console.error('[Smart Links] Failed to clear cache:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get index statistics - callable from settings UI
+   */
+  getIndexStats(): { notesIndexed: number; termsIndexed: number; lastAnalysis?: number } {
+    return {
+      notesIndexed: this.cache?.notes.size || 0,
+      termsIndexed: this.cache?.documentFrequency.size || 0,
+      lastAnalysis: this.cache?.lastFullAnalysis
+    };
+  }
+
+  /**
+   * Check if currently indexing - callable from settings UI
+   */
+  getIsIndexing(): boolean {
+    return this.isIndexing;
+  }
+
+  // ========================================
+  // Batch Auto-Link
+  // ========================================
+
+  /**
+   * Run batch auto-link on the entire vault
+   * This is called from the settings UI and command palette
+   */
+  async runBatchAutoLink(): Promise<void> {
+    if (this.isBatchLinking) {
+      new Notice('Batch linking already in progress...');
+      return;
+    }
+
+    if (!this.batchLinker || !this.cache) {
+      new Notice('Please wait for vault indexing to complete');
+      return;
+    }
+
+    if (this.cache.notes.size === 0) {
+      new Notice('No notes indexed. Go to Settings → Smart Links → Analyze Vault first.');
+      return;
+    }
+
+    this.isBatchLinking = true;
+    console.log('[Smart Links] Starting batch auto-link...');
+
+    const options: BatchLinkOptions = {
+      previewOnly: true,
+      confidenceThreshold: this.settings.batchLinkSettings.confidenceThreshold,
+      maxLinksPerNote: this.settings.batchLinkSettings.maxLinksPerNote
+    };
+
+    // Show progress modal for analysis phase
+    const progressModal = new BatchProgressModal(this.app);
+    progressModal.onCancel(() => {
+      console.log('[Smart Links] Batch auto-link cancelled by user');
+      this.batchLinker?.cancel();
+    });
+    progressModal.open();
+
+    try {
+      // Phase 1: Analyze vault
+      const summary = await this.batchLinker.processVault(options, (progress) => {
+        progressModal.updateProgress(progress);
+      });
+
+      // Close progress modal
+      progressModal.close();
+
+      // Check if cancelled
+      if (progressModal.wasCancelled()) {
+        console.log('[Smart Links] Analysis cancelled');
+        new Notice('Batch auto-link cancelled');
+        return;
+      }
+
+      console.log(`[Smart Links] Analysis complete: ${summary.totalLinksAdded} links in ${summary.notesWithChanges} notes`);
+
+      // Phase 2: Show preview modal
+      if (this.settings.batchLinkSettings.enablePreviewMode) {
+        const previewModal = new BatchPreviewModal(this.app, summary);
+
+        previewModal.onResult(async (result: PreviewResult) => {
+          if (result === 'apply' && summary.results.length > 0) {
+            await this.applyBatchChanges(summary);
+          } else {
+            console.log('[Smart Links] Batch auto-link cancelled from preview');
+          }
+        });
+
+        previewModal.open();
+      } else {
+        // Direct apply without preview
+        if (summary.results.length > 0) {
+          await this.applyBatchChanges(summary);
+        } else {
+          new Notice('No links to add');
+        }
+      }
+
+    } catch (error) {
+      console.error('[Smart Links] Batch auto-link error:', error);
+      progressModal.showError('Error', (error as Error).message);
+    } finally {
+      this.isBatchLinking = false;
+    }
+  }
+
+  /**
+   * Apply batch changes after preview approval
+   */
+  private async applyBatchChanges(summary: BatchLinkSummary): Promise<void> {
+    if (!this.batchLinker) return;
+
+    const progressModal = new BatchProgressModal(this.app);
+    progressModal.onCancel(() => {
+      this.batchLinker?.cancel();
+    });
+    progressModal.open();
+
+    try {
+      const { backupId, appliedCount } = await this.batchLinker.applyChanges(
+        summary.results,
+        (progress) => {
+          progressModal.updateProgress(progress);
+        }
+      );
+
+      // Update last run timestamp
+      this.settings.batchLinkSettings.lastRunTimestamp = Date.now();
+      await this.saveSettings();
+
+      // Show completion
+      const message = `Added ${summary.totalLinksAdded} links to ${appliedCount} notes`;
+      progressModal.showComplete(message);
+      console.log(`[Smart Links] ✓ ${message}. Backup: ${backupId}`);
+
+      new Notice(message, 5000);
+
+    } catch (error) {
+      console.error('[Smart Links] Failed to apply batch changes:', error);
+      progressModal.showError('Apply Failed', (error as Error).message);
+    }
+  }
+
+  /**
+   * Restore notes from the last batch backup
+   */
+  async restoreFromBackup(): Promise<void> {
+    if (!this.batchLinker) {
+      new Notice('Batch linker not initialized');
+      return;
+    }
+
+    const backupManager = this.batchLinker.getBackupManager();
+    const latestBackup = await backupManager.getLatestBackup();
+
+    if (!latestBackup || !latestBackup.hasData) {
+      new Notice('No backup available to restore');
+      return;
+    }
+
+    const manifest = latestBackup.manifest;
+
+    // Show confirmation modal
+    const confirmed = await this.confirmRestore(manifest);
+    if (!confirmed) {
+      console.log('[Smart Links] Restore cancelled by user');
+      return;
+    }
+
+    console.log(`[Smart Links] Restoring backup ${manifest.id}...`);
+
+    try {
+      const progressModal = new BatchProgressModal(this.app);
+      progressModal.open();
+
+      progressModal.updateProgress({
+        phase: 'applying',
+        current: 0,
+        total: manifest.noteCount,
+        message: 'Restoring notes...'
+      });
+
+      const restoredCount = await backupManager.restoreBackup(
+        manifest.id,
+        (current, total, path) => {
+          progressModal.updateProgress({
+            phase: 'applying',
+            current,
+            total,
+            currentNotePath: path,
+            message: `Restoring: ${path.split('/').pop()}`
+          });
+        }
+      );
+
+      progressModal.showComplete(`Restored ${restoredCount} notes from backup`);
+      console.log(`[Smart Links] ✓ Restored ${restoredCount} notes`);
+
+      new Notice(`Restored ${restoredCount} notes from backup`, 5000);
+
+    } catch (error) {
+      console.error('[Smart Links] Failed to restore backup:', error);
+      new Notice(`Restore failed: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Show confirmation modal for backup restore
+   */
+  private async confirmRestore(manifest: BackupManifest): Promise<boolean> {
+    return new Promise((resolve) => {
+      const modal = new ConfirmRestoreModal(
+        this.app,
+        manifest,
+        () => resolve(true),
+        () => resolve(false)
+      );
+      modal.open();
+    });
+  }
+
+  /**
+   * Check if a backup is available (for settings UI)
+   */
+  async hasBackupAvailable(): Promise<boolean> {
+    if (!this.batchLinker) return false;
+    return await this.batchLinker.getBackupManager().hasBackup();
+  }
+
+  /**
+   * Get the latest backup info (for settings UI)
+   */
+  async getLatestBackupInfo(): Promise<{ timestamp: number; noteCount: number; linksAdded: number } | null> {
+    if (!this.batchLinker) return null;
+    const backup = await this.batchLinker.getBackupManager().getLatestBackup();
+    if (!backup || !backup.hasData) return null;
+    return {
+      timestamp: backup.manifest.timestamp,
+      noteCount: backup.manifest.noteCount,
+      linksAdded: backup.manifest.linksAdded
+    };
+  }
+}
+
+/**
+ * Confirmation modal for backup restore
+ */
+class ConfirmRestoreModal extends Modal {
+  private manifest: BackupManifest;
+  private onConfirm: () => void;
+  private onCancel: () => void;
+
+  constructor(
+    app: App,
+    manifest: BackupManifest,
+    onConfirm: () => void,
+    onCancel: () => void
+  ) {
+    super(app);
+    this.manifest = manifest;
+    this.onConfirm = onConfirm;
+    this.onCancel = onCancel;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.addClass('smart-links-confirm-modal');
+
+    contentEl.createEl('h2', { text: 'Restore Backup?' });
+
+    const infoEl = contentEl.createDiv('smart-links-confirm-info');
+    infoEl.createEl('p', {
+      text: `This will restore ${this.manifest.noteCount} notes to their state before ${this.manifest.linksAdded} links were added.`
+    });
+    infoEl.createEl('p', {
+      text: `Backup created: ${formatBackupDate(this.manifest.timestamp)}`,
+      cls: 'smart-links-muted'
+    });
+
+    const warningEl = contentEl.createDiv('smart-links-confirm-warning');
+    warningEl.createEl('p', {
+      text: 'This will overwrite any changes made to these notes since the backup was created.'
+    });
+
+    const buttonContainer = contentEl.createDiv('smart-links-confirm-buttons');
+
+    const cancelButton = buttonContainer.createEl('button', { text: 'Cancel' });
+    cancelButton.addEventListener('click', () => {
+      this.onCancel();
+      this.close();
+    });
+
+    const confirmButton = buttonContainer.createEl('button', {
+      text: 'Restore',
+      cls: 'mod-warning'
+    });
+    confirmButton.addEventListener('click', () => {
+      this.onConfirm();
+      this.close();
+    });
+  }
+
+  onClose() {
+    const { contentEl } = this;
+    contentEl.empty();
   }
 }
