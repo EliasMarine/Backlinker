@@ -277,6 +277,14 @@ export class EmbeddingEngine {
   }
 
   /**
+   * Yield to the event loop to keep UI responsive
+   * Uses setTimeout(0) to allow pending UI updates and user interactions
+   */
+  private yieldToEventLoop(): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, 0));
+  }
+
+  /**
    * Generate embeddings for multiple notes in batches
    * @param notes - Array of NoteIndex objects to embed
    * @param progressCallback - Optional callback for progress updates
@@ -297,7 +305,7 @@ export class EmbeddingEngine {
 
     console.log(`[EmbeddingEngine] Starting batch embedding for ${totalNotes} notes`);
 
-    // Process in batches
+    // Process in batches with UI yielding
     for (let i = 0; i < totalNotes; i += this.config.batchSize) {
       const batch = notes.slice(i, i + this.config.batchSize);
 
@@ -326,6 +334,10 @@ export class EmbeddingEngine {
             notePath: note.path,
             eta: eta ? Math.round(eta) : undefined
           });
+
+          // Yield to event loop after each note to keep UI responsive
+          // This is critical because ONNX inference is CPU-bound and blocks the main thread
+          await this.yieldToEventLoop();
 
         } catch (error) {
           console.error(`[EmbeddingEngine] Failed to embed ${note.path}:`, error);
