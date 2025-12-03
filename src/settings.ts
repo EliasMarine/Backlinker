@@ -618,7 +618,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
       if (confirmed && this.plugin.clearCache) {
         try {
           await this.plugin.clearCache();
-          new Notice('Cache cleared. Please analyze vault again.');
+          new Notice('Cache cleared. Click "Analyze Vault" to rebuild.');
           this.display();
         } catch (error) {
           console.error('[Settings] Failed to clear cache:', error);

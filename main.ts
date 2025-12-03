@@ -924,11 +924,21 @@ export default class SmartLinksPlugin extends Plugin {
 
   /**
    * Clear the cache - callable from settings UI
+   * IMPORTANT: Clear in-place to preserve references held by other components
    */
   async clearCache(): Promise<void> {
     try {
       await this.cacheManager.clearCache();
-      this.cache = this.cacheManager.createEmptyCache();
+
+      // Clear the cache IN-PLACE to preserve references held by
+      // vaultIndexer, tfidfEngine, hybridScorer, linkDiscovery, etc.
+      this.cache.notes.clear();
+      this.cache.documentFrequency.clear();
+      this.cache.totalDocuments = 0;
+      this.cache.lastFullAnalysis = 0;
+      this.cache.semanticEnabled = false;
+      this.cache.version = '1.0.0';
+
       console.log('[Smart Links] Cache cleared');
       this.updateStatusBar('Cache cleared');
     } catch (error) {
