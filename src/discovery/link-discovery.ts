@@ -32,6 +32,7 @@ export class LinkDiscovery {
   // Current state
   private currentSuggestions: LinkSuggestion[] = [];
   private lastAnalyzedContent: string = '';
+  private documentFrequencyWarningShown: boolean = false;
 
   // Callbacks
   private onSuggestionsUpdated?: (update: SuggestionUpdate) => void;
@@ -108,22 +109,40 @@ export class LinkDiscovery {
     file: TFile,
     content: string
   ): Promise<LinkSuggestion[]> {
-    // Check if document frequency is populated
+    // Check if document frequency is populated (debounce warning)
     if (this.cache.documentFrequency.size === 0) {
-      console.warn('[Smart Links] Cannot generate suggestions - documentFrequency is empty');
-      console.warn('[Smart Links] Please run "Analyze entire vault" command first');
+      if (!this.documentFrequencyWarningShown) {
+        console.warn('[Smart Links] Cannot generate suggestions - documentFrequency is empty');
+        console.warn('[Smart Links] Please run "Analyze entire vault" command first');
+        this.documentFrequencyWarningShown = true;
+      }
+      return [];
+    }
+    // Reset warning flag when document frequency becomes available
+    this.documentFrequencyWarningShown = false;
+
+    // Create temporary note index for current content
+    let tempNote: NoteIndex;
+    try {
+      tempNote = await this.createTempNoteIndex(file, content);
+    } catch (error) {
+      console.error('[LinkDiscovery] Failed to create temp note index:', error);
       return [];
     }
 
-    // Create temporary note index for current content
-    const tempNote = await this.createTempNoteIndex(file, content);
-
     console.log('[LinkDiscovery] Calling hybridScorer.findSimilarNotes()...');
-    // Find similar notes using hybrid scoring
-    const similarNotes = await this.hybridScorer.findSimilarNotes(
-      tempNote,
-      this.settings.maxRealtimeSuggestions
-    );
+
+    // Find similar notes using hybrid scoring with proper error handling
+    let similarNotes: HybridResult[];
+    try {
+      similarNotes = await this.hybridScorer.findSimilarNotes(
+        tempNote,
+        this.settings.maxRealtimeSuggestions
+      );
+    } catch (error) {
+      console.error('[LinkDiscovery] Hybrid scorer error:', error);
+      return [];
+    }
 
     console.log('[LinkDiscovery] HybridScorer returned', similarNotes.length, 'similar notes');
     if (similarNotes.length > 0) {
@@ -334,15 +353,29 @@ export class LinkDiscovery {
   }
 
   /**
-   * Simple string similarity (ratio of common length)
+   * Simple string similarity using character-level comparison
+   * More accurate than just comparing lengths
    */
   private simpleStringSimilarity(a: string, b: string): number {
-    const minLength = Math.min(a.length, b.length);
-    const maxLength = Math.max(a.length, b.length);
+    if (a === b) return 1;
+    if (!a || !b) return 0;
 
+    const maxLength = Math.max(a.length, b.length);
     if (maxLength === 0) return 1;
 
-    return minLength / maxLength;
+    // Compare characters at corresponding positions
+    const minLength = Math.min(a.length, b.length);
+    let matches = 0;
+    for (let i = 0; i < minLength; i++) {
+      if (a[i] === b[i]) matches++;
+    }
+
+    // Factor in length difference penalty
+    const lengthPenalty = 1 - Math.abs(a.length - b.length) / maxLength;
+
+    // Combine character match ratio with length similarity
+    const charSimilarity = matches / minLength;
+    return (charSimilarity * 0.7) + (lengthPenalty * 0.3);
   }
 
   /**

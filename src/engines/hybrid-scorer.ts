@@ -302,10 +302,14 @@ export class HybridScorer {
     console.log('[HybridScorer] TF-IDF candidates:', tfidfResults.length);
 
     // Get or generate source embedding
-    let sourceEmbedding = this.embeddingCache.get(sourceNote.path);
+    let sourceEmbedding = this.embeddingCache?.get(sourceNote.path);
     if (!sourceEmbedding) {
       try {
         const text = sourceNote.cleanContent || sourceNote.content;
+        if (!text || text.trim().length === 0) {
+          console.warn('[HybridScorer] Source note has no content for embedding');
+          return this.hybridSearch(sourceNote, maxResults);
+        }
         sourceEmbedding = await this.embeddingEngine.generateEmbedding(text);
       } catch (error) {
         console.warn('[HybridScorer] Failed to generate source embedding:', error);
@@ -317,8 +321,17 @@ export class HybridScorer {
       }
     }
 
-    // Get all cached embeddings
-    const allEmbeddings = this.embeddingCache.getAll();
+    // Validate embedding was generated successfully
+    if (!sourceEmbedding || sourceEmbedding.length === 0) {
+      console.warn('[HybridScorer] Source embedding is invalid, falling back');
+      if (this.semanticEngine?.isModelReady()) {
+        return this.hybridSearch(sourceNote, maxResults);
+      }
+      return this.tfidfOnlySearch(sourceNote, maxResults);
+    }
+
+    // Get all cached embeddings (embeddingCache verified non-null earlier)
+    const allEmbeddings = this.embeddingCache!.getAll();
     console.log('[HybridScorer] Total cached embeddings:', allEmbeddings.size);
 
     // Calculate embedding similarities for all notes with embeddings

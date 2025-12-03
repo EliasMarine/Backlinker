@@ -319,8 +319,8 @@ export class SmartKeywordMatcher {
       // Generate embedding for the sentence
       const sentenceEmbedding = await this.embeddingEngine.generateEmbedding(sentenceContext);
 
-      // Get target note embedding
-      const targetEmbedding = this.embeddingCache.get(targetNotePath);
+      // Get target note embedding (embeddingCache may be null)
+      const targetEmbedding = this.embeddingCache?.get(targetNotePath);
       if (!targetEmbedding) {
         return 0.5; // Neutral score if target embedding not available
       }

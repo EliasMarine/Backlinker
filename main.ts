@@ -48,6 +48,7 @@ export default class SmartLinksPlugin extends Plugin {
   private isIndexing: boolean = false;
   private isGeneratingEmbeddings: boolean = false;
   private isBatchLinking: boolean = false;
+  private isAnalyzingCurrentNote: boolean = false;
   private debounceTimer: NodeJS.Timeout | null = null;
 
   async onload() {
@@ -445,9 +446,20 @@ export default class SmartLinksPlugin extends Plugin {
 
         console.log('[Smart Links] Editor changed, debouncing analysis (' + this.settings.debounceDelay + 'ms)...');
         this.debounceTimer = setTimeout(async () => {
-          const activeFile = this.app.workspace.getActiveFile();
-          console.log('[Smart Links] Debounce complete, analyzing:', activeFile?.path);
-          await this.linkDiscovery.analyzeCurrentNote(activeFile);
+          // Guard against overlapping analyses
+          if (this.isAnalyzingCurrentNote) {
+            console.log('[Smart Links] Analysis already in progress, skipping');
+            return;
+          }
+
+          this.isAnalyzingCurrentNote = true;
+          try {
+            const activeFile = this.app.workspace.getActiveFile();
+            console.log('[Smart Links] Debounce complete, analyzing:', activeFile?.path);
+            await this.linkDiscovery.analyzeCurrentNote(activeFile);
+          } finally {
+            this.isAnalyzingCurrentNote = false;
+          }
         }, this.settings.debounceDelay);
       })
     );
@@ -979,8 +991,12 @@ export default class SmartLinksPlugin extends Plugin {
     // Show progress modal for analysis phase
     const progressModal = new BatchProgressModal(this.app);
     progressModal.onCancel(() => {
-      console.log('[Smart Links] Batch auto-link cancelled by user');
-      this.batchLinker?.cancel();
+      try {
+        console.log('[Smart Links] Batch auto-link cancelled by user');
+        this.batchLinker?.cancel();
+      } catch (error) {
+        console.error('[Smart Links] Error during cancellation:', error);
+      }
     });
     progressModal.open();
 
@@ -1040,7 +1056,11 @@ export default class SmartLinksPlugin extends Plugin {
 
     const progressModal = new BatchProgressModal(this.app);
     progressModal.onCancel(() => {
-      this.batchLinker?.cancel();
+      try {
+        this.batchLinker?.cancel();
+      } catch (error) {
+        console.error('[Smart Links] Error during cancellation:', error);
+      }
     });
     progressModal.open();
 

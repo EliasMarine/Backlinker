@@ -71,6 +71,8 @@ export class BatchPreviewModal extends Modal {
   onClose() {
     const { contentEl } = this;
     contentEl.empty();
+    // Clean up state to prevent memory accumulation
+    this.expandedNotes.clear();
   }
 
   private renderSummary(container: HTMLElement): void {

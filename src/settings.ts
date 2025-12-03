@@ -580,7 +580,8 @@ export class SmartLinksSettingTab extends PluginSettingTab {
       analyzeButton.setText('Analyzing...');
     }
 
-    analyzeButton.addEventListener('click', async () => {
+    // Use onclick instead of addEventListener to prevent memory leaks on tab reopen
+    analyzeButton.onclick = async () => {
       if (this.plugin.getIsIndexing?.()) {
         new Notice('Analysis already in progress...');
         return;
@@ -603,14 +604,14 @@ export class SmartLinksSettingTab extends PluginSettingTab {
       } else {
         new Notice('Vault analysis not available');
       }
-    });
+    };
 
     // Clear Cache button
     const clearButton = buttonContainer.createEl('button', {
       text: 'Clear Cache',
       cls: 'smart-links-clear-cache-button'
     });
-    clearButton.addEventListener('click', async () => {
+    clearButton.onclick = async () => {
       const confirmed = confirm(
         'This will delete all indexed data. You will need to re-analyze the vault. Continue?'
       );
@@ -624,7 +625,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
           new Notice(`Clear cache failed: ${(error as Error).message}`);
         }
       }
-    });
+    };
 
     // Separator
     containerEl.createEl('hr', { cls: 'smart-links-separator' });
@@ -696,7 +697,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
       text: 'Link My Vault',
       cls: 'mod-cta smart-links-autolink-button'
     });
-    mainButton.addEventListener('click', async () => {
+    mainButton.onclick = async () => {
       if (this.plugin.runBatchAutoLink) {
         await this.plugin.runBatchAutoLink();
         // Refresh the display after batch linking
@@ -704,7 +705,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
       } else {
         new Notice('Batch auto-link not available');
       }
-    });
+    };
 
     // Status info
     const statusEl = featureEl.createDiv('smart-links-autolink-status');
@@ -855,7 +856,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
       restoreButton.setAttribute('disabled', 'true');
       restoreButton.setAttribute('title', 'No backup available');
     } else {
-      restoreButton.addEventListener('click', async () => {
+      restoreButton.onclick = async () => {
         const confirmed = confirm(
           'This will restore your notes to their state before the last batch auto-link. Continue?'
         );
@@ -864,7 +865,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
           new Notice('Notes restored from backup');
           this.display();
         }
-      });
+      };
     }
   }
 
@@ -968,7 +969,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
           cls: 'smart-links-backup-restore-btn'
         });
 
-        restoreBtn.addEventListener('click', async () => {
+        restoreBtn.onclick = async () => {
           const confirmed = confirm(
             `Restore ${manifest.noteCount} notes to their state before ${manifest.linksAdded} links were added?`
           );
@@ -981,7 +982,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
               new Notice(`Restore failed: ${(error as Error).message}`);
             }
           }
-        });
+        };
       }
     } else {
       sectionEl.createEl('p', {

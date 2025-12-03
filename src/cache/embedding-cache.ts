@@ -137,16 +137,26 @@ export class EmbeddingCache {
       const embeddingsArray = new Float32Array(binaryData);
 
       // Reconstruct embeddings map
+      let skippedEntries = 0;
       for (const entry of metadata.entries) {
         const startIndex = entry.offset / 4;  // Convert byte offset to float index
         const endIndex = startIndex + this.embeddingDimension;
 
+        // Validate bounds to handle corrupted cache files
         if (endIndex <= embeddingsArray.length) {
           const embedding = embeddingsArray.slice(startIndex, endIndex);
           this.embeddings.set(entry.notePath, embedding);
           this.contentHashes.set(entry.notePath, entry.contentHash);
           this.generatedTimes.set(entry.notePath, entry.generatedAt);
+        } else {
+          skippedEntries++;
+          console.warn(`[EmbeddingCache] Invalid offset for ${entry.notePath}, skipping (${endIndex} > ${embeddingsArray.length})`);
         }
+      }
+
+      if (skippedEntries > 0) {
+        console.warn(`[EmbeddingCache] Skipped ${skippedEntries} corrupted entries`);
+        this.isDirty = true; // Mark dirty to rebuild on next save
       }
 
       this.lastSaved = metadata.lastSaved;
