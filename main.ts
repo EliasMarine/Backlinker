@@ -1168,6 +1168,14 @@ export default class SmartLinksPlugin extends Plugin {
       linksAdded: backup.manifest.linksAdded
     };
   }
+
+  /**
+   * Get the backup manager (for settings UI)
+   */
+  getBackupManager(): import('./src/batch/backup-manager').BackupManager | null {
+    if (!this.batchLinker) return null;
+    return this.batchLinker.getBackupManager();
+  }
 }
 
 /**

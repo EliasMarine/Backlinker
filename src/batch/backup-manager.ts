@@ -3,6 +3,11 @@
  *
  * Creates and restores backups of notes before batch modifications.
  * Backups are stored in the plugin's data folder.
+ *
+ * Features:
+ * - Detailed backup manifests with per-note statistics
+ * - Restore history tracking
+ * - Configurable backup retention
  */
 
 import { App, TFile, Notice } from 'obsidian';
@@ -10,6 +15,7 @@ import { App, TFile, Notice } from 'obsidian';
 export interface BackupEntry {
   path: string;
   content: string;
+  linksAdded?: number;  // How many links were added to this note
 }
 
 export interface BackupManifest {
@@ -18,11 +24,43 @@ export interface BackupManifest {
   noteCount: number;
   linksAdded: number;
   notePaths: string[];
+
+  // Enhanced metadata
+  description?: string;           // Human-readable description
+  noteDetails?: BackupNoteDetail[]; // Per-note details
+  triggeredBy?: 'manual' | 'batch-autolink' | 'other';
+  pluginVersion?: string;
+}
+
+export interface BackupNoteDetail {
+  path: string;
+  title: string;
+  linksAdded: number;
+  contentLength: number;  // Original content length
+}
+
+export interface RestoreRecord {
+  id: string;                    // Unique restore ID
+  backupId: string;              // Which backup was restored
+  timestamp: number;             // When the restore happened
+  notesRestored: number;         // How many notes were actually restored
+  notesAttempted: number;        // How many notes were in the backup
+  errors: string[];              // Any errors during restore
+  duration: number;              // How long the restore took (ms)
 }
 
 export interface BackupInfo {
   manifest: BackupManifest;
   hasData: boolean;
+}
+
+export interface BackupStats {
+  totalBackups: number;
+  totalRestores: number;
+  lastBackupTimestamp?: number;
+  lastRestoreTimestamp?: number;
+  totalNotesBackedUp: number;
+  totalLinksAdded: number;
 }
 
 /**
@@ -53,6 +91,10 @@ export class BackupManager {
   private app: App;
   private pluginId: string;
   private backupFolderPath: string;
+
+  // Restore history
+  private restoreHistory: RestoreRecord[] = [];
+  private restoreHistoryLoaded: boolean = false;
 
   constructor(app: App, pluginId: string = 'smart-links') {
     this.app = app;
@@ -142,11 +184,17 @@ export class BackupManager {
    * Create a backup of the specified notes
    * @param notes Array of note paths and their current content
    * @param linksAdded Number of links that will be added
+   * @param options Optional metadata for the backup
    * @returns The created backup manifest
    */
   async createBackup(
     notes: BackupEntry[],
-    linksAdded: number
+    linksAdded: number,
+    options?: {
+      description?: string;
+      triggeredBy?: 'manual' | 'batch-autolink' | 'other';
+      noteDetails?: BackupNoteDetail[];
+    }
   ): Promise<BackupManifest> {
     if (!notes || notes.length === 0) {
       throw new Error('No notes to backup');
@@ -155,12 +203,26 @@ export class BackupManager {
     await this.ensureBackupFolder();
 
     const backupId = generateBackupId();
+
+    // Generate note details if not provided
+    const noteDetails: BackupNoteDetail[] = options?.noteDetails || notes.map(n => ({
+      path: n.path,
+      title: n.path.split('/').pop()?.replace(/\.md$/, '') || n.path,
+      linksAdded: n.linksAdded || 0,
+      contentLength: n.content.length
+    }));
+
     const manifest: BackupManifest = {
       id: backupId,
       timestamp: Date.now(),
       noteCount: notes.length,
       linksAdded,
-      notePaths: notes.map(n => n.path)
+      notePaths: notes.map(n => n.path),
+      // Enhanced metadata
+      description: options?.description || `Batch auto-link: ${linksAdded} links added to ${notes.length} notes`,
+      noteDetails,
+      triggeredBy: options?.triggeredBy || 'batch-autolink',
+      pluginVersion: '1.0.0'
     };
 
     // Save the backup data
@@ -276,6 +338,7 @@ export class BackupManager {
     backupId: string,
     progressCallback?: (current: number, total: number, path: string) => void
   ): Promise<number> {
+    const startTime = Date.now();
     console.log(`[BackupManager] Starting restore from backup ${backupId}`);
 
     const data = await this.loadBackupData(backupId);
@@ -342,10 +405,25 @@ export class BackupManager {
       await new Promise(resolve => setTimeout(resolve, 0));
     }
 
-    console.log(`[BackupManager] Restored ${restoredCount}/${notes.length} notes`);
+    const duration = Date.now() - startTime;
+
+    console.log(`[BackupManager] Restored ${restoredCount}/${notes.length} notes in ${duration}ms`);
     if (errors.length > 0) {
       console.warn(`[BackupManager] Restore completed with ${errors.length} errors:`, errors);
     }
+
+    // Record the restore in history
+    const restoreRecord: RestoreRecord = {
+      id: `restore-${Date.now()}`,
+      backupId,
+      timestamp: Date.now(),
+      notesRestored: restoredCount,
+      notesAttempted: notes.length,
+      errors: errors.slice(0, 10), // Keep only first 10 errors
+      duration
+    };
+
+    await this.addRestoreRecord(restoreRecord);
 
     return restoredCount;
   }
@@ -386,5 +464,141 @@ export class BackupManager {
 
     await this.saveManifests([]);
     console.log('[BackupManager] Cleared all backups');
+  }
+
+  // ==================== RESTORE HISTORY ====================
+
+  /**
+   * Get the path for restore history file
+   */
+  private getRestoreHistoryPath(): string {
+    return `${this.backupFolderPath}/restore-history.json`;
+  }
+
+  /**
+   * Load restore history from disk
+   */
+  async loadRestoreHistory(): Promise<RestoreRecord[]> {
+    if (this.restoreHistoryLoaded) {
+      return this.restoreHistory;
+    }
+
+    try {
+      const adapter = this.app.vault.adapter;
+      const historyPath = this.getRestoreHistoryPath();
+
+      if (!(await adapter.exists(historyPath))) {
+        this.restoreHistory = [];
+        this.restoreHistoryLoaded = true;
+        return [];
+      }
+
+      const content = await adapter.read(historyPath);
+      const data = JSON.parse(content);
+      this.restoreHistory = data.restores || [];
+      this.restoreHistoryLoaded = true;
+      return this.restoreHistory;
+    } catch (error) {
+      console.error('[BackupManager] Failed to load restore history:', error);
+      this.restoreHistory = [];
+      this.restoreHistoryLoaded = true;
+      return [];
+    }
+  }
+
+  /**
+   * Save restore history to disk
+   */
+  private async saveRestoreHistory(): Promise<void> {
+    const adapter = this.app.vault.adapter;
+    await this.ensureBackupFolder();
+
+    const content = JSON.stringify({ restores: this.restoreHistory }, null, 2);
+    await adapter.write(this.getRestoreHistoryPath(), content);
+  }
+
+  /**
+   * Add a restore record to history
+   */
+  private async addRestoreRecord(record: RestoreRecord): Promise<void> {
+    await this.loadRestoreHistory();
+
+    this.restoreHistory.unshift(record); // Most recent first
+
+    // Keep only last 20 restore records
+    const maxRecords = 20;
+    if (this.restoreHistory.length > maxRecords) {
+      this.restoreHistory = this.restoreHistory.slice(0, maxRecords);
+    }
+
+    await this.saveRestoreHistory();
+  }
+
+  /**
+   * Get restore history
+   */
+  async getRestoreHistory(): Promise<RestoreRecord[]> {
+    return this.loadRestoreHistory();
+  }
+
+  /**
+   * Get the most recent restore record
+   */
+  async getLastRestore(): Promise<RestoreRecord | null> {
+    const history = await this.loadRestoreHistory();
+    return history.length > 0 ? history[0] : null;
+  }
+
+  /**
+   * Clear restore history
+   */
+  async clearRestoreHistory(): Promise<void> {
+    this.restoreHistory = [];
+    this.restoreHistoryLoaded = true;
+    await this.saveRestoreHistory();
+    console.log('[BackupManager] Cleared restore history');
+  }
+
+  // ==================== STATISTICS ====================
+
+  /**
+   * Get comprehensive backup and restore statistics
+   */
+  async getStats(): Promise<BackupStats> {
+    const manifests = await this.loadManifests();
+    const restoreHistory = await this.loadRestoreHistory();
+
+    let totalNotesBackedUp = 0;
+    let totalLinksAdded = 0;
+    let lastBackupTimestamp: number | undefined;
+
+    for (const manifest of manifests) {
+      totalNotesBackedUp += manifest.noteCount;
+      totalLinksAdded += manifest.linksAdded;
+      if (!lastBackupTimestamp || manifest.timestamp > lastBackupTimestamp) {
+        lastBackupTimestamp = manifest.timestamp;
+      }
+    }
+
+    const lastRestore = restoreHistory.length > 0 ? restoreHistory[0] : null;
+
+    return {
+      totalBackups: manifests.length,
+      totalRestores: restoreHistory.length,
+      lastBackupTimestamp,
+      lastRestoreTimestamp: lastRestore?.timestamp,
+      totalNotesBackedUp,
+      totalLinksAdded
+    };
+  }
+
+  /**
+   * Get detailed info about a specific backup including note details
+   */
+  async getBackupDetails(backupId: string): Promise<{
+    manifest: BackupManifest;
+    notes: BackupEntry[];
+  } | null> {
+    return this.loadBackupData(backupId);
   }
 }

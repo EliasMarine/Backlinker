@@ -388,9 +388,11 @@ export class BatchLinker {
       message: 'Creating backup...'
     });
 
+    // Include per-note link counts in backup entries
     const backupEntries: BackupEntry[] = resultsWithChanges.map(r => ({
       path: r.notePath,
-      content: r.originalContent
+      content: r.originalContent,
+      linksAdded: r.replacements.length
     }));
 
     const totalLinksAdded = resultsWithChanges.reduce(
@@ -400,7 +402,11 @@ export class BatchLinker {
 
     const backup = await this.backupManager.createBackup(
       backupEntries,
-      totalLinksAdded
+      totalLinksAdded,
+      {
+        description: `Batch auto-link: ${totalLinksAdded} links added to ${totalNotes} notes`,
+        triggeredBy: 'batch-autolink'
+      }
     );
 
     console.log(`[BatchLinker] Created backup ${backup.id}`);

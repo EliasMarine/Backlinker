@@ -1,6 +1,8 @@
 import { App, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
 import { SmartLinksSettings, EMBEDDING_MODELS, getModelConfig, EmbeddingModelConfig } from './types';
 
+import { BackupManager } from './batch/backup-manager';
+
 // Forward declaration to avoid circular dependency
 type SmartLinksPlugin = Plugin & {
   settings: SmartLinksSettings;
@@ -21,6 +23,7 @@ type SmartLinksPlugin = Plugin & {
   runBatchAutoLink?: () => Promise<void>;
   restoreFromBackup?: () => Promise<void>;
   hasBackupAvailable?: () => Promise<boolean>;
+  getBackupManager?: () => BackupManager | null;
 };
 
 /**
@@ -674,7 +677,7 @@ export class SmartLinksSettingTab extends PluginSettingTab {
   /**
    * Render the featured Auto-Link section at the top of settings
    */
-  private renderAutoLinkSection(containerEl: HTMLElement): void {
+  private async renderAutoLinkSection(containerEl: HTMLElement): Promise<void> {
     // Featured container
     const featureEl = containerEl.createDiv('smart-links-autolink-feature');
 
@@ -802,6 +805,9 @@ export class SmartLinksSettingTab extends PluginSettingTab {
           })
       );
 
+    // Backup & Restore History Section
+    await this.renderBackupHistorySection(settingsEl);
+
     // Separator
     containerEl.createEl('hr', { cls: 'smart-links-separator' });
   }
@@ -859,6 +865,169 @@ export class SmartLinksSettingTab extends PluginSettingTab {
           this.display();
         }
       });
+    }
+  }
+
+  /**
+   * Render backup & restore history section
+   */
+  private async renderBackupHistorySection(containerEl: HTMLElement): Promise<void> {
+    const sectionEl = containerEl.createDiv('smart-links-backup-history-section');
+    sectionEl.createEl('h4', { text: 'Backup & Restore History', cls: 'smart-links-subheading' });
+
+    // Get backup manager stats
+    const backupManager = this.plugin.getBackupManager?.();
+    if (!backupManager) {
+      sectionEl.createEl('p', {
+        text: 'Backup manager not available',
+        cls: 'smart-links-muted'
+      });
+      return;
+    }
+
+    // Stats summary
+    const stats = await backupManager.getStats();
+    const statsEl = sectionEl.createDiv('smart-links-backup-stats');
+
+    const statsGrid = statsEl.createDiv('smart-links-stats-grid');
+
+    // Backups stat
+    const backupStat = statsGrid.createDiv('smart-links-stat-item');
+    backupStat.createEl('span', { text: String(stats.totalBackups), cls: 'smart-links-stat-value' });
+    backupStat.createEl('span', { text: 'Backups', cls: 'smart-links-stat-label' });
+
+    // Restores stat
+    const restoreStat = statsGrid.createDiv('smart-links-stat-item');
+    restoreStat.createEl('span', { text: String(stats.totalRestores), cls: 'smart-links-stat-value' });
+    restoreStat.createEl('span', { text: 'Restores', cls: 'smart-links-stat-label' });
+
+    // Total links stat
+    const linksStat = statsGrid.createDiv('smart-links-stat-item');
+    linksStat.createEl('span', { text: String(stats.totalLinksAdded), cls: 'smart-links-stat-value' });
+    linksStat.createEl('span', { text: 'Links Added', cls: 'smart-links-stat-label' });
+
+    // Last backup info
+    if (stats.lastBackupTimestamp) {
+      const lastBackupEl = sectionEl.createDiv('smart-links-last-activity');
+      const backupDate = new Date(stats.lastBackupTimestamp);
+      lastBackupEl.createEl('span', {
+        text: `Last backup: ${backupDate.toLocaleString()}`,
+        cls: 'smart-links-activity-item'
+      });
+    }
+
+    // Last restore info
+    if (stats.lastRestoreTimestamp) {
+      const lastRestoreEl = sectionEl.createDiv('smart-links-last-activity');
+      const restoreDate = new Date(stats.lastRestoreTimestamp);
+      lastRestoreEl.createEl('span', {
+        text: `Last restore: ${restoreDate.toLocaleString()}`,
+        cls: 'smart-links-activity-item'
+      });
+    }
+
+    // Available backups list
+    const backups = await backupManager.getAvailableBackups();
+    if (backups.length > 0) {
+      const listHeader = sectionEl.createDiv('smart-links-backup-list-header');
+      listHeader.createEl('h5', { text: 'Available Backups' });
+
+      const listEl = sectionEl.createDiv('smart-links-backup-list');
+
+      for (const backup of backups) {
+        if (!backup.hasData) continue;
+
+        const itemEl = listEl.createDiv('smart-links-backup-item');
+        const manifest = backup.manifest;
+
+        // Date and description
+        const infoEl = itemEl.createDiv('smart-links-backup-info');
+        const date = new Date(manifest.timestamp);
+        infoEl.createEl('span', {
+          text: date.toLocaleString(),
+          cls: 'smart-links-backup-date'
+        });
+
+        const detailsEl = infoEl.createDiv('smart-links-backup-details');
+        detailsEl.createEl('span', {
+          text: `${manifest.noteCount} notes • ${manifest.linksAdded} links`,
+          cls: 'smart-links-backup-meta'
+        });
+
+        if (manifest.description) {
+          detailsEl.createEl('span', {
+            text: manifest.description,
+            cls: 'smart-links-backup-desc smart-links-muted'
+          });
+        }
+
+        // Restore button for this backup
+        const actionsEl = itemEl.createDiv('smart-links-backup-actions');
+        const restoreBtn = actionsEl.createEl('button', {
+          text: 'Restore',
+          cls: 'smart-links-backup-restore-btn'
+        });
+
+        restoreBtn.addEventListener('click', async () => {
+          const confirmed = confirm(
+            `Restore ${manifest.noteCount} notes to their state before ${manifest.linksAdded} links were added?`
+          );
+          if (confirmed) {
+            try {
+              await backupManager.restoreBackup(manifest.id);
+              new Notice(`Restored ${manifest.noteCount} notes from backup`);
+              this.display(); // Refresh the view
+            } catch (error) {
+              new Notice(`Restore failed: ${(error as Error).message}`);
+            }
+          }
+        });
+      }
+    } else {
+      sectionEl.createEl('p', {
+        text: 'No backups available yet. Backups are created automatically when you run batch auto-link.',
+        cls: 'smart-links-muted'
+      });
+    }
+
+    // Restore history
+    const restoreHistory = await backupManager.getRestoreHistory();
+    if (restoreHistory.length > 0) {
+      const historyHeader = sectionEl.createDiv('smart-links-restore-history-header');
+      historyHeader.createEl('h5', { text: 'Recent Restores' });
+
+      const historyEl = sectionEl.createDiv('smart-links-restore-history');
+
+      // Show only last 5 restores
+      for (const record of restoreHistory.slice(0, 5)) {
+        const itemEl = historyEl.createDiv('smart-links-restore-item');
+        const date = new Date(record.timestamp);
+
+        itemEl.createEl('span', {
+          text: date.toLocaleString(),
+          cls: 'smart-links-restore-date'
+        });
+
+        const detailsEl = itemEl.createDiv('smart-links-restore-details');
+        detailsEl.createEl('span', {
+          text: `${record.notesRestored}/${record.notesAttempted} notes restored`,
+          cls: 'smart-links-restore-meta'
+        });
+
+        if (record.duration) {
+          detailsEl.createEl('span', {
+            text: `(${(record.duration / 1000).toFixed(1)}s)`,
+            cls: 'smart-links-muted'
+          });
+        }
+
+        if (record.errors.length > 0) {
+          detailsEl.createEl('span', {
+            text: `${record.errors.length} errors`,
+            cls: 'smart-links-restore-errors'
+          });
+        }
+      }
     }
   }
 }
