@@ -3,8 +3,8 @@
 **Last Updated**: December 4, 2025
 **Version**: 1.0.0
 **Build Status**: ✅ Compiles Successfully
-**Test Status**: Phase 3 tested + Batch Auto-Link + Critical semantic bug FIXED
-**Git Branch**: `fix/title-based-fallback-matching`
+**Test Status**: Phase 3 tested + Batch Auto-Link + Multi-Tier Smart Matching IMPLEMENTED
+**Git Branch**: `feature/smart-keyword-matcher`
 
 ---
 
@@ -21,8 +21,9 @@
 - ✅ Cache persistence bugs fixed
 - ✅ Model selection feature added - users can choose between 4 models
 - ✅ Batch Auto-Link feature fully integrated
-- ✅ **NEW**: Clear All Links feature added (remove wiki-links from vault)
-- 🎯 **Next Step**: Test batch auto-link and clear links in Obsidian
+- ✅ Clear All Links feature added (remove wiki-links from vault)
+- ✅ **NEW**: Multi-Tier Smart Matching with NER & Target Specificity
+- 🎯 **Next Step**: Test multi-tier matching in Obsidian
 
 ---
 
@@ -117,12 +118,88 @@
   - **Root Cause**: SmartKeywordMatcher was using SHARED KEYWORDS between notes
     - Example: "Session Layer" text was linked to "Presentation Layer" note because they shared keywords like "Layer"
     - This is semantically WRONG - the text doesn't refer to that note
-  - **Fix**: Complete rewrite to title-only matching:
-    - Strategy 1: Full title match (highest confidence)
-    - Strategy 2: Unique title word match (words in target title NOT in source title)
-    - Added check: Skip if source/target titles share >50% significant words
-  - Links now only created when TARGET note's title appears in source content
-  - File: `src/batch/smart-keyword-matcher.ts`
+  - **Initial Fix**: Title-only matching (too restrictive)
+  - **Final Fix**: Multi-Tier Smart Matching with Target Specificity
+
+---
+
+### ✅ Multi-Tier Smart Matching - IMPLEMENTED (December 4, 2025)
+
+**Problem Solved**: Balance between title-only (too restrictive) and keyword-based (semantically wrong) matching.
+
+**Solution**: 4-tier matching system with Target Specificity Score to ensure keywords are MORE relevant to the target than the source.
+
+| Tier | Match Type | Confidence | Description |
+|------|-----------|------------|-------------|
+| 1 | Title | 0.9x | Full title match (highest quality) |
+| 2 | Entity | 0.8x | Named entities (people, orgs, places) via NER |
+| 3 | Phrase | 0.7x | Rare multi-word phrases (<5% of vault) |
+| 4 | Keyword | 0.5x | Single keywords with context verification |
+
+**Key Innovation - Target Specificity Score**:
+```
+specificity = TF-IDF(keyword, target) / TF-IDF(keyword, source)
+```
+- Only use keyword if it's at least 2x more relevant to target than source
+- Prevents "Layer" linking Session Layer → Presentation Layer
+
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| `src/nlp/nlp-processor.ts` | Added NER using `compromise.js`, POS tagging with `natural.js` |
+| `src/types/index.ts` | Added `ExtractedEntities`, `MatchReason`, `MatchingStrictness` types |
+| `src/indexing/vault-indexer.ts` | Extract entities/nounPhrases during indexing |
+| `src/batch/smart-keyword-matcher.ts` | Complete rewrite with 4-tier matching |
+| `src/batch/inline-replacer.ts` | Pass `matchReason` through to UI |
+| `src/settings.ts` | Added strictness dropdown (strict/balanced/relaxed) |
+| `src/ui/batch-preview-modal.ts` | Added match reason badges |
+| `styles.css` | Badge styling (green/blue/yellow/gray) |
+
+**NER Capabilities Added**:
+- **People**: Names extracted via `doc.people()` (compromise.js)
+- **Organizations**: Companies, institutions via `doc.organizations()`
+- **Places**: Locations via `doc.places()`
+- **Acronyms**: All-caps 2-6 letter words (filtered common ones)
+- **Technical Terms**: Capitalized multi-word phrases (e.g., "Machine Learning")
+- **Noun Phrases**: POS-tagged noun sequences via `natural.js` BrillPOSTagger
+
+**User-Facing Settings**:
+- **Matching Strictness** dropdown:
+  - `strict`: Title matches only, highest quality
+  - `balanced`: Entities + rare phrases (default)
+  - `relaxed`: More connections, may include false positives
+
+**Preview Modal Badges**:
+- 🟢 **Title** (green) - Full title match
+- 🔵 **Entity** (blue) - Named entity match
+- 🟡 **Phrase** (yellow) - Rare phrase match
+- ⚪ **Keyword** (gray) - Single keyword match
+
+**Strictness Presets**:
+```typescript
+STRICTNESS_PRESETS = {
+  strict: {
+    minTargetSpecificity: 3.0,
+    minContextSimilarity: 0.6,
+    maxVaultFrequencyPercent: 3,
+    enableSpecificKeywords: false
+  },
+  balanced: {
+    minTargetSpecificity: 2.0,
+    minContextSimilarity: 0.5,
+    maxVaultFrequencyPercent: 5,
+    enableSpecificKeywords: true
+  },
+  relaxed: {
+    minTargetSpecificity: 1.5,
+    minContextSimilarity: 0.4,
+    maxVaultFrequencyPercent: 10,
+    enableSpecificKeywords: true
+  }
+}
+```
+
+**Confidence Level**: HIGH - Code complete, compiles successfully, needs testing
 
 ---
 

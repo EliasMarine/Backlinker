@@ -2,6 +2,27 @@
  * Type definitions for Smart Links plugin
  */
 
+/**
+ * Named entities extracted from text via NER
+ */
+export interface ExtractedEntities {
+  people: string[];
+  organizations: string[];
+  places: string[];
+  acronyms: string[];
+  technical: string[];  // Technical terms (capitalized multi-word phrases)
+}
+
+/**
+ * Match reason for keyword linking - explains WHY a link was created
+ */
+export type MatchReason = 'title' | 'entity' | 'phrase' | 'keyword';
+
+/**
+ * Strictness level for keyword matching
+ */
+export type MatchingStrictness = 'strict' | 'balanced' | 'relaxed';
+
 /** Core note representation with all indexed data */
 export interface NoteIndex {
   path: string;
@@ -14,6 +35,10 @@ export interface NoteIndex {
   headings: string[];
   tags: string[];
   lastModified: number;
+
+  // NER data (extracted during indexing)
+  entities?: ExtractedEntities;  // Named entities (people, orgs, places, acronyms, technical)
+  nounPhrases?: string[];        // POS-tagged noun phrases
 
   // TF-IDF data (always computed)
   tfidfVector: Map<string, number>;
@@ -89,6 +114,11 @@ export interface SerializedNoteIndex {
   headings: string[];
   tags: string[];
   lastModified: number;
+
+  // NER data
+  entities?: ExtractedEntities;
+  nounPhrases?: string[];
+
   tfidfVector: Record<string, number>;
   wordFrequency: Record<string, number>;
   semanticVersion?: string;
@@ -239,6 +269,7 @@ export interface BatchLinkSettings {
   lastRunTimestamp?: number;      // Timestamp of last batch run
 
   // Smart matching settings
+  matchingStrictness: MatchingStrictness; // How strict to be with link matching (default: 'balanced')
   enableContextVerification: boolean; // Use embeddings to verify link context (default: true)
   maxDocFrequencyPercent: number; // Skip words appearing in >X% of notes (default: 20)
 }
@@ -290,6 +321,7 @@ export const DEFAULT_SETTINGS: SmartLinksSettings = {
     lastRunTimestamp: undefined,
 
     // Smart matching (content-based linking)
+    matchingStrictness: 'balanced',  // Default to balanced mode
     enableContextVerification: true,  // Use embeddings when available
     maxDocFrequencyPercent: 20  // Skip words in >20% of notes
   }

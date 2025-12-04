@@ -13,6 +13,7 @@
 
 import { App, Modal } from 'obsidian';
 import { BatchLinkNoteResult, BatchLinkSummary } from '../batch/batch-linker';
+import { MatchReason } from '../types';
 
 export type PreviewResult = 'apply' | 'cancel';
 
@@ -184,7 +185,7 @@ export class BatchPreviewModal extends Modal {
       for (const replacement of result.replacements) {
         const repEl = replacementsEl.createDiv('smart-links-batch-replacement');
 
-        // Keyword -> Target
+        // Keyword -> Target with match reason badge
         const mappingEl = repEl.createDiv('smart-links-batch-mapping');
         mappingEl.createSpan({
           text: `"${replacement.originalText}"`,
@@ -198,6 +199,12 @@ export class BatchPreviewModal extends Modal {
           text: replacement.replacementText,
           cls: 'smart-links-batch-target'
         });
+
+        // Add match reason badge
+        if (replacement.matchReason) {
+          const badge = this.createMatchReasonBadge(replacement.matchReason);
+          mappingEl.appendChild(badge);
+        }
 
         // Context
         const contextEl = repEl.createDiv('smart-links-batch-context');
@@ -220,6 +227,28 @@ export class BatchPreviewModal extends Modal {
       text: 'This could mean your notes are already well-linked, or the confidence threshold is set too high.',
       cls: 'smart-links-muted'
     });
+  }
+
+  /**
+   * Create a styled badge for the match reason
+   */
+  private createMatchReasonBadge(reason: MatchReason): HTMLElement {
+    const badge = document.createElement('span');
+    badge.addClass('smart-links-match-reason-badge');
+
+    // Map reason to display text and CSS class
+    const config: Record<MatchReason, { text: string; cls: string }> = {
+      'title': { text: 'Title', cls: 'smart-links-badge-title' },
+      'entity': { text: 'Entity', cls: 'smart-links-badge-entity' },
+      'phrase': { text: 'Phrase', cls: 'smart-links-badge-phrase' },
+      'keyword': { text: 'Keyword', cls: 'smart-links-badge-keyword' }
+    };
+
+    const { text, cls } = config[reason] || { text: reason, cls: '' };
+    badge.setText(text);
+    badge.addClass(cls);
+
+    return badge;
   }
 
   private renderButtons(container: HTMLElement): void {

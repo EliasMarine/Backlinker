@@ -1024,3 +1024,46 @@
   color: var(--text-error);
   font-weight: 500;
 }
+
+/* ========================================
+   Match Reason Badges
+   ======================================== */
+
+.smart-links-match-reason-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Title match - highest quality (green) */
+.smart-links-badge-title {
+  background-color: var(--background-modifier-success);
+  color: var(--text-success);
+  border: 1px solid var(--text-success);
+}
+
+/* Entity match - named entities like people/orgs (blue) */
+.smart-links-badge-entity {
+  background-color: rgba(var(--interactive-accent-rgb), 0.15);
+  color: var(--interactive-accent);
+  border: 1px solid var(--interactive-accent);
+}
+
+/* Phrase match - rare multi-word phrases (yellow/amber) */
+.smart-links-badge-phrase {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #d4a000;
+  border: 1px solid #d4a000;
+}
+
+/* Keyword match - single keywords with context verification (gray) */
+.smart-links-badge-keyword {
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border-hover);
+}

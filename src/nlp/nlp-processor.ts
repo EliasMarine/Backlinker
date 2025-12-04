@@ -1,10 +1,46 @@
+// Import NLP libraries
+import nlp from 'compromise';
+// Natural.js doesn't have default export, use require
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const natural = require('natural');
+
+/**
+ * Named entities extracted from text
+ */
+export interface ExtractedEntities {
+  people: string[];
+  organizations: string[];
+  places: string[];
+  acronyms: string[];
+  technical: string[];  // Technical terms (capitalized multi-word phrases)
+}
+
 /**
  * Natural Language Processing for text analysis
+ * Enhanced with Named Entity Recognition (NER) and POS tagging
  */
 export class NLPProcessor {
   private stopwords: Set<string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private posTagger: any;
 
   constructor() {
+    // Initialize POS tagger from natural.js
+    const baseFolder = './node_modules/natural/lib/natural/brill_pos_tagger';
+    const rulesFilename = `${baseFolder}/data/English/tr_from_posjs.txt`;
+    const lexiconFilename = `${baseFolder}/data/English/lexicon_from_posjs.json`;
+    const defaultCategory = 'NN';
+
+    try {
+      const lexicon = new natural.Lexicon(lexiconFilename, defaultCategory);
+      const rules = new natural.RuleSet(rulesFilename);
+      this.posTagger = new natural.BrillPOSTagger(lexicon, rules);
+    } catch (e) {
+      // Fallback: create a simple tagger if files not found (bundled environment)
+      console.warn('[NLPProcessor] POS tagger data not found, using fallback');
+      this.posTagger = null as any;
+    }
+
     // Initialize stopwords set (English by default)
     // The stopword library provides removeStopwords function
     this.stopwords = new Set([
@@ -173,5 +209,197 @@ export class NLPProcessor {
     const union = new Set([...terms1, ...terms2]);
 
     return union.size > 0 ? intersection.size / union.size : 0;
+  }
+
+  /**
+   * Extract named entities from text using compromise.js
+   * Identifies people, organizations, places, acronyms, and technical terms
+   */
+  extractNamedEntities(text: string): ExtractedEntities {
+    const doc = nlp(text);
+
+    // Extract people (names)
+    const people = doc.people().out('array') as string[];
+
+    // Extract organizations
+    const organizations = doc.organizations().out('array') as string[];
+
+    // Extract places/locations
+    const places = doc.places().out('array') as string[];
+
+    // Extract acronyms (all caps words, 2-6 chars)
+    const acronyms: string[] = [];
+    const acronymRegex = /\b[A-Z]{2,6}\b/g;
+    const acronymMatches = text.match(acronymRegex);
+    if (acronymMatches) {
+      // Deduplicate and filter common ones
+      const commonAcronyms = new Set(['THE', 'AND', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU', 'ALL']);
+      acronymMatches.forEach(a => {
+        if (!commonAcronyms.has(a) && !acronyms.includes(a)) {
+          acronyms.push(a);
+        }
+      });
+    }
+
+    // Extract technical terms (capitalized multi-word phrases)
+    // e.g., "Machine Learning", "Natural Language Processing"
+    const technical: string[] = [];
+    const technicalRegex = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b/g;
+    const technicalMatches = text.match(technicalRegex);
+    if (technicalMatches) {
+      technicalMatches.forEach(t => {
+        // Filter out common phrases that aren't technical
+        const lowerT = t.toLowerCase();
+        if (!this.isCommonPhrase(lowerT) && !technical.includes(t)) {
+          technical.push(t);
+        }
+      });
+    }
+
+    return {
+      people: this.deduplicateAndClean(people),
+      organizations: this.deduplicateAndClean(organizations),
+      places: this.deduplicateAndClean(places),
+      acronyms: acronyms.slice(0, 20),  // Limit to top 20
+      technical: technical.slice(0, 30)  // Limit to top 30
+    };
+  }
+
+  /**
+   * Extract noun phrases using POS tagging from natural.js
+   * Finds compound nouns and noun phrases (NN, NNP, NNS, NNPS patterns)
+   */
+  extractNounPhrases(text: string): string[] {
+    if (!this.posTagger) {
+      // Fallback: use simple capitalized phrase extraction
+      return this.extractCapitalizedPhrases(text);
+    }
+
+    try {
+      const tokenizer = new natural.WordTokenizer();
+      const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+      const nounPhrases: Map<string, number> = new Map();
+
+      for (const sentence of sentences) {
+        const tokens = tokenizer.tokenize(sentence);
+        if (!tokens || tokens.length === 0) continue;
+
+        const tagged = this.posTagger.tag(tokens);
+        if (!tagged || !tagged.taggedWords) continue;
+
+        // Find consecutive noun sequences (NN, NNP, NNS, NNPS, JJ+NN patterns)
+        const nounTags = new Set(['NN', 'NNP', 'NNS', 'NNPS']);
+        const adjectiveTags = new Set(['JJ', 'JJR', 'JJS']);
+
+        let currentPhrase: string[] = [];
+
+        for (const wordTag of tagged.taggedWords) {
+          const { token, tag } = wordTag;
+
+          if (nounTags.has(tag) || (adjectiveTags.has(tag) && currentPhrase.length === 0)) {
+            currentPhrase.push(token);
+          } else {
+            if (currentPhrase.length >= 2) {
+              const phrase = currentPhrase.join(' ');
+              if (!this.isStopword(phrase) && phrase.length >= 4) {
+                nounPhrases.set(phrase, (nounPhrases.get(phrase) || 0) + 1);
+              }
+            }
+            currentPhrase = [];
+          }
+        }
+
+        // Handle phrase at end of sentence
+        if (currentPhrase.length >= 2) {
+          const phrase = currentPhrase.join(' ');
+          if (!this.isStopword(phrase) && phrase.length >= 4) {
+            nounPhrases.set(phrase, (nounPhrases.get(phrase) || 0) + 1);
+          }
+        }
+      }
+
+      // Sort by frequency and return top phrases
+      return Array.from(nounPhrases.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 50)
+        .map(([phrase]) => phrase);
+    } catch (e) {
+      console.warn('[NLPProcessor] POS tagging failed, using fallback:', e);
+      return this.extractCapitalizedPhrases(text);
+    }
+  }
+
+  /**
+   * Fallback: Extract capitalized phrases when POS tagger unavailable
+   */
+  private extractCapitalizedPhrases(text: string): string[] {
+    const phrases: string[] = [];
+    // Match 2-4 word capitalized phrases
+    const regex = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\b/g;
+    const matches = text.match(regex);
+
+    if (matches) {
+      const seen = new Set<string>();
+      for (const match of matches) {
+        const lower = match.toLowerCase();
+        if (!seen.has(lower) && !this.isCommonPhrase(lower)) {
+          seen.add(lower);
+          phrases.push(match);
+        }
+      }
+    }
+
+    return phrases.slice(0, 50);
+  }
+
+  /**
+   * Check if a phrase is too common to be meaningful
+   */
+  private isCommonPhrase(phrase: string): boolean {
+    const commonPhrases = new Set([
+      'the first', 'the last', 'the next', 'the same',
+      'this is', 'that is', 'there are', 'there is',
+      'it is', 'they are', 'we are', 'you are',
+      'can be', 'will be', 'has been', 'have been',
+      'for example', 'such as', 'as well', 'in order',
+      'more than', 'less than', 'at least', 'at most'
+    ]);
+    return commonPhrases.has(phrase.toLowerCase());
+  }
+
+  /**
+   * Deduplicate and clean entity list
+   */
+  private deduplicateAndClean(entities: string[]): string[] {
+    const seen = new Set<string>();
+    const result: string[] = [];
+
+    for (const entity of entities) {
+      const cleaned = entity.trim();
+      const lower = cleaned.toLowerCase();
+
+      // Skip if already seen, too short, or is a stopword
+      if (seen.has(lower) || cleaned.length < 2 || this.stopwords.has(lower)) {
+        continue;
+      }
+
+      seen.add(lower);
+      result.push(cleaned);
+    }
+
+    return result.slice(0, 30);  // Limit to 30 per category
+  }
+
+  /**
+   * Get all entities as a flat array (for matching)
+   */
+  getAllEntitiesFlat(entities: ExtractedEntities): string[] {
+    return [
+      ...entities.people,
+      ...entities.organizations,
+      ...entities.places,
+      ...entities.acronyms,
+      ...entities.technical
+    ];
   }
 }

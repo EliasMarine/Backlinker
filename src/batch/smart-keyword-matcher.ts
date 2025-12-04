@@ -19,7 +19,7 @@
  * has already determined the notes are related.
  */
 
-import { NoteIndex, VaultCache } from '../types';
+import { NoteIndex, VaultCache, MatchReason, MatchingStrictness } from '../types';
 import { KeywordToReplace } from './inline-replacer';
 import { EmbeddingEngine } from '../engines/embedding-engine';
 import { EmbeddingCache } from '../cache/embedding-cache';
@@ -36,13 +36,51 @@ export interface SmartMatcherConfig {
 
   // Minimum context similarity score (0-1) for embedding-based verification
   minContextSimilarity: number;
+
+  // NEW: Multi-tier matching configuration
+  enableEntityMatching: boolean;     // Use NER for entity matching (Tier 2)
+  enablePhraseMatching: boolean;     // Use rare phrase matching (Tier 3)
+  enableSpecificKeywords: boolean;   // Use specific keyword matching (Tier 4)
+  minTargetSpecificity: number;      // Min specificity ratio (target TF-IDF / source TF-IDF)
+  maxVaultFrequencyPercent: number;  // Max % of notes for phrase matching
 }
 
 export const DEFAULT_SMART_MATCHER_CONFIG: SmartMatcherConfig = {
   minKeywordLength: 4,
   maxDocumentFrequencyPercent: 20, // Skip words appearing in >20% of notes
   enableContextVerification: true,
-  minContextSimilarity: 0.4
+  minContextSimilarity: 0.5,  // Increased from 0.4 for better accuracy
+
+  // Multi-tier matching defaults
+  enableEntityMatching: true,
+  enablePhraseMatching: true,
+  enableSpecificKeywords: true,
+  minTargetSpecificity: 2.0,      // Keyword must be 2x more relevant to target
+  maxVaultFrequencyPercent: 5     // Phrases must appear in <5% of notes
+};
+
+/**
+ * Strictness presets for easy configuration
+ */
+export const STRICTNESS_PRESETS: Record<MatchingStrictness, Partial<SmartMatcherConfig>> = {
+  strict: {
+    minTargetSpecificity: 3.0,      // Keyword must be 3x more relevant to target
+    minContextSimilarity: 0.6,      // Higher embedding threshold
+    maxVaultFrequencyPercent: 3,    // Only very rare phrases
+    enableSpecificKeywords: false   // Disable Tier 4 entirely
+  },
+  balanced: {
+    minTargetSpecificity: 2.0,
+    minContextSimilarity: 0.5,
+    maxVaultFrequencyPercent: 5,
+    enableSpecificKeywords: true
+  },
+  relaxed: {
+    minTargetSpecificity: 1.5,
+    minContextSimilarity: 0.4,
+    maxVaultFrequencyPercent: 10,
+    enableSpecificKeywords: true
+  }
 };
 
 /**
@@ -217,7 +255,7 @@ export interface SmartMatchResult {
   targetNote: NoteIndex;
   keywords: KeywordToReplace[];
   totalConfidence: number;
-  matchReason: 'shared_phrase' | 'shared_keyword' | 'title_match' | 'context_verified';
+  matchReason: MatchReason;  // 'title' | 'entity' | 'phrase' | 'keyword'
 }
 
 /**
@@ -369,15 +407,75 @@ export class SmartKeywordMatcher {
   }
 
   /**
-   * Find keywords for a single note match
+   * Calculate target specificity score for a keyword
    *
-   * IMPORTANT: Only creates links when the TARGET note's title (or significant
-   * parts of it) appear in the source content. This ensures semantic correctness:
-   * - If "Presentation Layer" appears in a note, link it to "Presentation Layer.md"
-   * - Do NOT link arbitrary shared keywords to unrelated notes
+   * A keyword is good for linking if it's MORE specific to the target note
+   * than to the source note. This prevents linking shared generic terms.
+   *
+   * Formula: targetSpecificity = TF-IDF(keyword, target) / TF-IDF(keyword, source)
+   *
+   * Returns: ratio >= 1 means more specific to target, < 1 means more specific to source
+   */
+  private calculateTargetSpecificity(
+    keyword: string,
+    sourceNote: NoteIndex,
+    targetNote: NoteIndex
+  ): number {
+    const normalizedKeyword = normalize(keyword);
+
+    // Get TF-IDF scores from the notes' vectors
+    const sourceTFIDF = sourceNote.tfidfVector?.get(normalizedKeyword) || 0;
+    const targetTFIDF = targetNote.tfidfVector?.get(normalizedKeyword) || 0;
+
+    // Handle edge cases
+    if (targetTFIDF === 0) return 0;  // Keyword not in target - bad match
+    if (sourceTFIDF === 0) return 10; // Keyword not in source but in target - good match!
+
+    // Calculate specificity ratio
+    const specificity = targetTFIDF / sourceTFIDF;
+
+    return specificity;
+  }
+
+  /**
+   * Check if a keyword is specific enough to the target note
+   */
+  private isKeywordSpecificToTarget(
+    keyword: string,
+    sourceNote: NoteIndex,
+    targetNote: NoteIndex
+  ): boolean {
+    const specificity = this.calculateTargetSpecificity(keyword, sourceNote, targetNote);
+    return specificity >= this.config.minTargetSpecificity;
+  }
+
+  /**
+   * Check if a phrase is rare enough in the vault
+   */
+  private isPhraseRareEnough(phrase: string): boolean {
+    // Check each word in the phrase
+    const words = phrase.toLowerCase().split(/\s+/);
+    let maxFreqPercent = 0;
+
+    for (const word of words) {
+      const docFreq = this.wordDocFrequency.get(word) || 0;
+      const freqPercent = (docFreq / Math.max(this.totalDocuments, 1)) * 100;
+      maxFreqPercent = Math.max(maxFreqPercent, freqPercent);
+    }
+
+    return maxFreqPercent <= this.config.maxVaultFrequencyPercent;
+  }
+
+  /**
+   * Find keywords for a single note match using MULTI-TIER MATCHING
+   *
+   * Tier 1: Title Match (0.9x confidence) - highest quality
+   * Tier 2: Entity Match (0.8x confidence) - named entities from NER
+   * Tier 3: Rare Phrase Match (0.7x confidence) - rare shared phrases
+   * Tier 4: Specific Keyword Match (0.5x confidence) - with target specificity check
    *
    * The hybrid scorer has already determined these notes are related.
-   * This method finds WHERE in the source to place the link.
+   * This method finds WHERE in the source to place the link and WHAT text to use.
    */
   async findKeywordsForNote(
     hybridResult: HybridResultForSmartMatching,
@@ -393,119 +491,181 @@ export class SmartKeywordMatcher {
     const targetTitle = getNoteTitleFromPath(targetNote.path);
     const sourceContent = sourceNote.content || '';
     const sourceTitle = getNoteTitleFromPath(sourceNote.path);
-
-    const results: KeywordToReplace[] = [];
-
-    // =========================================================================
-    // TITLE-BASED MATCHING ONLY
-    // =========================================================================
-    // We ONLY create links when the target note's title appears in the source.
-    // This ensures semantic correctness - we're linking text that actually
-    // refers to the target note, not arbitrary shared keywords.
-    //
-    // IMPORTANT: We do NOT link shared keywords between notes. For example:
-    // - Source: "Session Layer.md" - talks about "Session Layer"
-    // - Target: "Presentation Layer.md" - talks about "Presentation Layer"
-    // - Shared keywords: "Layer", "Session", etc.
-    // - WRONG: Link "Session Layer" text to "Presentation Layer" note
-    // - RIGHT: Only link "Presentation Layer" text (if it appears) to that note
-    // =========================================================================
-
-    // CRITICAL: Skip if the target title contains the source title or vice versa
-    // This prevents linking "Session Layer" to "Presentation Layer" when both
-    // share common words. We only want to link exact title references.
     const sourceTitleLower = sourceTitle.toLowerCase();
     const targetTitleLower = targetTitle.toLowerCase();
 
-    // Don't match if the titles are too similar (share significant words)
+    const results: KeywordToReplace[] = [];
+
+    // Title similarity guard - skip if titles are too similar
     const sourceWords = new Set(sourceTitleLower.split(/[\s\-_()]+/).filter(w => w.length > 3));
     const targetWords = new Set(targetTitleLower.split(/[\s\-_()]+/).filter(w => w.length > 3));
     const sharedWords = [...sourceWords].filter(w => targetWords.has(w));
-
-    // If more than 50% of significant words are shared, skip (too similar, would create confusing links)
     const minWords = Math.min(sourceWords.size, targetWords.size);
+
     if (minWords > 0 && sharedWords.length / minWords > 0.5) {
       console.log(
-        `[SmartKeywordMatcher] Skipping "${targetTitle}" - too similar to source "${sourceTitle}" (shared: ${sharedWords.join(', ')})`
+        `[SmartKeywordMatcher] Skipping "${targetTitle}" - too similar to source "${sourceTitle}"`
       );
       return [];
     }
 
-    // Strategy 1: FULL TITLE MATCH (highest confidence)
+    // =========================================================================
+    // TIER 1: TITLE MATCHING (Confidence: 0.9x)
+    // =========================================================================
     const titleVariants = getTitleVariants(targetTitle);
 
     for (const variant of titleVariants) {
-      // Try full title match
       if (textExistsInContent(variant, sourceContent)) {
-        // Multi-word titles are generally safe even if individual words are common
         const confidence = hybridResult.finalScore * 0.9;
-
         results.push({
           keyword: variant,
           targetTitle,
           targetPath: targetNote.path,
-          confidence
+          confidence,
+          matchReason: 'title'
         });
-
-        console.log(
-          `[SmartKeywordMatcher] Matched full title "${variant}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
-        );
-        break; // Found a title match, no need to continue
+        console.log(`[SmartKeywordMatcher] Tier 1 - Title match "${variant}" -> "${targetTitle}"`);
+        return results; // Title match is definitive, no need for other tiers
       }
     }
 
-    // Strategy 2: PARTIAL TITLE MATCH (lower confidence)
-    // Only if no full title match was found
-    // Try to find significant unique words from the target title
-    if (results.length === 0) {
-      // Get words that are in target title but NOT in source title
-      // This prevents linking shared words like "Layer"
-      const uniqueTargetWords = targetTitle
-        .split(/[\s\-_()]+/)
-        .filter(word =>
-          word.length >= 4 &&
-          !this.isDomainStopword(word) &&
-          !sourceTitleLower.includes(word.toLowerCase())
-        );
+    // =========================================================================
+    // TIER 2: ENTITY MATCHING (Confidence: 0.8x)
+    // =========================================================================
+    if (this.config.enableEntityMatching && targetNote.entities) {
+      const targetEntities = [
+        ...(targetNote.entities.people || []),
+        ...(targetNote.entities.organizations || []),
+        ...(targetNote.entities.places || []),
+        ...(targetNote.entities.acronyms || []),
+        ...(targetNote.entities.technical || [])
+      ];
 
-      for (const word of uniqueTargetWords) {
-        if (textExistsInContent(word, sourceContent)) {
-          if (this.isValidKeyword(word)) {
-            let confidence = hybridResult.finalScore * 0.6;
+      for (const entity of targetEntities) {
+        // Skip if entity is part of source title (would be confusing)
+        if (sourceTitleLower.includes(entity.toLowerCase())) {
+          continue;
+        }
 
-            // Context verification is especially important for single words
-            if (
-              this.config.enableContextVerification &&
-              this.embeddingEngine?.isModelLoaded()
-            ) {
+        if (textExistsInContent(entity, sourceContent)) {
+          // Check target specificity for entities
+          if (this.isKeywordSpecificToTarget(entity, sourceNote, targetNote)) {
+            const confidence = hybridResult.finalScore * 0.8;
+            results.push({
+              keyword: entity,
+              targetTitle,
+              targetPath: targetNote.path,
+              confidence,
+              matchReason: 'entity'
+            });
+            console.log(`[SmartKeywordMatcher] Tier 2 - Entity match "${entity}" -> "${targetTitle}"`);
+            break; // One entity match is enough
+          }
+        }
+      }
+    }
+
+    // =========================================================================
+    // TIER 3: RARE PHRASE MATCHING (Confidence: 0.7x)
+    // =========================================================================
+    if (results.length === 0 && this.config.enablePhraseMatching) {
+      // Get shared phrases between source and target
+      const sourcePhrases = new Set(sourceNote.phrases || []);
+      const targetPhrases = targetNote.phrases || [];
+
+      for (const phrase of targetPhrases) {
+        // Check if phrase exists in source
+        if (sourcePhrases.has(phrase) || textExistsInContent(phrase, sourceContent)) {
+          // Check if phrase is rare enough
+          if (this.isPhraseRareEnough(phrase)) {
+            // Skip if phrase is part of source title
+            if (sourceTitleLower.includes(phrase.toLowerCase())) {
+              continue;
+            }
+
+            let confidence = hybridResult.finalScore * 0.7;
+
+            // Context verification for phrases
+            if (this.config.enableContextVerification && this.embeddingEngine?.isModelLoaded()) {
               const contextSimilarity = await this.verifyContextWithEmbeddings(
                 sourceContent,
-                word,
+                phrase,
                 targetNote.path
               );
 
               if (contextSimilarity < this.config.minContextSimilarity) {
-                console.log(
-                  `[SmartKeywordMatcher] Skipping title word "${word}" -> "${targetTitle}" - context similarity too low (${contextSimilarity.toFixed(2)})`
-                );
                 continue;
               }
-
-              confidence = confidence * (0.5 + contextSimilarity * 0.5);
+              confidence = confidence * (0.6 + contextSimilarity * 0.4);
             }
 
             results.push({
-              keyword: word,
+              keyword: phrase,
               targetTitle,
               targetPath: targetNote.path,
-              confidence
+              confidence,
+              matchReason: 'phrase'
             });
-
-            console.log(
-              `[SmartKeywordMatcher] Matched unique title word "${word}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
-            );
-            break; // One match is enough
+            console.log(`[SmartKeywordMatcher] Tier 3 - Phrase match "${phrase}" -> "${targetTitle}"`);
+            break; // One phrase match is enough
           }
+        }
+      }
+    }
+
+    // =========================================================================
+    // TIER 4: SPECIFIC KEYWORD MATCHING (Confidence: 0.5x)
+    // =========================================================================
+    if (results.length === 0 && this.config.enableSpecificKeywords) {
+      // Use target note's keywords that are specific to it
+      const targetKeywords = targetNote.keywords || [];
+
+      for (const keyword of targetKeywords) {
+        // Skip domain stopwords
+        if (this.isDomainStopword(keyword)) {
+          continue;
+        }
+
+        // Skip if keyword is in source title
+        if (sourceTitleLower.includes(keyword.toLowerCase())) {
+          continue;
+        }
+
+        // Check if keyword exists in source content
+        if (!textExistsInContent(keyword, sourceContent)) {
+          continue;
+        }
+
+        // KEY CHECK: Target specificity
+        const specificity = this.calculateTargetSpecificity(keyword, sourceNote, targetNote);
+        if (specificity < this.config.minTargetSpecificity) {
+          continue;
+        }
+
+        // Context verification is REQUIRED for Tier 4
+        if (this.config.enableContextVerification && this.embeddingEngine?.isModelLoaded()) {
+          const contextSimilarity = await this.verifyContextWithEmbeddings(
+            sourceContent,
+            keyword,
+            targetNote.path
+          );
+
+          if (contextSimilarity < this.config.minContextSimilarity) {
+            continue;
+          }
+
+          const confidence = hybridResult.finalScore * 0.5 * (0.5 + contextSimilarity * 0.5);
+          results.push({
+            keyword,
+            targetTitle,
+            targetPath: targetNote.path,
+            confidence,
+            matchReason: 'keyword'
+          });
+          console.log(
+            `[SmartKeywordMatcher] Tier 4 - Keyword match "${keyword}" -> "${targetTitle}" (specificity: ${specificity.toFixed(2)})`
+          );
+          break; // One keyword match is enough
         }
       }
     }
@@ -550,17 +710,8 @@ export class SmartKeywordMatcher {
       const validKeywords = keywords.filter(k => k.confidence >= minConfidence);
 
       if (validKeywords.length > 0) {
-        // All matches are now title-based (full or partial)
-        const firstKeyword = validKeywords[0].keyword;
-        const targetTitle = getNoteTitleFromPath(result.note.path);
-        const titleVariants = getTitleVariants(targetTitle);
-
-        // Determine if it's a full title match or partial
-        const isFullTitleMatch = titleVariants.some(
-          v => normalize(v) === normalize(firstKeyword)
-        );
-        const matchReason: 'shared_phrase' | 'shared_keyword' | 'title_match' | 'context_verified' =
-          isFullTitleMatch ? 'title_match' : 'context_verified';
+        // Get the match reason from the first (highest confidence) keyword
+        const matchReason: MatchReason = validKeywords[0].matchReason || 'title';
 
         results.push({
           targetNote: result.note,

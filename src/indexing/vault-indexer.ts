@@ -153,6 +153,10 @@ export class VaultIndexer {
         const phrases = this.nlpProcessor.extractPhrases(parsed.cleanText);
         const wordFrequency = this.nlpProcessor.getWordFrequency(parsed.cleanText);
 
+        // Extract named entities and noun phrases (NER)
+        const entities = this.nlpProcessor.extractNamedEntities(content);
+        const nounPhrases = this.nlpProcessor.extractNounPhrases(content);
+
         // Create note index
         const noteIndex: NoteIndex = {
           path: file.path,
@@ -165,6 +169,8 @@ export class VaultIndexer {
           headings: parsed.headings,
           tags: parsed.tags,
           lastModified: file.stat.mtime,
+          entities: entities,      // Named entities (people, orgs, places, etc.)
+          nounPhrases: nounPhrases, // POS-tagged noun phrases
           tfidfVector: new Map(), // Will be calculated later
           wordFrequency: wordFrequency
         };
@@ -226,6 +232,10 @@ export class VaultIndexer {
       const phrases = this.nlpProcessor.extractPhrases(parsed.cleanText);
       const wordFrequency = this.nlpProcessor.getWordFrequency(parsed.cleanText);
 
+      // Extract named entities and noun phrases (NER)
+      const entities = this.nlpProcessor.extractNamedEntities(content);
+      const nounPhrases = this.nlpProcessor.extractNounPhrases(content);
+
       // Create/update note index
       const noteIndex: NoteIndex = {
         path: file.path,
@@ -238,6 +248,8 @@ export class VaultIndexer {
         headings: parsed.headings,
         tags: parsed.tags,
         lastModified: file.stat.mtime,
+        entities: entities,      // Named entities (people, orgs, places, etc.)
+        nounPhrases: nounPhrases, // POS-tagged noun phrases
         tfidfVector: new Map(), // Will be calculated below
         wordFrequency: wordFrequency
       };

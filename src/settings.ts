@@ -1,5 +1,5 @@
 import { App, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
-import { SmartLinksSettings, EMBEDDING_MODELS, getModelConfig, EmbeddingModelConfig } from './types';
+import { SmartLinksSettings, EMBEDDING_MODELS, getModelConfig, EmbeddingModelConfig, MatchingStrictness } from './types';
 
 import { BackupManager } from './batch/backup-manager';
 import { LinkCleanSummary } from './batch/link-cleaner';
@@ -768,6 +768,22 @@ export class SmartLinksSettingTab extends PluginSettingTab {
 
     // Smart Matching Section
     settingsEl.createEl('h4', { text: 'Smart Matching', cls: 'smart-links-subheading' });
+
+    // Matching strictness dropdown
+    new Setting(settingsEl)
+      .setName('Matching strictness')
+      .setDesc('Controls how aggressively keywords are matched. Strict = fewer but higher quality links. Relaxed = more links but may include some false positives.')
+      .addDropdown(dropdown =>
+        dropdown
+          .addOption('strict', 'Strict (title matches only, highest quality)')
+          .addOption('balanced', 'Balanced (entities + rare phrases)')
+          .addOption('relaxed', 'Relaxed (more connections, may include false positives)')
+          .setValue(this.plugin.settings.batchLinkSettings.matchingStrictness || 'balanced')
+          .onChange(async (value: 'strict' | 'balanced' | 'relaxed') => {
+            this.plugin.settings.batchLinkSettings.matchingStrictness = value;
+            await this.plugin.saveSettings();
+          })
+      );
 
     // Context verification
     new Setting(settingsEl)

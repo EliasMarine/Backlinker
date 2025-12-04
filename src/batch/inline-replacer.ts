@@ -5,6 +5,8 @@
  * avoiding protected zones like code blocks, frontmatter, and existing links.
  */
 
+import { MatchReason } from '../types';
+
 export interface SkippedRange {
   start: number;
   end: number;
@@ -21,6 +23,7 @@ export interface Replacement {
   replacementText: string;
   contextBefore: string;
   contextAfter: string;
+  matchReason?: MatchReason;  // Why this keyword was matched (title, entity, phrase, keyword)
 }
 
 export interface ReplacementResult {
@@ -35,6 +38,7 @@ export interface KeywordToReplace {
   targetTitle: string;
   targetPath: string;
   confidence: number;
+  matchReason?: MatchReason;  // Why this keyword was matched (title, entity, phrase, keyword)
 }
 
 /**
@@ -265,7 +269,8 @@ export function findReplacements(
         originalText: matchedText,
         replacementText: createWikilink(kw.targetTitle, matchedText),
         contextBefore: before,
-        contextAfter: after
+        contextAfter: after,
+        matchReason: kw.matchReason
       });
 
       // Only replace first occurrence per keyword
