@@ -109,6 +109,7 @@ export class CacheManager {
         content: note.content,
         cleanContent: note.cleanContent,
         keywords: note.keywords,
+        phrases: note.phrases || [],  // multi-word phrases for content-based linking
         existingLinks: note.existingLinks,
         headings: note.headings,
         tags: note.tags,
@@ -142,6 +143,7 @@ export class CacheManager {
         content: serializedNote.content,
         cleanContent: serializedNote.cleanContent,
         keywords: serializedNote.keywords,
+        phrases: serializedNote.phrases || [],  // multi-word phrases (may not exist in old caches)
         existingLinks: serializedNote.existingLinks,
         headings: serializedNote.headings,
         tags: serializedNote.tags,

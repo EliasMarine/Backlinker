@@ -3,7 +3,8 @@ import { NoteIndex, VaultCache } from '../types';
 export interface TFIDFResult {
   note: NoteIndex;
   score: number;
-  matchedKeywords: string[];
+  matchedKeywords: string[];    // single-word keyword matches
+  matchedPhrases: string[];     // multi-word phrase matches (for content-based linking)
 }
 
 /**
@@ -124,11 +125,12 @@ export class TFIDFEngine {
 
       // Only include if above threshold
       if (score >= threshold) {
-        const matchedKeywords = this.findMatchedKeywords(sourceNote, candidateNote);
+        const { matchedKeywords, matchedPhrases } = this.findMatchedTerms(sourceNote, candidateNote);
         results.push({
           note: candidateNote,
           score,
-          matchedKeywords
+          matchedKeywords,
+          matchedPhrases
         });
       }
     }
@@ -152,20 +154,34 @@ export class TFIDFEngine {
   }
 
   /**
-   * Find keywords that appear in both notes
+   * Find keywords and phrases that appear in both notes
+   * Returns both single-word keywords and multi-word phrases
    */
-  private findMatchedKeywords(note1: NoteIndex, note2: NoteIndex): string[] {
+  private findMatchedTerms(note1: NoteIndex, note2: NoteIndex): {
+    matchedKeywords: string[];
+    matchedPhrases: string[];
+  } {
+    // Match single keywords
     const keywords1 = new Set(note1.keywords);
     const keywords2 = new Set(note2.keywords);
-
-    const matched: string[] = [];
+    const matchedKeywords: string[] = [];
     for (const keyword of keywords1) {
       if (keywords2.has(keyword)) {
-        matched.push(keyword);
+        matchedKeywords.push(keyword);
       }
     }
 
-    return matched;
+    // Match multi-word phrases (more meaningful for content-based linking)
+    const phrases1 = new Set(note1.phrases || []);
+    const phrases2 = new Set(note2.phrases || []);
+    const matchedPhrases: string[] = [];
+    for (const phrase of phrases1) {
+      if (phrases2.has(phrase)) {
+        matchedPhrases.push(phrase);
+      }
+    }
+
+    return { matchedKeywords, matchedPhrases };
   }
 
   /**

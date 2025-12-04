@@ -14,9 +14,9 @@
  * 4. Optional embedding-based context verification
  */
 
-import { App, TFile } from 'obsidian';
+import { App, TFile, TAbstractFile } from 'obsidian';
 import { NoteIndex, VaultCache, SmartLinksSettings } from '../types';
-import { HybridScorer } from '../engines/hybrid-scorer';
+import { HybridScorer, HybridResult } from '../engines/hybrid-scorer';
 import { EmbeddingEngine } from '../engines/embedding-engine';
 import { EmbeddingCache } from '../cache/embedding-cache';
 import {
@@ -112,8 +112,7 @@ export class BatchLinker {
       maxDocumentFrequencyPercent: batchSettings.maxDocFrequencyPercent ?? 20,
       enableContextVerification: (batchSettings.enableContextVerification ?? true) &&
                                   (this.embeddingEngine?.isModelLoaded() ?? false),
-      minContextSimilarity: 0.4,
-      exactTitleMatchOnly: batchSettings.exactTitleMatchOnly ?? true
+      minContextSimilarity: 0.4
     };
 
     this.smartMatcher = new SmartKeywordMatcher(
@@ -125,7 +124,6 @@ export class BatchLinker {
 
     console.log('[BatchLinker] Smart matcher initialized:', {
       contextVerification: smartMatcherConfig.enableContextVerification,
-      exactTitleMatchOnly: smartMatcherConfig.exactTitleMatchOnly,
       maxDocFrequencyPercent: smartMatcherConfig.maxDocumentFrequencyPercent
     });
   }
@@ -162,6 +160,36 @@ export class BatchLinker {
    */
   getBackupManager(): BackupManager {
     return this.backupManager;
+  }
+
+  /**
+   * Check if a file exists in the vault
+   */
+  private fileExistsInVault(path: string): boolean {
+    const file = this.app.vault.getAbstractFileByPath(path);
+    return file instanceof TFile;
+  }
+
+  /**
+   * Filter hybrid results to only include notes that actually exist in the vault.
+   * This prevents creating links to stale cached notes that were deleted.
+   */
+  private filterExistingNotes(hybridResults: HybridResult[]): HybridResult[] {
+    const existingResults = hybridResults.filter(result => {
+      const exists = this.fileExistsInVault(result.note.path);
+      if (!exists) {
+        console.log(`[BatchLinker] Skipping stale cached note: ${result.note.path}`);
+      }
+      return exists;
+    });
+
+    if (existingResults.length < hybridResults.length) {
+      console.log(
+        `[BatchLinker] Filtered out ${hybridResults.length - existingResults.length} stale cached notes`
+      );
+    }
+
+    return existingResults;
   }
 
   /**
@@ -202,8 +230,17 @@ export class BatchLinker {
         return result;
       }
 
+      // CRITICAL: Filter out stale cached notes that no longer exist in vault
+      // This prevents creating broken links to deleted notes
+      const validResults = this.filterExistingNotes(hybridResults);
+
+      if (validResults.length === 0) {
+        result.modifiedContent = content;
+        return result;
+      }
+
       // Convert to the format expected by smart keyword matcher
-      const resultsForMatching: HybridResultForSmartMatching[] = hybridResults.map(r => ({
+      const resultsForMatching: HybridResultForSmartMatching[] = validResults.map(r => ({
         note: r.note,
         tfidfScore: r.tfidfScore,
         semanticScore: r.semanticScore,

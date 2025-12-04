@@ -1,0 +1,961 @@
+{
+  "version": "1.0.0",
+  "modelName": "Xenova/all-MiniLM-L12-v2",
+  "embeddingDimension": 384,
+  "totalEmbeddings": 136,
+  "lastSaved": 1764732907091,
+  "entries": [
+    {
+      "notePath": "obsidian.main.vault/⚡️Kanban Boards/TO DOs.md",
+      "contentHash": "76e2247c",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 0
+    },
+    {
+      "notePath": "obsidian.main.vault/Whiskey Reviews/Review 5 - Russel's Reserve 13 Year - Spring 2025.md",
+      "contentHash": "-4de56976",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 1536
+    },
+    {
+      "notePath": "obsidian.main.vault/Whiskey Reviews/Review 4 - Bomberger's PFG 2024 Release.md",
+      "contentHash": "-2db15d14",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 3072
+    },
+    {
+      "notePath": "obsidian.main.vault/Whiskey Reviews/Review 3 - Jack Daniel's Heritage Toasted Barrel.md",
+      "contentHash": "2c180cab",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 4608
+    },
+    {
+      "notePath": "obsidian.main.vault/Whiskey Reviews/Review 2 - Hardin's Creek Jacob's Well 184 & 211 month.md",
+      "contentHash": "-330cb125",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 6144
+    },
+    {
+      "notePath": "obsidian.main.vault/Whiskey Reviews/Review 1 - Hardin's Creek Jacob's Well 184 month.md",
+      "contentHash": "-3551017d",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 7680
+    },
+    {
+      "notePath": "obsidian.main.vault/Ubuntu/Updating Grafana Docker.md",
+      "contentHash": "3bf05023",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 9216
+    },
+    {
+      "notePath": "obsidian.main.vault/Ubuntu/Ubuntu Repositories.md",
+      "contentHash": "2a20247",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 10752
+    },
+    {
+      "notePath": "obsidian.main.vault/Templates/Reviews.md",
+      "contentHash": "7501f9c4",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 12288
+    },
+    {
+      "notePath": "obsidian.main.vault/Somacis Screening Call/Somacis.md",
+      "contentHash": "-4813ccfc",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 13824
+    },
+    {
+      "notePath": "obsidian.main.vault/Resume Write-ups/drafts.md",
+      "contentHash": "-188e2c49",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 15360
+    },
+    {
+      "notePath": "obsidian.main.vault/Reddit vault export.md",
+      "contentHash": "17705a8",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 16896
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/Tests/Test 1.md",
+      "contentHash": "f494879",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 18432
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/Tests/OFFSEC Study Guide - Google AI Studio.md",
+      "contentHash": "-6dcf4649",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 19968
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/Web App Attacks.md",
+      "contentHash": "-5faa2beb",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 21504
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/SAST vs DAST vs Others.md",
+      "contentHash": "-4663f8e8",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 23040
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/PayPal - Offensive Sec Eng. Prep - Network Infra & Web App.md",
+      "contentHash": "-52e2a763",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 24576
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/OSI - TCPIP.md",
+      "contentHash": "-48267511",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 26112
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/Network Segmentation Techniques.md",
+      "contentHash": "37333562",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 27648
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/Advanced Network Tiering Model.md",
+      "contentHash": "5b3cbae5",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 29184
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/00 - PayPal Network Infra.md",
+      "contentHash": "24fd76a6",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 30720
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Red Teaming VS. PenTesting.md",
+      "contentHash": "38c8b536",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 32256
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Red - Purple Team Threat Emulation.md",
+      "contentHash": "3e8387d1",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 33792
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/ROE's.md",
+      "contentHash": "71a48e5e",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 35328
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/QUESTIONS.md",
+      "contentHash": "-e5c11",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 36864
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Cyber Kill Chain.md",
+      "contentHash": "72aaf95e",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 38400
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/APT 37 - Hack Analysis.md",
+      "contentHash": "-49e24af2",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 39936
+    },
+    {
+      "notePath": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/00 - Threat Emulation Defined.md",
+      "contentHash": "-55256e8e",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 41472
+    },
+    {
+      "notePath": "obsidian.main.vault/OSI Model/Transport Layer (Layer 4).md",
+      "contentHash": "-4fbaec86",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 43008
+    },
+    {
+      "notePath": "obsidian.main.vault/OSI Model/Session Layer (Layer 5).md",
+      "contentHash": "-3cca2fcc",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 44544
+    },
+    {
+      "notePath": "obsidian.main.vault/OSI Model/Presentation Layer (Layer 6).md",
+      "contentHash": "-5a0cf98b",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 46080
+    },
+    {
+      "notePath": "obsidian.main.vault/OSI Model/OSI Model.md",
+      "contentHash": "-5b9cd8f1",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 47616
+    },
+    {
+      "notePath": "obsidian.main.vault/OSI Model/Network Layer (Layer 3).md",
+      "contentHash": "-2e783e6e",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 49152
+    },
+    {
+      "notePath": "obsidian.main.vault/OSI Model/Application Layer (Layer 7).md",
+      "contentHash": "19408185",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 50688
+    },
+    {
+      "notePath": "obsidian.main.vault/Notes/USMC Responsibilities.md",
+      "contentHash": "75fc6d72",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 52224
+    },
+    {
+      "notePath": "obsidian.main.vault/Notes/Test.md",
+      "contentHash": "205a886b",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 53760
+    },
+    {
+      "notePath": "obsidian.main.vault/Notes/Tell Me About Yourself.md",
+      "contentHash": "6c2e47a6",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 55296
+    },
+    {
+      "notePath": "obsidian.main.vault/Notes/Job Descriptions.md",
+      "contentHash": "-6a2de941",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 56832
+    },
+    {
+      "notePath": "obsidian.main.vault/Notes/Intro Cybersecurity.md",
+      "contentHash": "-4ad0dfae",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 58368
+    },
+    {
+      "notePath": "obsidian.main.vault/Malware Analysis/Setting up environment for FlareVM.md",
+      "contentHash": "4caa9247",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 59904
+    },
+    {
+      "notePath": "obsidian.main.vault/Malware Analysis/Malware Samples.md",
+      "contentHash": "1b8af5c2",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 61440
+    },
+    {
+      "notePath": "obsidian.main.vault/Malware Analysis/FLARE-VM & REMnux Tool List.md",
+      "contentHash": "46721ef1",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 62976
+    },
+    {
+      "notePath": "obsidian.main.vault/Malware Analysis/Course Notes - Guided Intro.md",
+      "contentHash": "7846179e",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 64512
+    },
+    {
+      "notePath": "obsidian.main.vault/Malware Analysis/Cloud-Based Setup.md",
+      "contentHash": "4bc3f1fc",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 66048
+    },
+    {
+      "notePath": "obsidian.main.vault/Malware Analysis/Analysis - RAT.cmdshell.exe - Malware - Investigation.md",
+      "contentHash": "7c5485c6",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 67584
+    },
+    {
+      "notePath": "obsidian.main.vault/Malware Analysis/Analysis - RAT.Unkown2.exe.md",
+      "contentHash": "4ae0e32",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 69120
+    },
+    {
+      "notePath": "obsidian.main.vault/MOCs/People MOC.md",
+      "contentHash": "45d929df",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 70656
+    },
+    {
+      "notePath": "obsidian.main.vault/Journal/2024-04-25.md",
+      "contentHash": "-57f06ccf",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 72192
+    },
+    {
+      "notePath": "obsidian.main.vault/Journal/2024-04-24.md",
+      "contentHash": "7f0171f0",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 73728
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Questions.md",
+      "contentHash": "203fbfae",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 75264
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/NCL Screenshots.md",
+      "contentHash": "7afcae3f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 76800
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/MDR Daily Role.md",
+      "contentHash": "-5058eb25",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 78336
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Scripts.md",
+      "contentHash": "-51cbd88d",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 79872
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Persistence.md",
+      "contentHash": "-871e068",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 81408
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Mitigation and Discovery.md",
+      "contentHash": "3b0eabb",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 82944
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/MITRE ATT&CK.md",
+      "contentHash": "-4ea27e42",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 84480
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/LSASS.md",
+      "contentHash": "1ee31ae6",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 86016
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts.md",
+      "contentHash": "-7211182f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 87552
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts 1.md",
+      "contentHash": "-7211182f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 89088
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's.md",
+      "contentHash": "22c8908c",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 90624
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's 1.md",
+      "contentHash": "22c8908c",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 92160
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Encryption.md",
+      "contentHash": "-736b9fee",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 93696
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain.md",
+      "contentHash": "1da92975",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 95232
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain 1.md",
+      "contentHash": "-2194b2ef",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 96768
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Attacker VS. Defender Mindset.md",
+      "contentHash": "-14e0e62e",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 98304
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow.md",
+      "contentHash": "-6d64e12f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 99840
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow 1.md",
+      "contentHash": "-6d64e12f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 101376
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins.md",
+      "contentHash": "-bf454cb",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 102912
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins 1.md",
+      "contentHash": "-bf454cb",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 104448
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/00 - Screening Call Prep.md",
+      "contentHash": "68d49c3f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 105984
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker.md",
+      "contentHash": "-5a81a0e9",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 107520
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker 1.md",
+      "contentHash": "-5a81a0e9",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 109056
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/$MFT.md",
+      "contentHash": "-4589562f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 110592
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Daily Walk-Through/High-Level.md",
+      "contentHash": "-6e3ea81e",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 112128
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Daily Walk-Through/Daily Walk-Through - Low Level.md",
+      "contentHash": "-4f697984",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 113664
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Why work at Rapid 7?.md",
+      "contentHash": "483f417d",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 115200
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Why ME for this job?.md",
+      "contentHash": "30ca47ba",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 116736
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Under Pressure - change to be marines focused.md",
+      "contentHash": "4304f412",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 118272
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Teamwork.md",
+      "contentHash": "38ccd265",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 119808
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Strength - Weakness.md",
+      "contentHash": "-7c2bfe40",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 121344
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Staying Current.md",
+      "contentHash": "18757efe",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 122880
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Repetitive Tasks - Motivation.md",
+      "contentHash": "-c05e192",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 124416
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Ownership.md",
+      "contentHash": "4afc51e7",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907090,
+      "offset": 125952
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Leadership - Helping someone.md",
+      "contentHash": "-6d849c4a",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 127488
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Fixed Problem.md",
+      "contentHash": "4afc51e7",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 129024
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Failure 1 ⭐️.md",
+      "contentHash": "cc7167a",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 130560
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Disagreement.md",
+      "contentHash": "7ba44e15",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 132096
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Difficult Person.md",
+      "contentHash": "2ff68de0",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 133632
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Core Values.md",
+      "contentHash": "-4411d232",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 135168
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Constructive Feedback.md",
+      "contentHash": "-43d6f746",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 136704
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Conflict Resolution.md",
+      "contentHash": "32a09a3",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 138240
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Communication.md",
+      "contentHash": "73c9c889",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 139776
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Communication Style.md",
+      "contentHash": "-34132333",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 141312
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Burn Out - Repetitive Work.md",
+      "contentHash": "54a7fcd5",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 142848
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/Rapid7/00 - Screening Call Prep 1.md",
+      "contentHash": "68d49c3f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 144384
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/SSP - System Security Plan.md",
+      "contentHash": "-2ee5cd28",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 145920
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Mind Map - Critical Thinking.md",
+      "contentHash": "-72cbf1fb",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 147456
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/MQ-9A Reaper - UAV.md",
+      "contentHash": "3ce3df86",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 148992
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Thought Process Walkthrough - 2.md",
+      "contentHash": "-4330da1c",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 150528
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Thought Process Walkthrough - 1.md",
+      "contentHash": "33bd272d",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 152064
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Solutions for thought process walkthrough 2.md",
+      "contentHash": "-234b777b",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 153600
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2.md",
+      "contentHash": "4d27beaa",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 155136
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2 Answers.md",
+      "contentHash": "41efa4c6",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 156672
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1.md",
+      "contentHash": "4cdd552b",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 158208
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1 Answers.md",
+      "contentHash": "-64ddd143",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 159744
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/NIST SP 800-53.md",
+      "contentHash": "49312472",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 161280
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Full Scenario of Job as described in JD.md",
+      "contentHash": "4843667c",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 162816
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Deep Prep.md",
+      "contentHash": "-52558c62",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 164352
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Cybersecurity Architect - What they do.md",
+      "contentHash": "-78759f4c",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 165888
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/000 - Mind Maps - Trouble Shooting - Critical Thinking.md",
+      "contentHash": "-644d6ad7",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 167424
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/Diffie-Hellman or Eliptical Curve Diffie Hellman.md",
+      "contentHash": "69d2bf19",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 168960
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/CT & TS Challenge Questions.md",
+      "contentHash": "-4eb44a68",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 170496
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/9 - Types of Encryption.md",
+      "contentHash": "2179aeb0",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 172032
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/7 - Task Prioritization.md",
+      "contentHash": "36ee4594",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 173568
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/6 - IATT - A&A - ATO.md",
+      "contentHash": "4f80df35",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 175104
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/4 - Questions.md",
+      "contentHash": "-1ab79142",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 176640
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/3 - RMF.md",
+      "contentHash": "-24803bb3",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 178176
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/2 - Cyber Architect - Responsibilities.md",
+      "contentHash": "4f70a11b",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 179712
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/11 - IPv4 Header.md",
+      "contentHash": "3cb7f165",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 181248
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/11 - Antivirus.md",
+      "contentHash": "310204ca",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 182784
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/10 - Firewall - Process.md",
+      "contentHash": "6a641e0f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 184320
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/1.1 - POA&M (Plan of action & Milestones).md",
+      "contentHash": "286b46b2",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 185856
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/1 - Cyber Security Principles.md",
+      "contentHash": "-bcb0cd6",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 187392
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/00 - Why do I want to join GA?.md",
+      "contentHash": "5ca24b27",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 188928
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/General Atomics/0 - Core Principles & Theories.md",
+      "contentHash": "372f3c5e",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 190464
+    },
+    {
+      "notePath": "obsidian.main.vault/Job Interview Prep/CISA - A Partnership Agency.md",
+      "contentHash": "-9de3b4f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 192000
+    },
+    {
+      "notePath": "obsidian.main.vault/Extras/Templates/Weekly Notes.md",
+      "contentHash": "2295db91",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 193536
+    },
+    {
+      "notePath": "obsidian.main.vault/Extras/Templates/People.template.md",
+      "contentHash": "-19eb3d6d",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 195072
+    },
+    {
+      "notePath": "obsidian.main.vault/Extras/Templates/Note.main.template.md",
+      "contentHash": "1257bbd3",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 196608
+    },
+    {
+      "notePath": "obsidian.main.vault/Extras/Templates/Daily Notes.md",
+      "contentHash": "-209de8ba",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 198144
+    },
+    {
+      "notePath": "obsidian.main.vault/Extras/People/Sara Bouzeid.md",
+      "contentHash": "7db2c514",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 199680
+    },
+    {
+      "notePath": "obsidian.main.vault/Excalidraw/Drawing 2025-10-05 17.24.36.excalidraw.md",
+      "contentHash": "40f2ce9f",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 201216
+    },
+    {
+      "notePath": "obsidian.main.vault/Excalidraw/Drawing 2024-09-26 20.04.39.excalidraw.md",
+      "contentHash": "58afbc09",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 202752
+    },
+    {
+      "notePath": "obsidian.main.vault/Computer Repair Website.md",
+      "contentHash": "28fe934b",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 204288
+    },
+    {
+      "notePath": "obsidian.main.vault/2024 Move/San Diego.md",
+      "contentHash": "-4d92f0e8",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 205824
+    },
+    {
+      "notePath": "Privelege Escalation 2.md",
+      "contentHash": "48e5b9d6",
+      "modelVersion": "Xenova/all-MiniLM-L12-v2",
+      "generatedAt": 1764732907091,
+      "offset": 207360
+    }
+  ]
+}

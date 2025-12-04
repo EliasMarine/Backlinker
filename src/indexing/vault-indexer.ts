@@ -148,8 +148,9 @@ export class VaultIndexer {
           continue;
         }
 
-        // Extract keywords and word frequency
+        // Extract keywords, phrases, and word frequency
         const keywords = this.nlpProcessor.extractKeywords(parsed.cleanText);
+        const phrases = this.nlpProcessor.extractPhrases(parsed.cleanText);
         const wordFrequency = this.nlpProcessor.getWordFrequency(parsed.cleanText);
 
         // Create note index
@@ -159,6 +160,7 @@ export class VaultIndexer {
           content: content,
           cleanContent: parsed.cleanText,
           keywords: keywords,
+          phrases: phrases,  // multi-word phrases for content-based linking
           existingLinks: parsed.links,
           headings: parsed.headings,
           tags: parsed.tags,
@@ -219,8 +221,9 @@ export class VaultIndexer {
         this.tfidfEngine.updateDocumentFrequency(existingNote, false);
       }
 
-      // Extract keywords and word frequency
+      // Extract keywords, phrases, and word frequency
       const keywords = this.nlpProcessor.extractKeywords(parsed.cleanText);
+      const phrases = this.nlpProcessor.extractPhrases(parsed.cleanText);
       const wordFrequency = this.nlpProcessor.getWordFrequency(parsed.cleanText);
 
       // Create/update note index
@@ -230,6 +233,7 @@ export class VaultIndexer {
         content: content,
         cleanContent: parsed.cleanText,
         keywords: keywords,
+        phrases: phrases,  // multi-word phrases for content-based linking
         existingLinks: parsed.links,
         headings: parsed.headings,
         tags: parsed.tags,

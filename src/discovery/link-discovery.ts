@@ -154,9 +154,13 @@ export class LinkDiscovery {
       })));
     }
 
+    // CRITICAL: Filter out stale cached notes that no longer exist in vault
+    // This prevents suggesting links to deleted notes
+    const existingNotes = this.filterStaleNotes(similarNotes);
+
     console.log('[LinkDiscovery] TempNote has', tempNote.existingLinks.length, 'existing links');
     // Filter out already-linked notes
-    const filteredNotes = this.filterAlreadyLinked(similarNotes, tempNote);
+    const filteredNotes = this.filterAlreadyLinked(existingNotes, tempNote);
 
     console.log('[LinkDiscovery] After filtering already-linked:', filteredNotes.length, 'notes remain');
 
@@ -178,8 +182,9 @@ export class LinkDiscovery {
     // Parse content
     const parsed = this.contentParser.parse(content, file.path);
 
-    // Extract keywords
+    // Extract keywords and phrases
     const keywords = this.nlpProcessor.extractKeywords(parsed.cleanText);
+    const phrases = this.nlpProcessor.extractPhrases(parsed.cleanText);
 
     // Get word frequency from full text (matches vault indexer behavior)
     const wordFrequency = this.nlpProcessor.getWordFrequency(parsed.cleanText);
@@ -207,6 +212,7 @@ export class LinkDiscovery {
       content: content,
       cleanContent: parsed.cleanText,
       keywords: keywords,
+      phrases: phrases,  // multi-word phrases for content-based linking
       existingLinks: parsed.links,
       headings: parsed.headings,
       tags: parsed.tags,
@@ -237,6 +243,29 @@ export class LinkDiscovery {
     }
 
     return tfidfVector;
+  }
+
+  /**
+   * Filter out stale cached notes that no longer exist in the vault
+   * This prevents suggesting links to notes that were deleted
+   */
+  private filterStaleNotes(results: HybridResult[]): HybridResult[] {
+    const existingResults = results.filter(result => {
+      const file = this.app.vault.getAbstractFileByPath(result.note.path);
+      if (!(file instanceof TFile)) {
+        console.log(`[LinkDiscovery] Skipping stale cached note: ${result.note.path}`);
+        return false;
+      }
+      return true;
+    });
+
+    if (existingResults.length < results.length) {
+      console.log(
+        `[LinkDiscovery] Filtered out ${results.length - existingResults.length} stale cached notes`
+      );
+    }
+
+    return existingResults;
   }
 
   /**

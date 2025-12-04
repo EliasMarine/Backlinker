@@ -3,7 +3,7 @@
 **Last Updated**: December 2, 2025
 **Version**: 1.0.0
 **Build Status**: ✅ Compiles Successfully
-**Test Status**: Phase 3 tested + Batch Auto-Link feature integrated
+**Test Status**: Phase 3 tested + Batch Auto-Link + Clear All Links feature integrated
 **Git Branch**: `feature/model-selection`
 
 ---
@@ -20,8 +20,9 @@
 - ✅ UI freeze bug fixed with event loop yielding
 - ✅ Cache persistence bugs fixed
 - ✅ Model selection feature added - users can choose between 4 models
-- ✅ **NEW**: Batch Auto-Link feature fully integrated
-- 🎯 **Next Step**: Test batch auto-link in Obsidian
+- ✅ Batch Auto-Link feature fully integrated
+- ✅ **NEW**: Clear All Links feature added (remove wiki-links from vault)
+- 🎯 **Next Step**: Test batch auto-link and clear links in Obsidian
 
 ---
 
@@ -145,6 +146,36 @@
 
 ---
 
+### ✅ Clear All Links Feature - INTEGRATED (December 2, 2025)
+
+| Component | Status | File | Notes |
+|-----------|--------|------|-------|
+| Link Cleaner | ✅ Complete | `src/batch/link-cleaner.ts` | Core utility |
+| Settings UI | ✅ Complete | `src/settings.ts` | Danger zone section |
+| main.ts Integration | ✅ Complete | `main.ts` | Plugin methods |
+| Backup Support | ✅ Complete | `src/batch/backup-manager.ts` | Added 'clear-all-links' type |
+
+**Confidence Level**: MEDIUM - Code integrated, needs testing in Obsidian
+
+**Features**:
+- **Preview Changes button**: Scans vault without making changes, shows link count
+- **Clear All Links button**: Only enabled after preview, requires double confirmation
+- **Backup Before Clear**: Creates backup before removing any links (restorable)
+- **Safe Conversion**: `[[Note Title]]` → `Note Title`, `[[Note|Display]]` → `Display`
+- **Progress Feedback**: Status bar updates during scan and clear operations
+- **Warning UI**: Danger zone styling with clear warnings about destructive action
+
+**How It Works**:
+1. `[[Note Title]]` becomes `Note Title`
+2. `[[Note Title|Display Text]]` becomes `Display Text`
+3. `[[Folder/Note]]` becomes `Note`
+4. `[[Note#Heading]]` becomes `Note`
+5. `#[[Note|Text]]` (malformed) becomes `Text`
+
+**Use Case**: Clean up vault before running fresh batch auto-link, or export notes without wiki-links.
+
+---
+
 ### ❌ Phase 4: Polish & Release - NOT STARTED
 
 - ❌ Comprehensive testing
@@ -189,6 +220,17 @@
    - Cancel button
 
 7. **`documents/BATCH_AUTOLINK_PLAN.md`** - Feature plan document
+
+---
+
+## New Files Created (Clear All Links)
+
+1. **`src/batch/link-cleaner.ts`** - Link removal utility
+   - `removeWikiLinks()` - Converts wiki-links to plain text
+   - `countWikiLinks()` - Counts links without modifying
+   - `LinkCleaner` class - Orchestrates vault-wide link removal
+   - Progress callbacks and cancellation support
+   - Backup integration before clearing
 
 ---
 
@@ -414,4 +456,47 @@
 
 ---
 
-**Status**: Phase 3 core functionality tested and working. Batch Auto-Link integrated, needs testing.
+## Testing Checklist (Clear All Links)
+
+### Prerequisites
+- [ ] Some notes have wiki-links to test removal
+- [ ] Console open for debugging
+
+### Settings UI
+- [ ] "Remove Links" section appears in Auto-Link settings
+- [ ] Warning message is displayed
+- [ ] Preview button is visible
+- [ ] Clear All Links button is initially disabled
+
+### Preview
+- [ ] Click "Preview Changes" button
+- [ ] Button shows "Scanning..." while working
+- [ ] Stats display shows link count and affected notes
+- [ ] Clear All Links button becomes enabled (if links found)
+- [ ] If no links, success message shows "No wiki-links found"
+
+### Clear Operation
+- [ ] Click "Clear All Links" button
+- [ ] First confirmation dialog appears
+- [ ] Second confirmation dialog appears
+- [ ] Button shows "Clearing..." while working
+- [ ] Status bar updates with progress
+- [ ] Success message shows final count
+- [ ] Backup ID is displayed
+
+### Verification
+- [ ] Check a note that had links - links are now plain text
+- [ ] `[[Note]]` became `Note`
+- [ ] `[[Note|Display]]` became `Display`
+- [ ] Check backup in `.obsidian/plugins/smart-links/backups/`
+
+### Restore (if needed)
+- [ ] Go to Backup History section
+- [ ] Find the "clear-all-links" backup
+- [ ] Click Restore button
+- [ ] Confirm restoration
+- [ ] Verify links are restored
+
+---
+
+**Status**: Phase 3 core functionality tested and working. Batch Auto-Link and Clear All Links integrated, needs testing.

@@ -125,7 +125,7 @@ export class HybridScorer {
       semanticScore: undefined,
       finalScore: result.score, // TF-IDF score is the final score
       matchedKeywords: result.matchedKeywords,
-      matchedPhrases: undefined
+      matchedPhrases: result.matchedPhrases  // Pass through phrases for content-based linking
     }));
 
     console.log('[HybridScorer] Returning', hybridResults.length, 'hybrid results from TF-IDF only search');
@@ -334,6 +334,14 @@ export class HybridScorer {
     const allEmbeddings = this.embeddingCache!.getAll();
     console.log('[HybridScorer] Total cached embeddings:', allEmbeddings.size);
 
+    // CRITICAL: If no embeddings are cached, fall back to TF-IDF only search
+    // This prevents the scenario where TF-IDF candidates are found with threshold*0.5
+    // but then filtered out by the full threshold (since there are no embeddings to boost scores)
+    if (allEmbeddings.size === 0) {
+      console.log('[HybridScorer] No cached embeddings, falling back to TF-IDF only search');
+      return this.tfidfOnlySearch(sourceNote, maxResults);
+    }
+
     // Calculate embedding similarities for all notes with embeddings
     const embeddingSimilarities = this.embeddingEngine.findSimilarNotes(
       sourceEmbedding,
@@ -350,6 +358,7 @@ export class HybridScorer {
       tfidfScore: number;
       semanticScore: number;
       matchedKeywords: string[];
+      matchedPhrases: string[];
     }>();
 
     // Add TF-IDF results
@@ -358,7 +367,8 @@ export class HybridScorer {
         note: result.note,
         tfidfScore: result.score,
         semanticScore: 0,
-        matchedKeywords: result.matchedKeywords
+        matchedKeywords: result.matchedKeywords,
+        matchedPhrases: result.matchedPhrases  // Pass through phrases
       });
     }
 
@@ -375,7 +385,8 @@ export class HybridScorer {
           note,
           tfidfScore: 0,
           semanticScore: embResult.similarity,
-          matchedKeywords: []
+          matchedKeywords: [],
+          matchedPhrases: []
         });
       }
     }
@@ -406,7 +417,7 @@ export class HybridScorer {
           semanticScore: result.semanticScore,
           finalScore,
           matchedKeywords: result.matchedKeywords,
-          matchedPhrases: undefined  // Not available with neural embeddings
+          matchedPhrases: result.matchedPhrases  // Pass through phrases for content-based linking
         });
       }
     }

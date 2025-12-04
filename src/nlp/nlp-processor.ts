@@ -55,6 +55,39 @@ export class NLPProcessor {
   }
 
   /**
+   * Extract meaningful multi-word phrases (n-grams)
+   * Finds 2-3 word phrases that appear multiple times in the text
+   * Used for content-based link matching
+   */
+  extractPhrases(text: string, topN: number = 30): string[] {
+    const words = this.tokenize(text);
+    const phraseFreq = new Map<string, number>();
+
+    // Extract 2-word and 3-word phrases
+    for (let n = 2; n <= 3; n++) {
+      for (let i = 0; i <= words.length - n; i++) {
+        const phraseWords = words.slice(i, i + n);
+
+        // Skip if any word is a stopword or too short
+        const hasStopword = phraseWords.some(w =>
+          this.stopwords.has(w) || w.length < 3
+        );
+        if (hasStopword) continue;
+
+        const phraseStr = phraseWords.join(' ');
+        phraseFreq.set(phraseStr, (phraseFreq.get(phraseStr) || 0) + 1);
+      }
+    }
+
+    // Return top N by frequency, require minimum 2 occurrences
+    return Array.from(phraseFreq.entries())
+      .filter(([_, count]) => count >= 2)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, topN)
+      .map(([phrase]) => phrase);
+  }
+
+  /**
    * Calculate word frequency in text
    */
   getWordFrequency(text: string): Map<string, number> {

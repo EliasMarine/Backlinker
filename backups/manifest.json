@@ -1,0 +1,1567 @@
+{
+  "backups": [
+    {
+      "id": "backup-1764866166070",
+      "timestamp": 1764866166070,
+      "noteCount": 46,
+      "linksAdded": -207,
+      "notePaths": [
+        "obsidian.main.vault/Whiskey Reviews/Review 1 - Hardin's Creek Jacob's Well 184 month.md",
+        "obsidian.main.vault/Whiskey Reviews/Review 2 - Hardin's Creek Jacob's Well 184 & 211 month.md",
+        "obsidian.main.vault/Resume Write-ups/drafts.md",
+        "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/OSI - TCPIP.md",
+        "obsidian.main.vault/OSI Model/Transport Layer (Layer 4).md",
+        "obsidian.main.vault/OSI Model/Session Layer (Layer 5).md",
+        "obsidian.main.vault/OSI Model/Presentation Layer (Layer 6).md",
+        "obsidian.main.vault/OSI Model/OSI Model.md",
+        "obsidian.main.vault/OSI Model/Network Layer (Layer 3).md",
+        "obsidian.main.vault/OSI Model/Application Layer (Layer 7).md",
+        "obsidian.main.vault/Notes/Job Descriptions.md",
+        "obsidian.main.vault/MOCs/People MOC.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Thought Process Walkthrough - 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Solutions for thought process walkthrough 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2 Answers.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1 Answers.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/9 - Types of Encryption.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/1 - Cyber Security Principles.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/0 - Core Principles & Theories.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Encryption.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/00 - Screening Call Prep.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/$MFT.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Daily Walk-Through/High-Level.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Daily Walk-Through/Daily Walk-Through - Low Level.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Ownership.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Fixed Problem.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Core Values.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/00 - Screening Call Prep 1.md",
+        "obsidian.main.vault/Extras/Templates/People.template.md",
+        "obsidian.main.vault/Extras/People/Sara Bouzeid.md",
+        "obsidian.main.vault/Excalidraw/Drawing 2025-10-05 17.24.36.excalidraw.md",
+        "obsidian.main.vault/Excalidraw/Drawing 2024-09-26 20.04.39.excalidraw.md"
+      ],
+      "description": "Clear all links: Removed 207 links from 46 notes",
+      "noteDetails": [
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 1 - Hardin's Creek Jacob's Well 184 month.md",
+          "title": "Review 1 - Hardin's Creek Jacob's Well 184 month",
+          "linksAdded": -4,
+          "contentLength": 3609
+        },
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 2 - Hardin's Creek Jacob's Well 184 & 211 month.md",
+          "title": "Review 2 - Hardin's Creek Jacob's Well 184 & 211 month",
+          "linksAdded": -4,
+          "contentLength": 6900
+        },
+        {
+          "path": "obsidian.main.vault/Resume Write-ups/drafts.md",
+          "title": "drafts",
+          "linksAdded": -1,
+          "contentLength": 8481
+        },
+        {
+          "path": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/OSI - TCPIP.md",
+          "title": "OSI - TCPIP",
+          "linksAdded": -4,
+          "contentLength": 1675
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Transport Layer (Layer 4).md",
+          "title": "Transport Layer (Layer 4)",
+          "linksAdded": -1,
+          "contentLength": 3061
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Session Layer (Layer 5).md",
+          "title": "Session Layer (Layer 5)",
+          "linksAdded": -6,
+          "contentLength": 2983
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Presentation Layer (Layer 6).md",
+          "title": "Presentation Layer (Layer 6)",
+          "linksAdded": -6,
+          "contentLength": 2955
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/OSI Model.md",
+          "title": "OSI Model",
+          "linksAdded": -1,
+          "contentLength": 3827
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Network Layer (Layer 3).md",
+          "title": "Network Layer (Layer 3)",
+          "linksAdded": -2,
+          "contentLength": 3232
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Application Layer (Layer 7).md",
+          "title": "Application Layer (Layer 7)",
+          "linksAdded": -1,
+          "contentLength": 3071
+        },
+        {
+          "path": "obsidian.main.vault/Notes/Job Descriptions.md",
+          "title": "Job Descriptions",
+          "linksAdded": -1,
+          "contentLength": 2913
+        },
+        {
+          "path": "obsidian.main.vault/MOCs/People MOC.md",
+          "title": "People MOC",
+          "linksAdded": -1,
+          "contentLength": 672
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Thought Process Walkthrough - 2.md",
+          "title": "Thought Process Walkthrough - 2",
+          "linksAdded": -2,
+          "contentLength": 15279
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Solutions for thought process walkthrough 2.md",
+          "title": "Solutions for thought process walkthrough 2",
+          "linksAdded": -2,
+          "contentLength": 2702
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2.md",
+          "title": "TIP 2",
+          "linksAdded": -3,
+          "contentLength": 4212
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2 Answers.md",
+          "title": "TIP 2 Answers",
+          "linksAdded": -3,
+          "contentLength": 2345
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1.md",
+          "title": "TIP 1",
+          "linksAdded": -8,
+          "contentLength": 5133
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1 Answers.md",
+          "title": "TIP 1 Answers",
+          "linksAdded": -10,
+          "contentLength": 2836
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/9 - Types of Encryption.md",
+          "title": "9 - Types of Encryption",
+          "linksAdded": -7,
+          "contentLength": 4604
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/1 - Cyber Security Principles.md",
+          "title": "1 - Cyber Security Principles",
+          "linksAdded": -1,
+          "contentLength": 6600
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/0 - Core Principles & Theories.md",
+          "title": "0 - Core Principles & Theories",
+          "linksAdded": -1,
+          "contentLength": 3498
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts.md",
+          "title": "Fundamental Security Concepts",
+          "linksAdded": -10,
+          "contentLength": 23009
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts 1.md",
+          "title": "Fundamental Security Concepts 1",
+          "linksAdded": -10,
+          "contentLength": 22989
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's.md",
+          "title": "Event ID's",
+          "linksAdded": -10,
+          "contentLength": 8222
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's 1.md",
+          "title": "Event ID's 1",
+          "linksAdded": -10,
+          "contentLength": 8202
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Encryption.md",
+          "title": "Encryption",
+          "linksAdded": -7,
+          "contentLength": 3551
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain.md",
+          "title": "Cyber Kill Chain",
+          "linksAdded": -10,
+          "contentLength": 6109
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain 1.md",
+          "title": "Cyber Kill Chain 1",
+          "linksAdded": -9,
+          "contentLength": 6043
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow.md",
+          "title": "Analyst Detection Workflow",
+          "linksAdded": -2,
+          "contentLength": 3113
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow 1.md",
+          "title": "Analyst Detection Workflow 1",
+          "linksAdded": -2,
+          "contentLength": 3109
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins.md",
+          "title": "01 - LOLbins",
+          "linksAdded": -3,
+          "contentLength": 1997
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins 1.md",
+          "title": "01 - LOLbins 1",
+          "linksAdded": -3,
+          "contentLength": 1991
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/00 - Screening Call Prep.md",
+          "title": "00 - Screening Call Prep",
+          "linksAdded": -10,
+          "contentLength": 10277
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker.md",
+          "title": "0 - How to be an Attacker",
+          "linksAdded": -2,
+          "contentLength": 3789
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker 1.md",
+          "title": "0 - How to be an Attacker 1",
+          "linksAdded": -2,
+          "contentLength": 3785
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/$MFT.md",
+          "title": "$MFT",
+          "linksAdded": -2,
+          "contentLength": 929
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Daily Walk-Through/High-Level.md",
+          "title": "High-Level",
+          "linksAdded": -4,
+          "contentLength": 2658
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Daily Walk-Through/Daily Walk-Through - Low Level.md",
+          "title": "Daily Walk-Through - Low Level",
+          "linksAdded": -4,
+          "contentLength": 14685
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Ownership.md",
+          "title": "Ownership",
+          "linksAdded": -2,
+          "contentLength": 1805
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Fixed Problem.md",
+          "title": "Fixed Problem",
+          "linksAdded": -2,
+          "contentLength": 1793
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Core Values.md",
+          "title": "Core Values",
+          "linksAdded": -2,
+          "contentLength": 5938
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/00 - Screening Call Prep 1.md",
+          "title": "00 - Screening Call Prep 1",
+          "linksAdded": -10,
+          "contentLength": 10257
+        },
+        {
+          "path": "obsidian.main.vault/Extras/Templates/People.template.md",
+          "title": "People.template",
+          "linksAdded": -2,
+          "contentLength": 376
+        },
+        {
+          "path": "obsidian.main.vault/Extras/People/Sara Bouzeid.md",
+          "title": "Sara Bouzeid",
+          "linksAdded": -2,
+          "contentLength": 422
+        },
+        {
+          "path": "obsidian.main.vault/Excalidraw/Drawing 2025-10-05 17.24.36.excalidraw.md",
+          "title": "Drawing 2025-10-05 17.24.36.excalidraw",
+          "linksAdded": -9,
+          "contentLength": 953
+        },
+        {
+          "path": "obsidian.main.vault/Excalidraw/Drawing 2024-09-26 20.04.39.excalidraw.md",
+          "title": "Drawing 2024-09-26 20.04.39.excalidraw",
+          "linksAdded": -9,
+          "contentLength": 17653
+        }
+      ],
+      "triggeredBy": "clear-all-links",
+      "pluginVersion": "1.0.0"
+    },
+    {
+      "id": "backup-1764733009539",
+      "timestamp": 1764733009539,
+      "noteCount": 46,
+      "linksAdded": 208,
+      "notePaths": [
+        "obsidian.main.vault/Whiskey Reviews/Review 2 - Hardin's Creek Jacob's Well 184 & 211 month.md",
+        "obsidian.main.vault/Whiskey Reviews/Review 1 - Hardin's Creek Jacob's Well 184 month.md",
+        "obsidian.main.vault/Resume Write-ups/drafts.md",
+        "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/OSI - TCPIP.md",
+        "obsidian.main.vault/OSI Model/Transport Layer (Layer 4).md",
+        "obsidian.main.vault/OSI Model/Session Layer (Layer 5).md",
+        "obsidian.main.vault/OSI Model/Presentation Layer (Layer 6).md",
+        "obsidian.main.vault/OSI Model/OSI Model.md",
+        "obsidian.main.vault/OSI Model/Network Layer (Layer 3).md",
+        "obsidian.main.vault/OSI Model/Application Layer (Layer 7).md",
+        "obsidian.main.vault/Notes/Job Descriptions.md",
+        "obsidian.main.vault/MOCs/People MOC.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Encryption.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/00 - Screening Call Prep.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/$MFT.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Daily Walk-Through/High-Level.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Daily Walk-Through/Daily Walk-Through - Low Level.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Ownership.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Fixed Problem.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Core Values.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/00 - Screening Call Prep 1.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Thought Process Walkthrough - 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Solutions for thought process walkthrough 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2 Answers.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1 Answers.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/9 - Types of Encryption.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/1 - Cyber Security Principles.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/0 - Core Principles & Theories.md",
+        "obsidian.main.vault/Extras/Templates/People.template.md",
+        "obsidian.main.vault/Extras/People/Sara Bouzeid.md",
+        "obsidian.main.vault/Excalidraw/Drawing 2025-10-05 17.24.36.excalidraw.md",
+        "obsidian.main.vault/Excalidraw/Drawing 2024-09-26 20.04.39.excalidraw.md"
+      ],
+      "description": "Batch auto-link: 208 links added to 46 notes",
+      "noteDetails": [
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 2 - Hardin's Creek Jacob's Well 184 & 211 month.md",
+          "title": "Review 2 - Hardin's Creek Jacob's Well 184 & 211 month",
+          "linksAdded": 4,
+          "contentLength": 6688
+        },
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 1 - Hardin's Creek Jacob's Well 184 month.md",
+          "title": "Review 1 - Hardin's Creek Jacob's Well 184 month",
+          "linksAdded": 4,
+          "contentLength": 3373
+        },
+        {
+          "path": "obsidian.main.vault/Resume Write-ups/drafts.md",
+          "title": "drafts",
+          "linksAdded": 1,
+          "contentLength": 8460
+        },
+        {
+          "path": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/OSI - TCPIP.md",
+          "title": "OSI - TCPIP",
+          "linksAdded": 4,
+          "contentLength": 1582
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Transport Layer (Layer 4).md",
+          "title": "Transport Layer (Layer 4)",
+          "linksAdded": 1,
+          "contentLength": 3033
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Session Layer (Layer 5).md",
+          "title": "Session Layer (Layer 5)",
+          "linksAdded": 6,
+          "contentLength": 2785
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Presentation Layer (Layer 6).md",
+          "title": "Presentation Layer (Layer 6)",
+          "linksAdded": 6,
+          "contentLength": 2787
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/OSI Model.md",
+          "title": "OSI Model",
+          "linksAdded": 1,
+          "contentLength": 3811
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Network Layer (Layer 3).md",
+          "title": "Network Layer (Layer 3)",
+          "linksAdded": 2,
+          "contentLength": 3186
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Application Layer (Layer 7).md",
+          "title": "Application Layer (Layer 7)",
+          "linksAdded": 1,
+          "contentLength": 3043
+        },
+        {
+          "path": "obsidian.main.vault/Notes/Job Descriptions.md",
+          "title": "Job Descriptions",
+          "linksAdded": 1,
+          "contentLength": 2902
+        },
+        {
+          "path": "obsidian.main.vault/MOCs/People MOC.md",
+          "title": "People MOC",
+          "linksAdded": 1,
+          "contentLength": 652
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts.md",
+          "title": "Fundamental Security Concepts",
+          "linksAdded": 10,
+          "contentLength": 22649
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts 1.md",
+          "title": "Fundamental Security Concepts 1",
+          "linksAdded": 10,
+          "contentLength": 22649
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's.md",
+          "title": "Event ID's",
+          "linksAdded": 10,
+          "contentLength": 8052
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's 1.md",
+          "title": "Event ID's 1",
+          "linksAdded": 10,
+          "contentLength": 8052
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Encryption.md",
+          "title": "Encryption",
+          "linksAdded": 7,
+          "contentLength": 3355
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain.md",
+          "title": "Cyber Kill Chain",
+          "linksAdded": 10,
+          "contentLength": 5879
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain 1.md",
+          "title": "Cyber Kill Chain 1",
+          "linksAdded": 10,
+          "contentLength": 5833
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow.md",
+          "title": "Analyst Detection Workflow",
+          "linksAdded": 2,
+          "contentLength": 3047
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow 1.md",
+          "title": "Analyst Detection Workflow 1",
+          "linksAdded": 2,
+          "contentLength": 3047
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins.md",
+          "title": "01 - LOLbins",
+          "linksAdded": 3,
+          "contentLength": 1940
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins 1.md",
+          "title": "01 - LOLbins 1",
+          "linksAdded": 3,
+          "contentLength": 1940
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/00 - Screening Call Prep.md",
+          "title": "00 - Screening Call Prep",
+          "linksAdded": 10,
+          "contentLength": 9967
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker.md",
+          "title": "0 - How to be an Attacker",
+          "linksAdded": 2,
+          "contentLength": 3725
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker 1.md",
+          "title": "0 - How to be an Attacker 1",
+          "linksAdded": 2,
+          "contentLength": 3725
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/$MFT.md",
+          "title": "$MFT",
+          "linksAdded": 2,
+          "contentLength": 909
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Daily Walk-Through/High-Level.md",
+          "title": "High-Level",
+          "linksAdded": 4,
+          "contentLength": 2518
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Daily Walk-Through/Daily Walk-Through - Low Level.md",
+          "title": "Daily Walk-Through - Low Level",
+          "linksAdded": 4,
+          "contentLength": 14625
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Ownership.md",
+          "title": "Ownership",
+          "linksAdded": 2,
+          "contentLength": 1769
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Fixed Problem.md",
+          "title": "Fixed Problem",
+          "linksAdded": 2,
+          "contentLength": 1765
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Core Values.md",
+          "title": "Core Values",
+          "linksAdded": 2,
+          "contentLength": 5880
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/00 - Screening Call Prep 1.md",
+          "title": "00 - Screening Call Prep 1",
+          "linksAdded": 10,
+          "contentLength": 9967
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Thought Process Walkthrough - 2.md",
+          "title": "Thought Process Walkthrough - 2",
+          "linksAdded": 2,
+          "contentLength": 15183
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Solutions for thought process walkthrough 2.md",
+          "title": "Solutions for thought process walkthrough 2",
+          "linksAdded": 2,
+          "contentLength": 2630
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2.md",
+          "title": "TIP 2",
+          "linksAdded": 3,
+          "contentLength": 4158
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2 Answers.md",
+          "title": "TIP 2 Answers",
+          "linksAdded": 3,
+          "contentLength": 2315
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1.md",
+          "title": "TIP 1",
+          "linksAdded": 8,
+          "contentLength": 4989
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1 Answers.md",
+          "title": "TIP 1 Answers",
+          "linksAdded": 10,
+          "contentLength": 2736
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/9 - Types of Encryption.md",
+          "title": "9 - Types of Encryption",
+          "linksAdded": 7,
+          "contentLength": 4499
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/1 - Cyber Security Principles.md",
+          "title": "1 - Cyber Security Principles",
+          "linksAdded": 1,
+          "contentLength": 6565
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/0 - Core Principles & Theories.md",
+          "title": "0 - Core Principles & Theories",
+          "linksAdded": 1,
+          "contentLength": 3464
+        },
+        {
+          "path": "obsidian.main.vault/Extras/Templates/People.template.md",
+          "title": "People.template",
+          "linksAdded": 2,
+          "contentLength": 342
+        },
+        {
+          "path": "obsidian.main.vault/Extras/People/Sara Bouzeid.md",
+          "title": "Sara Bouzeid",
+          "linksAdded": 2,
+          "contentLength": 382
+        },
+        {
+          "path": "obsidian.main.vault/Excalidraw/Drawing 2025-10-05 17.24.36.excalidraw.md",
+          "title": "Drawing 2025-10-05 17.24.36.excalidraw",
+          "linksAdded": 9,
+          "contentLength": 566
+        },
+        {
+          "path": "obsidian.main.vault/Excalidraw/Drawing 2024-09-26 20.04.39.excalidraw.md",
+          "title": "Drawing 2024-09-26 20.04.39.excalidraw",
+          "linksAdded": 9,
+          "contentLength": 17266
+        }
+      ],
+      "triggeredBy": "batch-autolink",
+      "pluginVersion": "1.0.0"
+    },
+    {
+      "id": "backup-1764732323696",
+      "timestamp": 1764732323696,
+      "noteCount": 76,
+      "linksAdded": -331,
+      "notePaths": [
+        "obsidian.main.vault/Whiskey Reviews/Review 5 - Russel's Reserve 13 Year - Spring 2025.md",
+        "obsidian.main.vault/Whiskey Reviews/Review 4 - Bomberger's PFG 2024 Release.md",
+        "obsidian.main.vault/Whiskey Reviews/Review 3 - Jack Daniel's Heritage Toasted Barrel.md",
+        "obsidian.main.vault/Whiskey Reviews/Review 2 - Hardin's Creek Jacob's Well 184 & 211 month.md",
+        "obsidian.main.vault/Whiskey Reviews/Review 1 - Hardin's Creek Jacob's Well 184 month.md",
+        "obsidian.main.vault/PayPal - Offensive Security Engineer/Tests/OFFSEC Study Guide - Google AI Studio.md",
+        "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/PayPal - Offensive Sec Eng. Prep - Network Infra & Web App.md",
+        "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/OSI - TCPIP.md",
+        "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Red Teaming VS. PenTesting.md",
+        "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Red - Purple Team Threat Emulation.md",
+        "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Cyber Kill Chain.md",
+        "obsidian.main.vault/OSI Model/Transport Layer (Layer 4).md",
+        "obsidian.main.vault/OSI Model/Session Layer (Layer 5).md",
+        "obsidian.main.vault/OSI Model/Presentation Layer (Layer 6).md",
+        "obsidian.main.vault/OSI Model/OSI Model.md",
+        "obsidian.main.vault/OSI Model/Network Layer (Layer 3).md",
+        "obsidian.main.vault/OSI Model/Application Layer (Layer 7).md",
+        "obsidian.main.vault/Notes/Test.md",
+        "obsidian.main.vault/Notes/Tell Me About Yourself.md",
+        "obsidian.main.vault/Notes/Job Descriptions.md",
+        "obsidian.main.vault/Notes/Intro Cybersecurity.md",
+        "obsidian.main.vault/Malware Analysis/Setting up environment for FlareVM.md",
+        "obsidian.main.vault/Malware Analysis/Course Notes - Guided Intro.md",
+        "obsidian.main.vault/Malware Analysis/Analysis - RAT.cmdshell.exe - Malware - Investigation.md",
+        "obsidian.main.vault/Malware Analysis/Analysis - RAT.Unkown2.exe.md",
+        "obsidian.main.vault/MOCs/People MOC.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/NCL Screenshots.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Persistence.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Encryption.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Attacker VS. Defender Mindset.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/00 - Screening Call Prep.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Strength - Weakness.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Ownership.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Fixed Problem.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Failure 1 ⭐️.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Difficult Person.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Core Values.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/00 - Screening Call Prep 1.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/SSP - System Security Plan.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Mind Map - Critical Thinking.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/MQ-9A Reaper - UAV.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Thought Process Walkthrough - 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Solutions for thought process walkthrough 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2 Answers.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1 Answers.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Full Scenario of Job as described in JD.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/000 - Mind Maps - Trouble Shooting - Critical Thinking.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/9 - Types of Encryption.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/8 - Incident Response Process.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/6 - IATT - A&A - ATO.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/5 - OSI Model.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/2 - Cyber Architect - Responsibilities.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/11 - IPv4 Header.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/1.1 - POA&M (Plan of action & Milestones).md",
+        "obsidian.main.vault/Job Interview Prep/CISA - A Partnership Agency.md",
+        "obsidian.main.vault/Extras/Templates/People.template.md",
+        "obsidian.main.vault/Extras/Templates/Note.main.template.md",
+        "obsidian.main.vault/Extras/People/Sara Bouzeid.md",
+        "obsidian.main.vault/Excalidraw/Drawing 2025-10-05 17.24.36.excalidraw.md",
+        "obsidian.main.vault/Excalidraw/Drawing 2024-09-26 20.04.39.excalidraw.md",
+        "obsidian.main.vault/Computer Repair Website.md",
+        "Privelege Escalation 2.md"
+      ],
+      "description": "Clear all links: Removed 331 links from 76 notes",
+      "noteDetails": [
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 5 - Russel's Reserve 13 Year - Spring 2025.md",
+          "title": "Review 5 - Russel's Reserve 13 Year - Spring 2025",
+          "linksAdded": -2,
+          "contentLength": 2730
+        },
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 4 - Bomberger's PFG 2024 Release.md",
+          "title": "Review 4 - Bomberger's PFG 2024 Release",
+          "linksAdded": -3,
+          "contentLength": 2169
+        },
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 3 - Jack Daniel's Heritage Toasted Barrel.md",
+          "title": "Review 3 - Jack Daniel's Heritage Toasted Barrel",
+          "linksAdded": -5,
+          "contentLength": 2431
+        },
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 2 - Hardin's Creek Jacob's Well 184 & 211 month.md",
+          "title": "Review 2 - Hardin's Creek Jacob's Well 184 & 211 month",
+          "linksAdded": -12,
+          "contentLength": 6932
+        },
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 1 - Hardin's Creek Jacob's Well 184 month.md",
+          "title": "Review 1 - Hardin's Creek Jacob's Well 184 month",
+          "linksAdded": -8,
+          "contentLength": 3625
+        },
+        {
+          "path": "obsidian.main.vault/PayPal - Offensive Security Engineer/Tests/OFFSEC Study Guide - Google AI Studio.md",
+          "title": "OFFSEC Study Guide - Google AI Studio",
+          "linksAdded": -1,
+          "contentLength": 19355
+        },
+        {
+          "path": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/PayPal - Offensive Sec Eng. Prep - Network Infra & Web App.md",
+          "title": "PayPal - Offensive Sec Eng. Prep - Network Infra & Web App",
+          "linksAdded": -1,
+          "contentLength": 3525
+        },
+        {
+          "path": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/OSI - TCPIP.md",
+          "title": "OSI - TCPIP",
+          "linksAdded": -4,
+          "contentLength": 1677
+        },
+        {
+          "path": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Red Teaming VS. PenTesting.md",
+          "title": "Red Teaming VS. PenTesting",
+          "linksAdded": -1,
+          "contentLength": 1973
+        },
+        {
+          "path": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Red - Purple Team Threat Emulation.md",
+          "title": "Red - Purple Team Threat Emulation",
+          "linksAdded": -2,
+          "contentLength": 5417
+        },
+        {
+          "path": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Cyber Kill Chain.md",
+          "title": "Cyber Kill Chain",
+          "linksAdded": -1,
+          "contentLength": 5844
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Transport Layer (Layer 4).md",
+          "title": "Transport Layer (Layer 4)",
+          "linksAdded": -5,
+          "contentLength": 3078
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Session Layer (Layer 5).md",
+          "title": "Session Layer (Layer 5)",
+          "linksAdded": -6,
+          "contentLength": 2984
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Presentation Layer (Layer 6).md",
+          "title": "Presentation Layer (Layer 6)",
+          "linksAdded": -6,
+          "contentLength": 2956
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/OSI Model.md",
+          "title": "OSI Model",
+          "linksAdded": -2,
+          "contentLength": 3847
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Network Layer (Layer 3).md",
+          "title": "Network Layer (Layer 3)",
+          "linksAdded": -5,
+          "contentLength": 3245
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Application Layer (Layer 7).md",
+          "title": "Application Layer (Layer 7)",
+          "linksAdded": -6,
+          "contentLength": 3089
+        },
+        {
+          "path": "obsidian.main.vault/Notes/Test.md",
+          "title": "Test",
+          "linksAdded": -1,
+          "contentLength": 1717
+        },
+        {
+          "path": "obsidian.main.vault/Notes/Tell Me About Yourself.md",
+          "title": "Tell Me About Yourself",
+          "linksAdded": -2,
+          "contentLength": 2111
+        },
+        {
+          "path": "obsidian.main.vault/Notes/Job Descriptions.md",
+          "title": "Job Descriptions",
+          "linksAdded": -12,
+          "contentLength": 2950
+        },
+        {
+          "path": "obsidian.main.vault/Notes/Intro Cybersecurity.md",
+          "title": "Intro Cybersecurity",
+          "linksAdded": -1,
+          "contentLength": 4422
+        },
+        {
+          "path": "obsidian.main.vault/Malware Analysis/Setting up environment for FlareVM.md",
+          "title": "Setting up environment for FlareVM",
+          "linksAdded": -1,
+          "contentLength": 20891
+        },
+        {
+          "path": "obsidian.main.vault/Malware Analysis/Course Notes - Guided Intro.md",
+          "title": "Course Notes - Guided Intro",
+          "linksAdded": -13,
+          "contentLength": 3800
+        },
+        {
+          "path": "obsidian.main.vault/Malware Analysis/Analysis - RAT.cmdshell.exe - Malware - Investigation.md",
+          "title": "Analysis - RAT.cmdshell.exe - Malware - Investigation",
+          "linksAdded": -19,
+          "contentLength": 1707
+        },
+        {
+          "path": "obsidian.main.vault/Malware Analysis/Analysis - RAT.Unkown2.exe.md",
+          "title": "Analysis - RAT.Unkown2.exe",
+          "linksAdded": -6,
+          "contentLength": 558
+        },
+        {
+          "path": "obsidian.main.vault/MOCs/People MOC.md",
+          "title": "People MOC",
+          "linksAdded": -3,
+          "contentLength": 664
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/NCL Screenshots.md",
+          "title": "NCL Screenshots",
+          "linksAdded": -6,
+          "contentLength": 1338
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Persistence.md",
+          "title": "Persistence",
+          "linksAdded": -1,
+          "contentLength": 4387
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts.md",
+          "title": "Fundamental Security Concepts",
+          "linksAdded": -10,
+          "contentLength": 23009
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts 1.md",
+          "title": "Fundamental Security Concepts 1",
+          "linksAdded": -10,
+          "contentLength": 22989
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's.md",
+          "title": "Event ID's",
+          "linksAdded": -11,
+          "contentLength": 8226
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's 1.md",
+          "title": "Event ID's 1",
+          "linksAdded": -11,
+          "contentLength": 8206
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Encryption.md",
+          "title": "Encryption",
+          "linksAdded": -7,
+          "contentLength": 3551
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain.md",
+          "title": "Cyber Kill Chain",
+          "linksAdded": -9,
+          "contentLength": 6067
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain 1.md",
+          "title": "Cyber Kill Chain 1",
+          "linksAdded": -2,
+          "contentLength": 5841
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Attacker VS. Defender Mindset.md",
+          "title": "Attacker VS. Defender Mindset",
+          "linksAdded": -8,
+          "contentLength": 12778
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow.md",
+          "title": "Analyst Detection Workflow",
+          "linksAdded": -2,
+          "contentLength": 3113
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow 1.md",
+          "title": "Analyst Detection Workflow 1",
+          "linksAdded": -2,
+          "contentLength": 3109
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins.md",
+          "title": "01 - LOLbins",
+          "linksAdded": -3,
+          "contentLength": 1997
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins 1.md",
+          "title": "01 - LOLbins 1",
+          "linksAdded": -3,
+          "contentLength": 1991
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/00 - Screening Call Prep.md",
+          "title": "00 - Screening Call Prep",
+          "linksAdded": -10,
+          "contentLength": 10277
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker.md",
+          "title": "0 - How to be an Attacker",
+          "linksAdded": -3,
+          "contentLength": 3793
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker 1.md",
+          "title": "0 - How to be an Attacker 1",
+          "linksAdded": -3,
+          "contentLength": 3789
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Strength - Weakness.md",
+          "title": "Strength - Weakness",
+          "linksAdded": -1,
+          "contentLength": 1886
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Ownership.md",
+          "title": "Ownership",
+          "linksAdded": -2,
+          "contentLength": 1805
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Fixed Problem.md",
+          "title": "Fixed Problem",
+          "linksAdded": -2,
+          "contentLength": 1793
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Failure 1 ⭐️.md",
+          "title": "Failure 1 ⭐️",
+          "linksAdded": -1,
+          "contentLength": 3463
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Difficult Person.md",
+          "title": "Difficult Person",
+          "linksAdded": -1,
+          "contentLength": 1885
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Core Values.md",
+          "title": "Core Values",
+          "linksAdded": -2,
+          "contentLength": 5938
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/00 - Screening Call Prep 1.md",
+          "title": "00 - Screening Call Prep 1",
+          "linksAdded": -10,
+          "contentLength": 10257
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/SSP - System Security Plan.md",
+          "title": "SSP - System Security Plan",
+          "linksAdded": -3,
+          "contentLength": 3995
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Mind Map - Critical Thinking.md",
+          "title": "Mind Map - Critical Thinking",
+          "linksAdded": -1,
+          "contentLength": 11083
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/MQ-9A Reaper - UAV.md",
+          "title": "MQ-9A Reaper - UAV",
+          "linksAdded": -1,
+          "contentLength": 2392
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Thought Process Walkthrough - 2.md",
+          "title": "Thought Process Walkthrough - 2",
+          "linksAdded": -2,
+          "contentLength": 15279
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Solutions for thought process walkthrough 2.md",
+          "title": "Solutions for thought process walkthrough 2",
+          "linksAdded": -2,
+          "contentLength": 2702
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2.md",
+          "title": "TIP 2",
+          "linksAdded": -3,
+          "contentLength": 4212
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2 Answers.md",
+          "title": "TIP 2 Answers",
+          "linksAdded": -3,
+          "contentLength": 2345
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1.md",
+          "title": "TIP 1",
+          "linksAdded": -7,
+          "contentLength": 5115
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1 Answers.md",
+          "title": "TIP 1 Answers",
+          "linksAdded": -8,
+          "contentLength": 2816
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Full Scenario of Job as described in JD.md",
+          "title": "Full Scenario of Job as described in JD",
+          "linksAdded": -4,
+          "contentLength": 12099
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/000 - Mind Maps - Trouble Shooting - Critical Thinking.md",
+          "title": "000 - Mind Maps - Trouble Shooting - Critical Thinking",
+          "linksAdded": -1,
+          "contentLength": 4701
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/9 - Types of Encryption.md",
+          "title": "9 - Types of Encryption",
+          "linksAdded": -7,
+          "contentLength": 4604
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/8 - Incident Response Process.md",
+          "title": "8 - Incident Response Process",
+          "linksAdded": -1,
+          "contentLength": 45
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/6 - IATT - A&A - ATO.md",
+          "title": "6 - IATT - A&A - ATO",
+          "linksAdded": -4,
+          "contentLength": 6442
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/5 - OSI Model.md",
+          "title": "5 - OSI Model",
+          "linksAdded": -1,
+          "contentLength": 33
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/2 - Cyber Architect - Responsibilities.md",
+          "title": "2 - Cyber Architect - Responsibilities",
+          "linksAdded": -1,
+          "contentLength": 4667
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/11 - IPv4 Header.md",
+          "title": "11 - IPv4 Header",
+          "linksAdded": -2,
+          "contentLength": 62
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/1.1 - POA&M (Plan of action & Milestones).md",
+          "title": "1.1 - POA&M (Plan of action & Milestones)",
+          "linksAdded": -1,
+          "contentLength": 8874
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/CISA - A Partnership Agency.md",
+          "title": "CISA - A Partnership Agency",
+          "linksAdded": -1,
+          "contentLength": 5357
+        },
+        {
+          "path": "obsidian.main.vault/Extras/Templates/People.template.md",
+          "title": "People.template",
+          "linksAdded": -4,
+          "contentLength": 384
+        },
+        {
+          "path": "obsidian.main.vault/Extras/Templates/Note.main.template.md",
+          "title": "Note.main.template",
+          "linksAdded": -1,
+          "contentLength": 393
+        },
+        {
+          "path": "obsidian.main.vault/Extras/People/Sara Bouzeid.md",
+          "title": "Sara Bouzeid",
+          "linksAdded": -3,
+          "contentLength": 410
+        },
+        {
+          "path": "obsidian.main.vault/Excalidraw/Drawing 2025-10-05 17.24.36.excalidraw.md",
+          "title": "Drawing 2025-10-05 17.24.36.excalidraw",
+          "linksAdded": -10,
+          "contentLength": 996
+        },
+        {
+          "path": "obsidian.main.vault/Excalidraw/Drawing 2024-09-26 20.04.39.excalidraw.md",
+          "title": "Drawing 2024-09-26 20.04.39.excalidraw",
+          "linksAdded": -10,
+          "contentLength": 17696
+        },
+        {
+          "path": "obsidian.main.vault/Computer Repair Website.md",
+          "title": "Computer Repair Website",
+          "linksAdded": -1,
+          "contentLength": 4558
+        },
+        {
+          "path": "Privelege Escalation 2.md",
+          "title": "Privelege Escalation 2",
+          "linksAdded": -1,
+          "contentLength": 127
+        }
+      ],
+      "triggeredBy": "clear-all-links",
+      "pluginVersion": "1.0.0"
+    },
+    {
+      "id": "backup-1764730267073",
+      "timestamp": 1764730267073,
+      "noteCount": 42,
+      "linksAdded": 201,
+      "notePaths": [
+        "obsidian.main.vault/Whiskey Reviews/Review 2 - Hardin's Creek Jacob's Well 184 & 211 month.md",
+        "obsidian.main.vault/Whiskey Reviews/Review 1 - Hardin's Creek Jacob's Well 184 month.md",
+        "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/OSI - TCPIP.md",
+        "obsidian.main.vault/OSI Model/Transport Layer (Layer 4).md",
+        "obsidian.main.vault/OSI Model/Session Layer (Layer 5).md",
+        "obsidian.main.vault/OSI Model/Presentation Layer (Layer 6).md",
+        "obsidian.main.vault/OSI Model/OSI Model.md",
+        "obsidian.main.vault/OSI Model/Network Layer (Layer 3).md",
+        "obsidian.main.vault/OSI Model/Application Layer (Layer 7).md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Encryption.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/00 - Screening Call Prep.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker 1.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Ownership.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Fixed Problem.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Core Values.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/00 - Screening Call Prep 1.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/SSP - System Security Plan.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Mind Map - Critical Thinking.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Thought Process Walkthrough - 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Solutions for thought process walkthrough 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2 Answers.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1 Answers.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Full Scenario of Job as described in JD.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/000 - Mind Maps - Trouble Shooting - Critical Thinking.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/9 - Types of Encryption.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/6 - IATT - A&A - ATO.md",
+        "obsidian.main.vault/Extras/Templates/People.template.md",
+        "obsidian.main.vault/Extras/People/Sara Bouzeid.md",
+        "obsidian.main.vault/Excalidraw/Drawing 2025-10-05 17.24.36.excalidraw.md",
+        "obsidian.main.vault/Excalidraw/Drawing 2024-09-26 20.04.39.excalidraw.md"
+      ],
+      "description": "Batch auto-link: 201 links added to 42 notes",
+      "noteDetails": [
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 2 - Hardin's Creek Jacob's Well 184 & 211 month.md",
+          "title": "Review 2 - Hardin's Creek Jacob's Well 184 & 211 month",
+          "linksAdded": 4,
+          "contentLength": 6720
+        },
+        {
+          "path": "obsidian.main.vault/Whiskey Reviews/Review 1 - Hardin's Creek Jacob's Well 184 month.md",
+          "title": "Review 1 - Hardin's Creek Jacob's Well 184 month",
+          "linksAdded": 4,
+          "contentLength": 3389
+        },
+        {
+          "path": "obsidian.main.vault/PayPal - Offensive Security Engineer/01 - Network Infra - Web App/OSI - TCPIP.md",
+          "title": "OSI - TCPIP",
+          "linksAdded": 3,
+          "contentLength": 1586
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Transport Layer (Layer 4).md",
+          "title": "Transport Layer (Layer 4)",
+          "linksAdded": 1,
+          "contentLength": 3050
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Session Layer (Layer 5).md",
+          "title": "Session Layer (Layer 5)",
+          "linksAdded": 6,
+          "contentLength": 2786
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Presentation Layer (Layer 6).md",
+          "title": "Presentation Layer (Layer 6)",
+          "linksAdded": 6,
+          "contentLength": 2788
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/OSI Model.md",
+          "title": "OSI Model",
+          "linksAdded": 1,
+          "contentLength": 3815
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Network Layer (Layer 3).md",
+          "title": "Network Layer (Layer 3)",
+          "linksAdded": 2,
+          "contentLength": 3199
+        },
+        {
+          "path": "obsidian.main.vault/OSI Model/Application Layer (Layer 7).md",
+          "title": "Application Layer (Layer 7)",
+          "linksAdded": 2,
+          "contentLength": 3059
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts.md",
+          "title": "Fundamental Security Concepts",
+          "linksAdded": 10,
+          "contentLength": 22649
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Fundamental Security Concepts 1.md",
+          "title": "Fundamental Security Concepts 1",
+          "linksAdded": 10,
+          "contentLength": 22649
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's.md",
+          "title": "Event ID's",
+          "linksAdded": 10,
+          "contentLength": 8056
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Event ID's 1.md",
+          "title": "Event ID's 1",
+          "linksAdded": 10,
+          "contentLength": 8056
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Encryption.md",
+          "title": "Encryption",
+          "linksAdded": 7,
+          "contentLength": 3355
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Cyber Kill Chain.md",
+          "title": "Cyber Kill Chain",
+          "linksAdded": 10,
+          "contentLength": 5837
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow.md",
+          "title": "Analyst Detection Workflow",
+          "linksAdded": 2,
+          "contentLength": 3047
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/Analyst Detection Workflow 1.md",
+          "title": "Analyst Detection Workflow 1",
+          "linksAdded": 2,
+          "contentLength": 3047
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins.md",
+          "title": "01 - LOLbins",
+          "linksAdded": 3,
+          "contentLength": 1940
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/01 - LOLbins 1.md",
+          "title": "01 - LOLbins 1",
+          "linksAdded": 3,
+          "contentLength": 1940
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/00 - Screening Call Prep.md",
+          "title": "00 - Screening Call Prep",
+          "linksAdded": 10,
+          "contentLength": 9967
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker.md",
+          "title": "0 - How to be an Attacker",
+          "linksAdded": 2,
+          "contentLength": 3729
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Technical/0 - How to be an Attacker 1.md",
+          "title": "0 - How to be an Attacker 1",
+          "linksAdded": 2,
+          "contentLength": 3729
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Ownership.md",
+          "title": "Ownership",
+          "linksAdded": 2,
+          "contentLength": 1769
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Fixed Problem.md",
+          "title": "Fixed Problem",
+          "linksAdded": 2,
+          "contentLength": 1765
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Core Values.md",
+          "title": "Core Values",
+          "linksAdded": 2,
+          "contentLength": 5880
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/00 - Screening Call Prep 1.md",
+          "title": "00 - Screening Call Prep 1",
+          "linksAdded": 10,
+          "contentLength": 9967
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/SSP - System Security Plan.md",
+          "title": "SSP - System Security Plan",
+          "linksAdded": 4,
+          "contentLength": 3819
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Mind Map - Critical Thinking.md",
+          "title": "Mind Map - Critical Thinking",
+          "linksAdded": 1,
+          "contentLength": 11024
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Thought Process Walkthrough - 2.md",
+          "title": "Thought Process Walkthrough - 2",
+          "linksAdded": 2,
+          "contentLength": 15183
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Thought Process Walkthroughs/Solutions for thought process walkthrough 2.md",
+          "title": "Solutions for thought process walkthrough 2",
+          "linksAdded": 2,
+          "contentLength": 2630
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2.md",
+          "title": "TIP 2",
+          "linksAdded": 3,
+          "contentLength": 4158
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 2/TIP 2 Answers.md",
+          "title": "TIP 2 Answers",
+          "linksAdded": 3,
+          "contentLength": 2315
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1.md",
+          "title": "TIP 1",
+          "linksAdded": 10,
+          "contentLength": 4935
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Test 1/TIP 1 Answers.md",
+          "title": "TIP 1 Answers",
+          "linksAdded": 10,
+          "contentLength": 2716
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/Full Scenario of Job as described in JD.md",
+          "title": "Full Scenario of Job as described in JD",
+          "linksAdded": 5,
+          "contentLength": 11962
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/Interview Prep/000 - Mind Maps - Trouble Shooting - Critical Thinking.md",
+          "title": "000 - Mind Maps - Trouble Shooting - Critical Thinking",
+          "linksAdded": 1,
+          "contentLength": 4668
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/9 - Types of Encryption.md",
+          "title": "9 - Types of Encryption",
+          "linksAdded": 7,
+          "contentLength": 4499
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/6 - IATT - A&A - ATO.md",
+          "title": "6 - IATT - A&A - ATO",
+          "linksAdded": 4,
+          "contentLength": 6266
+        },
+        {
+          "path": "obsidian.main.vault/Extras/Templates/People.template.md",
+          "title": "People.template",
+          "linksAdded": 2,
+          "contentLength": 350
+        },
+        {
+          "path": "obsidian.main.vault/Extras/People/Sara Bouzeid.md",
+          "title": "Sara Bouzeid",
+          "linksAdded": 1,
+          "contentLength": 390
+        },
+        {
+          "path": "obsidian.main.vault/Excalidraw/Drawing 2025-10-05 17.24.36.excalidraw.md",
+          "title": "Drawing 2025-10-05 17.24.36.excalidraw",
+          "linksAdded": 10,
+          "contentLength": 566
+        },
+        {
+          "path": "obsidian.main.vault/Excalidraw/Drawing 2024-09-26 20.04.39.excalidraw.md",
+          "title": "Drawing 2024-09-26 20.04.39.excalidraw",
+          "linksAdded": 10,
+          "contentLength": 17266
+        }
+      ],
+      "triggeredBy": "batch-autolink",
+      "pluginVersion": "1.0.0"
+    },
+    {
+      "id": "backup-1764726711683",
+      "timestamp": 1764726711683,
+      "noteCount": 4,
+      "linksAdded": 4,
+      "notePaths": [
+        "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Red - Purple Team Threat Emulation.md",
+        "obsidian.main.vault/Notes/Tell Me About Yourself.md",
+        "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Difficult Person.md",
+        "obsidian.main.vault/Job Interview Prep/General Atomics/2 - Cyber Architect - Responsibilities.md"
+      ],
+      "description": "Batch auto-link: 4 links added to 4 notes",
+      "noteDetails": [
+        {
+          "path": "obsidian.main.vault/PayPal - Offensive Security Engineer/00 - Threat Emulation - Purple Team/Red - Purple Team Threat Emulation.md",
+          "title": "Red - Purple Team Threat Emulation",
+          "linksAdded": 1,
+          "contentLength": 5413
+        },
+        {
+          "path": "obsidian.main.vault/Notes/Tell Me About Yourself.md",
+          "title": "Tell Me About Yourself",
+          "linksAdded": 1,
+          "contentLength": 2107
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/Rapid7/Interview Prep/Behavioral/Difficult Person.md",
+          "title": "Difficult Person",
+          "linksAdded": 1,
+          "contentLength": 1881
+        },
+        {
+          "path": "obsidian.main.vault/Job Interview Prep/General Atomics/2 - Cyber Architect - Responsibilities.md",
+          "title": "2 - Cyber Architect - Responsibilities",
+          "linksAdded": 1,
+          "contentLength": 4663
+        }
+      ],
+      "triggeredBy": "batch-autolink",
+      "pluginVersion": "1.0.0"
+    }
+  ]
+}

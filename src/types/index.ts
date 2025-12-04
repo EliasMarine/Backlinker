@@ -8,7 +8,8 @@ export interface NoteIndex {
   title: string;
   content: string;
   cleanContent: string; // stripped of markdown
-  keywords: string[];
+  keywords: string[];   // single-word keywords
+  phrases: string[];    // multi-word phrases (2-3 words) for content-based linking
   existingLinks: LinkReference[];
   headings: string[];
   tags: string[];
@@ -83,6 +84,7 @@ export interface SerializedNoteIndex {
   content: string;
   cleanContent: string;
   keywords: string[];
+  phrases: string[];    // multi-word phrases for content-based linking
   existingLinks: LinkReference[];
   headings: string[];
   tags: string[];
@@ -237,7 +239,6 @@ export interface BatchLinkSettings {
   lastRunTimestamp?: number;      // Timestamp of last batch run
 
   // Smart matching settings
-  exactTitleMatchOnly: boolean;   // Only link when exact note title is found (default: true)
   enableContextVerification: boolean; // Use embeddings to verify link context (default: true)
   maxDocFrequencyPercent: number; // Skip words appearing in >X% of notes (default: 20)
 }
@@ -288,8 +289,7 @@ export const DEFAULT_SETTINGS: SmartLinksSettings = {
     maxLinksPerNote: 10,
     lastRunTimestamp: undefined,
 
-    // Smart matching (conservative defaults)
-    exactTitleMatchOnly: true,  // Only match exact note titles by default
+    // Smart matching (content-based linking)
     enableContextVerification: true,  // Use embeddings when available
     maxDocFrequencyPercent: 20  // Skip words in >20% of notes
   }
