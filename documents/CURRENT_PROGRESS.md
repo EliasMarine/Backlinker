@@ -1,10 +1,43 @@
 # Smart Links - Current Progress & Status
 
-**Last Updated**: December 4, 2025
+**Last Updated**: December 4, 2025 (Evening)
 **Version**: 1.0.0
 **Build Status**: ✅ Compiles Successfully
-**Test Status**: Phase 3 tested + Batch Auto-Link + Multi-Tier Smart Matching IMPLEMENTED
-**Git Branch**: `feature/smart-keyword-matcher`
+**Test Status**: Phase 3 tested + Batch Auto-Link + Multi-Tier Smart Matching IMPLEMENTED (needs testing)
+**Git Branch**: `feature/multi-tier-smart-matching` (pushed to GitHub)
+
+---
+
+## 🎯 PICK UP HERE TOMORROW
+
+### What Was Just Completed
+Multi-Tier Smart Matching system - a balanced approach between title-only matching (too restrictive) and shared keyword matching (which caused the "212 links but only 20 visible" bug).
+
+### Immediate Next Steps
+
+1. **Test Multi-Tier Matching in Obsidian**
+   - Reload Obsidian to pick up new build
+   - Go to Settings > Smart Links > Auto-Link section
+   - Try the new "Matching strictness" dropdown (strict/balanced/relaxed)
+   - Run "Link My Vault" and check preview modal for:
+     - Correct link suggestions
+     - Match reason badges (Title/Entity/Phrase/Keyword)
+     - No semantic garbage like "Session Layer" → "Presentation Layer"
+
+2. **Re-index Vault** (IMPORTANT)
+   - Go to Settings > Smart Links > Vault Index
+   - Click "Clear Cache" then "Analyze Vault"
+   - This is needed to extract entities/nounPhrases for new matching
+
+3. **Verify Each Strictness Level**
+   - `strict`: Should only show title matches
+   - `balanced`: Titles + entities + rare phrases
+   - `relaxed`: All of above + single keywords
+
+### If Issues Found
+- Check console for `[SmartKeywordMatcher]` logs
+- Each match shows: tier, keyword, target, confidence, matchReason
+- Adjust `STRICTNESS_PRESETS` in `src/batch/smart-keyword-matcher.ts` if needed
 
 ---
 
