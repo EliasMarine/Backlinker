@@ -129,8 +129,10 @@ export class BatchProgressModal extends Modal {
     }
 
     // Update progress bar
-    const percentage = progress.total > 0
-      ? Math.round((progress.current / progress.total) * 100)
+    const current = progress.current ?? 0;
+    const total = progress.total ?? 0;
+    const percentage = total > 0
+      ? Math.round((current / total) * 100)
       : 0;
 
     if (this.progressFill) {
@@ -138,7 +140,7 @@ export class BatchProgressModal extends Modal {
     }
 
     if (this.percentageText) {
-      this.percentageText.setText(`${progress.current}/${progress.total}`);
+      this.percentageText.setText(`${percentage}% (${current}/${total})`);
     }
 
     // Handle completion
