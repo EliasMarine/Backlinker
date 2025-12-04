@@ -1,10 +1,10 @@
 # Smart Links - Current Progress & Status
 
-**Last Updated**: December 2, 2025
+**Last Updated**: December 4, 2025
 **Version**: 1.0.0
 **Build Status**: ✅ Compiles Successfully
-**Test Status**: Phase 3 tested + Batch Auto-Link + Clear All Links feature integrated
-**Git Branch**: `feature/model-selection`
+**Test Status**: Phase 3 tested + Batch Auto-Link + Critical semantic bug FIXED
+**Git Branch**: `fix/title-based-fallback-matching`
 
 ---
 
@@ -110,6 +110,19 @@
   - "Clear Cache" button in settings
   - Status display showing indexed notes/terms count
   - All "Analyze entire vault" messages now point to Settings UI
+
+**Bugs Fixed (December 4, 2025)**:
+- **CRITICAL: Semantic Linking Bug** - Links were being created incorrectly
+  - **Symptom**: "212 links added" but only ~20 visible in graph view
+  - **Root Cause**: SmartKeywordMatcher was using SHARED KEYWORDS between notes
+    - Example: "Session Layer" text was linked to "Presentation Layer" note because they shared keywords like "Layer"
+    - This is semantically WRONG - the text doesn't refer to that note
+  - **Fix**: Complete rewrite to title-only matching:
+    - Strategy 1: Full title match (highest confidence)
+    - Strategy 2: Unique title word match (words in target title NOT in source title)
+    - Added check: Skip if source/target titles share >50% significant words
+  - Links now only created when TARGET note's title appears in source content
+  - File: `src/batch/smart-keyword-matcher.ts`
 
 ---
 
