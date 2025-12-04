@@ -1,14 +1,22 @@
 /**
  * Smart Keyword Matcher for Batch Auto-Link
  *
- * A more intelligent keyword matching system that:
- * 1. Only matches meaningful references (primarily full note titles)
- * 2. Filters out domain-generic terms that create noise
- * 3. Considers word uniqueness in the vault
- * 4. Optionally uses embeddings for context verification
+ * A content-based keyword matching system that:
+ * 1. Uses shared phrases (2-3 words) as link anchors - most meaningful
+ * 2. Falls back to shared keywords if no phrase matches
+ * 3. Falls back to title-based matching if no shared terms found
+ * 4. Filters out domain-generic terms that create noise
+ * 5. Considers word uniqueness in the vault
+ * 6. Optionally uses embeddings for context verification
  *
- * Philosophy: It's better to miss some potential links than to create
- * incorrect ones. Users trust auto-linking to be accurate.
+ * The three-tier matching strategy ensures we find meaningful links:
+ * - Strategy 1: Shared phrases (highest quality)
+ * - Strategy 2: Shared keywords (good quality)
+ * - Strategy 3: Title in content (fallback for semantically similar notes)
+ *
+ * Philosophy: Links should connect semantically related notes. Shared content
+ * is preferred, but title matching is a valid fallback when the hybrid scorer
+ * has already determined the notes are related.
  */
 
 import { NoteIndex, VaultCache } from '../types';
@@ -28,17 +36,13 @@ export interface SmartMatcherConfig {
 
   // Minimum context similarity score (0-1) for embedding-based verification
   minContextSimilarity: number;
-
-  // Only match exact titles (strictest mode)
-  exactTitleMatchOnly: boolean;
 }
 
 export const DEFAULT_SMART_MATCHER_CONFIG: SmartMatcherConfig = {
   minKeywordLength: 4,
   maxDocumentFrequencyPercent: 20, // Skip words appearing in >20% of notes
   enableContextVerification: true,
-  minContextSimilarity: 0.4,
-  exactTitleMatchOnly: false
+  minContextSimilarity: 0.4
 };
 
 /**
@@ -109,6 +113,35 @@ const DOMAIN_STOPWORDS = new Set([
 function getNoteTitleFromPath(path: string): string {
   const fileName = path.split('/').pop() || path;
   return fileName.replace(/\.md$/, '');
+}
+
+/**
+ * Strip numbered prefix from a title
+ * Handles patterns like: "00 - Title", "1 - Title", "2.1 - Title", "01.2.3 - Title"
+ * Returns the title without the prefix, or the original if no prefix found
+ *
+ * Note: Requires space-dash-space to avoid matching dates like "2024-04-24"
+ */
+function stripNumberedPrefix(title: string): string {
+  // Pattern: digits, optional dots/digits, followed by space-dash-space
+  // Examples: "1 - ", "00 - ", "2.1 - ", "01.2.3 - "
+  // Does NOT match: "2024-04-24" (no space before dash)
+  const prefixPattern = /^[\d]+(?:\.[\d]+)*\s+-\s+/;
+  const stripped = title.replace(prefixPattern, '');
+  return stripped !== title ? stripped : title;
+}
+
+/**
+ * Get all variants of a title for matching
+ * Returns [originalTitle, normalizedTitle] where normalizedTitle has prefix stripped
+ * If they're the same, returns just [originalTitle]
+ */
+function getTitleVariants(title: string): string[] {
+  const normalized = stripNumberedPrefix(title);
+  if (normalized !== title && normalized.length > 0) {
+    return [title, normalized];
+  }
+  return [title];
 }
 
 /**
@@ -184,7 +217,7 @@ export interface SmartMatchResult {
   targetNote: NoteIndex;
   keywords: KeywordToReplace[];
   totalConfidence: number;
-  matchReason: 'exact_title' | 'partial_title' | 'alias' | 'context_verified';
+  matchReason: 'shared_phrase' | 'shared_keyword' | 'title_match' | 'context_verified';
 }
 
 /**
@@ -337,7 +370,8 @@ export class SmartKeywordMatcher {
 
   /**
    * Find keywords for a single note match
-   * Uses strict matching criteria
+   * Uses CONTENT-BASED matching - shared phrases and keywords between notes
+   * NO LONGER uses title-based matching
    */
   async findKeywordsForNote(
     hybridResult: HybridResultForSmartMatching,
@@ -352,77 +386,19 @@ export class SmartKeywordMatcher {
 
     const targetTitle = getNoteTitleFromPath(targetNote.path);
     const sourceContent = sourceNote.content || '';
-    const sourceTitle = getNoteTitleFromPath(sourceNote.path);
-
-    // Skip if same title (could be in different folders)
-    if (normalize(sourceTitle) === normalize(targetTitle)) {
-      return [];
-    }
 
     const results: KeywordToReplace[] = [];
 
-    // Strategy 1: EXACT full title match (highest confidence)
-    // This is the most reliable - the note's exact title appears in the source
-    if (textExistsInContent(targetTitle, sourceContent)) {
-      // Even for exact matches, verify it's not a domain stopword
-      if (this.isValidKeyword(targetTitle)) {
-        let confidence = hybridResult.finalScore * 1.0;
-        let matchReason: 'exact_title' | 'context_verified' = 'exact_title';
-
-        // Optional context verification for single-word titles
-        if (
-          this.config.enableContextVerification &&
-          !targetTitle.includes(' ') &&
-          this.embeddingEngine?.isModelLoaded()
-        ) {
-          const contextSimilarity = await this.verifyContextWithEmbeddings(
-            sourceContent,
-            targetTitle,
-            targetNote.path
-          );
-
-          if (contextSimilarity < this.config.minContextSimilarity) {
-            // Context doesn't support this link - skip it
-            console.log(
-              `[SmartKeywordMatcher] Skipping "${targetTitle}" - context similarity too low (${contextSimilarity.toFixed(2)})`
-            );
-            return results;
-          }
-
-          confidence = confidence * (0.5 + contextSimilarity * 0.5);
-          matchReason = 'context_verified';
-        }
-
-        results.push({
-          keyword: targetTitle,
-          targetTitle,
-          targetPath: targetNote.path,
-          confidence
-        });
-
-        console.log(
-          `[SmartKeywordMatcher] Matched "${targetTitle}" via ${matchReason} (confidence: ${confidence.toFixed(2)})`
-        );
-      }
-    }
-
-    // If exact title match only mode, stop here
-    if (this.config.exactTitleMatchOnly) {
-      return results;
-    }
-
-    // Strategy 2: Multi-word title partial match
-    // For titles like "Machine Learning Basics", check if "Machine Learning" appears
-    const titleWords = targetTitle.split(/\s+/);
-    if (titleWords.length >= 2 && results.length === 0) {
-      // Try matching consecutive word combinations (2+ words)
-      for (let i = 0; i < titleWords.length - 1; i++) {
-        for (let j = i + 2; j <= titleWords.length; j++) {
-          const phrase = titleWords.slice(i, j).join(' ');
-
-          if (phrase.length >= 6 && textExistsInContent(phrase, sourceContent)) {
-            // Multi-word phrase found
-            const confidence = hybridResult.finalScore * 0.8 * (j - i) / titleWords.length;
+    // Strategy 1: SHARED PHRASES (highest priority)
+    // Multi-word phrases are more meaningful and specific
+    // These are phrases that appear in BOTH the source and target notes
+    if (hybridResult.matchedPhrases && hybridResult.matchedPhrases.length > 0) {
+      for (const phrase of hybridResult.matchedPhrases) {
+        // Verify the phrase exists in source content as whole words
+        if (textExistsInContent(phrase, sourceContent)) {
+          // Check if it's a valid keyword (not too generic)
+          if (this.isValidKeyword(phrase)) {
+            const confidence = hybridResult.finalScore * 0.95;
 
             results.push({
               keyword: phrase,
@@ -432,18 +408,139 @@ export class SmartKeywordMatcher {
             });
 
             console.log(
-              `[SmartKeywordMatcher] Matched phrase "${phrase}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
+              `[SmartKeywordMatcher] Matched shared phrase "${phrase}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
             );
-
-            // Only take the longest matching phrase
-            break;
           }
         }
       }
     }
 
-    // Strategy 3: Note aliases (if available in frontmatter)
-    // This would require parsing YAML frontmatter - future enhancement
+    // Strategy 2: SHARED KEYWORDS (fallback)
+    // Only use if no phrase matches found
+    // Single words that appear in BOTH notes
+    if (results.length === 0 && hybridResult.matchedKeywords && hybridResult.matchedKeywords.length > 0) {
+      for (const keyword of hybridResult.matchedKeywords) {
+        // Verify the keyword exists in source content as whole word
+        if (textExistsInContent(keyword, sourceContent)) {
+          // Check if it's a valid keyword (not too generic)
+          if (this.isValidKeyword(keyword)) {
+            let confidence = hybridResult.finalScore * 0.8;
+
+            // Optional: Context verification for single words using embeddings
+            if (
+              this.config.enableContextVerification &&
+              this.embeddingEngine?.isModelLoaded()
+            ) {
+              const contextSimilarity = await this.verifyContextWithEmbeddings(
+                sourceContent,
+                keyword,
+                targetNote.path
+              );
+
+              if (contextSimilarity < this.config.minContextSimilarity) {
+                // Context doesn't support this link - skip it
+                console.log(
+                  `[SmartKeywordMatcher] Skipping keyword "${keyword}" -> "${targetTitle}" - context similarity too low (${contextSimilarity.toFixed(2)})`
+                );
+                continue;
+              }
+
+              confidence = confidence * (0.5 + contextSimilarity * 0.5);
+            }
+
+            results.push({
+              keyword,
+              targetTitle,
+              targetPath: targetNote.path,
+              confidence
+            });
+
+            console.log(
+              `[SmartKeywordMatcher] Matched shared keyword "${keyword}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
+            );
+          }
+        }
+      }
+    }
+
+    // Strategy 3: TITLE-BASED MATCHING (final fallback)
+    // Only use if no shared phrases or keywords found
+    // The hybrid scorer already determined these notes are semantically related,
+    // so matching the target's title in the source is a valid link
+    if (results.length === 0) {
+      const titleVariants = getTitleVariants(targetTitle);
+
+      for (const variant of titleVariants) {
+        // Try full title match first
+        if (textExistsInContent(variant, sourceContent)) {
+          // Validate the title isn't too generic
+          if (this.isValidKeyword(variant) || variant.includes(' ')) {
+            // Multi-word titles are generally safe even if individual words are common
+            const confidence = hybridResult.finalScore * 0.7; // Slightly lower confidence for title matches
+
+            results.push({
+              keyword: variant,
+              targetTitle,
+              targetPath: targetNote.path,
+              confidence
+            });
+
+            console.log(
+              `[SmartKeywordMatcher] Matched title "${variant}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
+            );
+            break; // Found a title match, no need to continue
+          }
+        }
+      }
+
+      // If no full title match, try individual significant words from the title
+      if (results.length === 0) {
+        const titleWords = targetTitle
+          .split(/[\s\-_]+/)
+          .filter(word => word.length >= 4 && !this.isDomainStopword(word));
+
+        for (const word of titleWords) {
+          if (textExistsInContent(word, sourceContent)) {
+            if (this.isValidKeyword(word)) {
+              let confidence = hybridResult.finalScore * 0.6; // Lower confidence for partial title matches
+
+              // Context verification is especially important for single title words
+              if (
+                this.config.enableContextVerification &&
+                this.embeddingEngine?.isModelLoaded()
+              ) {
+                const contextSimilarity = await this.verifyContextWithEmbeddings(
+                  sourceContent,
+                  word,
+                  targetNote.path
+                );
+
+                if (contextSimilarity < this.config.minContextSimilarity) {
+                  console.log(
+                    `[SmartKeywordMatcher] Skipping title word "${word}" -> "${targetTitle}" - context similarity too low (${contextSimilarity.toFixed(2)})`
+                  );
+                  continue;
+                }
+
+                confidence = confidence * (0.5 + contextSimilarity * 0.5);
+              }
+
+              results.push({
+                keyword: word,
+                targetTitle,
+                targetPath: targetNote.path,
+                confidence
+              });
+
+              console.log(
+                `[SmartKeywordMatcher] Matched title word "${word}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
+              );
+              break; // One title word match is enough
+            }
+          }
+        }
+      }
+    }
 
     // Remove duplicates, keep highest confidence
     const uniqueResults = new Map<string, KeywordToReplace>();
@@ -485,13 +582,38 @@ export class SmartKeywordMatcher {
       const validKeywords = keywords.filter(k => k.confidence >= minConfidence);
 
       if (validKeywords.length > 0) {
+        // Determine match reason based on how the keyword was matched
+        const firstKeyword = validKeywords[0].keyword;
+        const targetTitle = getNoteTitleFromPath(result.note.path);
+        const titleVariants = getTitleVariants(targetTitle);
+
+        let matchReason: 'shared_phrase' | 'shared_keyword' | 'title_match' | 'context_verified';
+
+        // Check if matched via shared phrases
+        if (result.matchedPhrases?.includes(firstKeyword)) {
+          matchReason = 'shared_phrase';
+        }
+        // Check if matched via shared keywords
+        else if (result.matchedKeywords?.includes(firstKeyword)) {
+          matchReason = 'shared_keyword';
+        }
+        // Check if matched via title (full or partial)
+        else if (
+          titleVariants.some(v => normalize(v) === normalize(firstKeyword)) ||
+          targetTitle.toLowerCase().split(/[\s\-_]+/).some(w => normalize(w) === normalize(firstKeyword))
+        ) {
+          matchReason = 'title_match';
+        }
+        // Default fallback
+        else {
+          matchReason = firstKeyword.includes(' ') ? 'shared_phrase' : 'shared_keyword';
+        }
+
         results.push({
           targetNote: result.note,
           keywords: validKeywords,
           totalConfidence: result.finalScore,
-          matchReason: validKeywords[0].keyword === getNoteTitleFromPath(result.note.path)
-            ? 'exact_title'
-            : 'partial_title'
+          matchReason
         });
       }
     }
