@@ -28,7 +28,7 @@ export interface BackupManifest {
   // Enhanced metadata
   description?: string;           // Human-readable description
   noteDetails?: BackupNoteDetail[]; // Per-note details
-  triggeredBy?: 'manual' | 'batch-autolink' | 'other';
+  triggeredBy?: 'manual' | 'batch-autolink' | 'clear-all-links' | 'other';
   pluginVersion?: string;
 }
 
@@ -60,7 +60,9 @@ export interface BackupStats {
   lastBackupTimestamp?: number;
   lastRestoreTimestamp?: number;
   totalNotesBackedUp: number;
-  totalLinksAdded: number;
+  totalLinksAdded: number;      // Only positive values (from batch auto-link)
+  totalLinksRemoved: number;    // Only from clear-all-links operations
+  netLinksAdded: number;        // totalLinksAdded - totalLinksRemoved
 }
 
 /**
@@ -192,7 +194,7 @@ export class BackupManager {
     linksAdded: number,
     options?: {
       description?: string;
-      triggeredBy?: 'manual' | 'batch-autolink' | 'other';
+      triggeredBy?: 'manual' | 'batch-autolink' | 'clear-all-links' | 'other';
       noteDetails?: BackupNoteDetail[];
     }
   ): Promise<BackupManifest> {
@@ -563,6 +565,11 @@ export class BackupManager {
 
   /**
    * Get comprehensive backup and restore statistics
+   *
+   * Stats are calculated separately for add vs remove operations:
+   * - totalLinksAdded: Sum of all positive linksAdded values (from batch auto-link)
+   * - totalLinksRemoved: Absolute value of negative linksAdded (from clear-all-links)
+   * - netLinksAdded: totalLinksAdded - totalLinksRemoved
    */
   async getStats(): Promise<BackupStats> {
     const manifests = await this.loadManifests();
@@ -570,11 +577,20 @@ export class BackupManager {
 
     let totalNotesBackedUp = 0;
     let totalLinksAdded = 0;
+    let totalLinksRemoved = 0;
     let lastBackupTimestamp: number | undefined;
 
     for (const manifest of manifests) {
       totalNotesBackedUp += manifest.noteCount;
-      totalLinksAdded += manifest.linksAdded;
+
+      // Separate positive (adds) from negative (removes)
+      if (manifest.linksAdded > 0) {
+        totalLinksAdded += manifest.linksAdded;
+      } else if (manifest.linksAdded < 0) {
+        // Clear operations record negative values
+        totalLinksRemoved += Math.abs(manifest.linksAdded);
+      }
+
       if (!lastBackupTimestamp || manifest.timestamp > lastBackupTimestamp) {
         lastBackupTimestamp = manifest.timestamp;
       }
@@ -588,7 +604,9 @@ export class BackupManager {
       lastBackupTimestamp,
       lastRestoreTimestamp: lastRestore?.timestamp,
       totalNotesBackedUp,
-      totalLinksAdded
+      totalLinksAdded,
+      totalLinksRemoved,
+      netLinksAdded: totalLinksAdded - totalLinksRemoved
     };
   }
 

@@ -14,7 +14,8 @@ import { EmbeddingProgressModal, EnableEmbeddingsModal } from './src/ui/embeddin
 import { BatchLinker, BatchLinkOptions, BatchLinkSummary } from './src/batch/batch-linker';
 import { BatchPreviewModal, PreviewResult } from './src/ui/batch-preview-modal';
 import { BatchProgressModal } from './src/ui/batch-progress-modal';
-import { BackupManifest, formatBackupDate } from './src/batch/backup-manager';
+import { BackupManifest, formatBackupDate, BackupManager } from './src/batch/backup-manager';
+import { LinkCleaner, LinkCleanSummary } from './src/batch/link-cleaner';
 
 /**
  * Smart Links - Intelligent Backlinking for Obsidian
@@ -42,6 +43,9 @@ export default class SmartLinksPlugin extends Plugin {
 
   // Batch Auto-Link
   private batchLinker: BatchLinker | null = null;
+
+  // Link Cleaner
+  private linkCleaner: LinkCleaner | null = null;
 
   // State
   private statusBarItem: HTMLElement;
@@ -150,6 +154,12 @@ export default class SmartLinksPlugin extends Plugin {
       this.embeddingCache
     );
     console.log('[Smart Links] ✓ Batch linker initialized');
+
+    // Initialize link cleaner (uses batch linker's backup manager)
+    console.log('[Smart Links] Initializing link cleaner...');
+    const backupManager = this.batchLinker.getBackupManager();
+    this.linkCleaner = new LinkCleaner(this.app, backupManager);
+    console.log('[Smart Links] ✓ Link cleaner initialized');
 
     // Register suggestion panel view
     console.log('[Smart Links] Registering suggestion panel view...');
@@ -925,6 +935,7 @@ export default class SmartLinksPlugin extends Plugin {
   /**
    * Clear the cache - callable from settings UI
    * IMPORTANT: Clear in-place to preserve references held by other components
+   * Also clears embedding cache to prevent stale embeddings
    */
   async clearCache(): Promise<void> {
     try {
@@ -938,6 +949,13 @@ export default class SmartLinksPlugin extends Plugin {
       this.cache.lastFullAnalysis = 0;
       this.cache.semanticEnabled = false;
       this.cache.version = '1.0.0';
+
+      // Also clear embedding cache to prevent stale embeddings
+      // (embeddings without corresponding notes in the main cache)
+      if (this.embeddingCache) {
+        await this.embeddingCache.clear();
+        console.log('[Smart Links] Embedding cache cleared');
+      }
 
       console.log('[Smart Links] Cache cleared');
       this.updateStatusBar('Cache cleared');
@@ -1205,6 +1223,89 @@ export default class SmartLinksPlugin extends Plugin {
   getBackupManager(): import('./src/batch/backup-manager').BackupManager | null {
     if (!this.batchLinker) return null;
     return this.batchLinker.getBackupManager();
+  }
+
+  // ========================================
+  // Link Cleaner
+  // ========================================
+
+  /**
+   * Preview clearing all links from the vault
+   * Returns summary without making any changes
+   */
+  async previewClearLinks(): Promise<LinkCleanSummary | null> {
+    if (!this.linkCleaner) {
+      new Notice('Link cleaner not initialized');
+      return null;
+    }
+
+    console.log('[Smart Links] Previewing link clearing...');
+    this.updateStatusBar('Scanning links...');
+
+    try {
+      const summary = await this.linkCleaner.scanVault((progress) => {
+        if (progress.phase === 'scanning') {
+          this.updateStatusBar(`Scanning: ${progress.current}/${progress.total}`);
+        }
+      });
+
+      console.log(`[Smart Links] Preview complete: ${summary.totalLinksRemoved} links in ${summary.notesWithChanges} notes`);
+      this.updateStatusBar('Ready');
+
+      return summary;
+
+    } catch (error) {
+      console.error('[Smart Links] Preview failed:', error);
+      this.updateStatusBar('Error');
+      throw error;
+    }
+  }
+
+  /**
+   * Clear all wiki-links from the vault
+   * Creates backup before making changes
+   */
+  async clearAllLinks(): Promise<LinkCleanSummary | null> {
+    if (!this.linkCleaner) {
+      new Notice('Link cleaner not initialized');
+      return null;
+    }
+
+    console.log('[Smart Links] Clearing all links...');
+    this.updateStatusBar('Clearing links...');
+
+    try {
+      const summary = await this.linkCleaner.cleanAllLinks((progress) => {
+        switch (progress.phase) {
+          case 'scanning':
+            this.updateStatusBar(`Scanning: ${progress.current}/${progress.total}`);
+            break;
+          case 'backup':
+            this.updateStatusBar('Creating backup...');
+            break;
+          case 'cleaning':
+            this.updateStatusBar(`Cleaning: ${progress.current}/${progress.total}`);
+            break;
+          case 'complete':
+            this.updateStatusBar('Done');
+            break;
+        }
+      });
+
+      console.log(`[Smart Links] Cleared ${summary.totalLinksRemoved} links from ${summary.notesWithChanges} notes`);
+
+      if (summary.errors.length > 0) {
+        console.warn('[Smart Links] Errors during link clearing:', summary.errors);
+      }
+
+      this.updateStatusBar('Ready');
+      return summary;
+
+    } catch (error) {
+      console.error('[Smart Links] Clear links failed:', error);
+      this.updateStatusBar('Error');
+      throw error;
+    }
   }
 }
 

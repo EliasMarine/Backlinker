@@ -2,6 +2,7 @@ import { App, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
 import { SmartLinksSettings, EMBEDDING_MODELS, getModelConfig, EmbeddingModelConfig } from './types';
 
 import { BackupManager } from './batch/backup-manager';
+import { LinkCleanSummary } from './batch/link-cleaner';
 
 // Forward declaration to avoid circular dependency
 type SmartLinksPlugin = Plugin & {
@@ -24,6 +25,9 @@ type SmartLinksPlugin = Plugin & {
   restoreFromBackup?: () => Promise<void>;
   hasBackupAvailable?: () => Promise<boolean>;
   getBackupManager?: () => BackupManager | null;
+  // Link cleaner methods
+  clearAllLinks?: () => Promise<LinkCleanSummary | null>;
+  previewClearLinks?: () => Promise<LinkCleanSummary | null>;
 };
 
 /**
@@ -765,19 +769,6 @@ export class SmartLinksSettingTab extends PluginSettingTab {
     // Smart Matching Section
     settingsEl.createEl('h4', { text: 'Smart Matching', cls: 'smart-links-subheading' });
 
-    // Exact title match only
-    new Setting(settingsEl)
-      .setName('Exact title match only')
-      .setDesc('Only create links when the exact note title is found in text (recommended). Disabling allows partial matches but may create incorrect links.')
-      .addToggle(toggle =>
-        toggle
-          .setValue(this.plugin.settings.batchLinkSettings.exactTitleMatchOnly ?? true)
-          .onChange(async (value) => {
-            this.plugin.settings.batchLinkSettings.exactTitleMatchOnly = value;
-            await this.plugin.saveSettings();
-          })
-      );
-
     // Context verification
     new Setting(settingsEl)
       .setName('Context verification')
@@ -808,6 +799,9 @@ export class SmartLinksSettingTab extends PluginSettingTab {
 
     // Backup & Restore History Section
     await this.renderBackupHistorySection(settingsEl);
+
+    // Clear All Links Section (Danger Zone)
+    await this.renderClearLinksSection(settingsEl);
 
     // Separator
     containerEl.createEl('hr', { cls: 'smart-links-separator' });
@@ -902,10 +896,17 @@ export class SmartLinksSettingTab extends PluginSettingTab {
     restoreStat.createEl('span', { text: String(stats.totalRestores), cls: 'smart-links-stat-value' });
     restoreStat.createEl('span', { text: 'Restores', cls: 'smart-links-stat-label' });
 
-    // Total links stat
+    // Total links added stat
     const linksStat = statsGrid.createDiv('smart-links-stat-item');
     linksStat.createEl('span', { text: String(stats.totalLinksAdded), cls: 'smart-links-stat-value' });
     linksStat.createEl('span', { text: 'Links Added', cls: 'smart-links-stat-label' });
+
+    // Total links removed stat (only show if > 0)
+    if (stats.totalLinksRemoved > 0) {
+      const removedStat = statsGrid.createDiv('smart-links-stat-item');
+      removedStat.createEl('span', { text: String(stats.totalLinksRemoved), cls: 'smart-links-stat-value' });
+      removedStat.createEl('span', { text: 'Links Removed', cls: 'smart-links-stat-label' });
+    }
 
     // Last backup info
     if (stats.lastBackupTimestamp) {
@@ -950,8 +951,12 @@ export class SmartLinksSettingTab extends PluginSettingTab {
         });
 
         const detailsEl = infoEl.createDiv('smart-links-backup-details');
+        // Format links text properly for add vs remove operations
+        const linksText = manifest.linksAdded >= 0
+          ? `${manifest.linksAdded} links added`
+          : `${Math.abs(manifest.linksAdded)} links removed`;
         detailsEl.createEl('span', {
-          text: `${manifest.noteCount} notes • ${manifest.linksAdded} links`,
+          text: `${manifest.noteCount} notes • ${linksText}`,
           cls: 'smart-links-backup-meta'
         });
 
@@ -970,8 +975,12 @@ export class SmartLinksSettingTab extends PluginSettingTab {
         });
 
         restoreBtn.onclick = async () => {
+          // Format confirmation message based on operation type
+          const actionText = manifest.linksAdded >= 0
+            ? `${manifest.linksAdded} links were added`
+            : `${Math.abs(manifest.linksAdded)} links were removed`;
           const confirmed = confirm(
-            `Restore ${manifest.noteCount} notes to their state before ${manifest.linksAdded} links were added?`
+            `Restore ${manifest.noteCount} notes to their state before ${actionText}?`
           );
           if (confirmed) {
             try {
@@ -1030,5 +1039,201 @@ export class SmartLinksSettingTab extends PluginSettingTab {
         }
       }
     }
+  }
+
+  /**
+   * Render the Clear All Links section (danger zone)
+   */
+  private async renderClearLinksSection(containerEl: HTMLElement): Promise<void> {
+    const sectionEl = containerEl.createDiv('smart-links-clear-links-section');
+
+    // Danger zone header
+    const headerEl = sectionEl.createDiv('smart-links-danger-header');
+    headerEl.createEl('h4', { text: 'Remove Links', cls: 'smart-links-danger-title' });
+    headerEl.createEl('p', {
+      text: 'Remove all wiki-links from your notes. This keeps the display text but removes the link formatting.',
+      cls: 'smart-links-danger-desc'
+    });
+
+    // Warning message
+    const warningEl = sectionEl.createDiv('smart-links-danger-warning');
+    warningEl.createEl('span', { text: '⚠️ ' });
+    warningEl.createEl('span', {
+      text: 'This is a destructive operation. A backup will be created before removing links.',
+      cls: 'smart-links-warning-text'
+    });
+
+    // Preview stats container (will be populated when preview is run)
+    const statsEl = sectionEl.createDiv('smart-links-clear-stats');
+    statsEl.style.display = 'none';
+
+    // Button container
+    const buttonContainer = sectionEl.createDiv('smart-links-clear-buttons');
+
+    // Preview button
+    const previewButton = buttonContainer.createEl('button', {
+      text: 'Preview Changes',
+      cls: 'smart-links-preview-clear-button'
+    });
+
+    // Clear All button (disabled until preview is run)
+    const clearButton = buttonContainer.createEl('button', {
+      text: 'Clear All Links',
+      cls: 'mod-warning smart-links-clear-all-button'
+    });
+    clearButton.setAttribute('disabled', 'true');
+    clearButton.addClass('smart-links-button-disabled');
+
+    let previewSummary: LinkCleanSummary | null = null;
+
+    // Preview button handler
+    previewButton.onclick = async () => {
+      if (!this.plugin.previewClearLinks) {
+        new Notice('Clear links feature not available');
+        return;
+      }
+
+      previewButton.setAttribute('disabled', 'true');
+      previewButton.setText('Scanning...');
+
+      try {
+        previewSummary = await this.plugin.previewClearLinks();
+
+        if (!previewSummary) {
+          new Notice('Failed to scan vault');
+          return;
+        }
+
+        // Show stats
+        statsEl.empty();
+        statsEl.style.display = 'block';
+
+        if (previewSummary.totalLinksRemoved === 0) {
+          statsEl.createEl('p', {
+            text: '✓ No wiki-links found in your vault.',
+            cls: 'smart-links-success-text'
+          });
+          clearButton.setAttribute('disabled', 'true');
+          clearButton.addClass('smart-links-button-disabled');
+        } else {
+          const statsGrid = statsEl.createDiv('smart-links-stats-grid');
+
+          const linksStat = statsGrid.createDiv('smart-links-stat-item');
+          linksStat.createEl('span', {
+            text: String(previewSummary.totalLinksRemoved),
+            cls: 'smart-links-stat-value smart-links-danger-value'
+          });
+          linksStat.createEl('span', { text: 'Links to Remove', cls: 'smart-links-stat-label' });
+
+          const notesStat = statsGrid.createDiv('smart-links-stat-item');
+          notesStat.createEl('span', {
+            text: String(previewSummary.notesWithChanges),
+            cls: 'smart-links-stat-value'
+          });
+          notesStat.createEl('span', { text: 'Notes Affected', cls: 'smart-links-stat-label' });
+
+          // Enable the clear button
+          clearButton.removeAttribute('disabled');
+          clearButton.removeClass('smart-links-button-disabled');
+        }
+
+      } catch (error) {
+        console.error('[Settings] Failed to preview link clearing:', error);
+        new Notice(`Preview failed: ${(error as Error).message}`);
+      } finally {
+        previewButton.removeAttribute('disabled');
+        previewButton.setText('Preview Changes');
+      }
+    };
+
+    // Clear All button handler
+    clearButton.onclick = async () => {
+      if (!this.plugin.clearAllLinks) {
+        new Notice('Clear links feature not available');
+        return;
+      }
+
+      // Double confirmation for destructive action
+      const confirmed = confirm(
+        `⚠️ WARNING: This will remove ${previewSummary?.totalLinksRemoved || 'all'} wiki-links from ${previewSummary?.notesWithChanges || 'multiple'} notes.\n\n` +
+        `Example: [[Note Title]] → Note Title\n\n` +
+        `A backup will be created before making changes.\n\n` +
+        `This cannot be easily undone. Are you sure?`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      // Final confirmation
+      const finalConfirm = confirm(
+        `FINAL CONFIRMATION\n\n` +
+        `You are about to remove ${previewSummary?.totalLinksRemoved || 'all'} links.\n\n` +
+        `Type "yes" in your mind and click OK to proceed.`
+      );
+
+      if (!finalConfirm) {
+        return;
+      }
+
+      clearButton.setAttribute('disabled', 'true');
+      clearButton.setText('Clearing...');
+
+      try {
+        const result = await this.plugin.clearAllLinks();
+
+        if (result) {
+          // Update stats to show completion
+          statsEl.empty();
+          statsEl.style.display = 'block';
+
+          const successEl = statsEl.createDiv('smart-links-clear-success');
+          successEl.createEl('span', { text: '✓ ' });
+          successEl.createEl('span', {
+            text: `Removed ${result.totalLinksRemoved} links from ${result.notesWithChanges} notes`,
+            cls: 'smart-links-success-text'
+          });
+
+          if (result.backupId) {
+            successEl.createEl('p', {
+              text: `Backup created: ${result.backupId.slice(0, 8)}...`,
+              cls: 'smart-links-muted'
+            });
+          }
+
+          new Notice(`Removed ${result.totalLinksRemoved} links from ${result.notesWithChanges} notes`);
+
+          // Disable clear button since there's nothing to clear
+          clearButton.setAttribute('disabled', 'true');
+          clearButton.addClass('smart-links-button-disabled');
+          previewSummary = null;
+        }
+
+      } catch (error) {
+        console.error('[Settings] Failed to clear links:', error);
+        new Notice(`Clear links failed: ${(error as Error).message}`);
+      } finally {
+        clearButton.setText('Clear All Links');
+      }
+    };
+
+    // Add some basic styling
+    sectionEl.style.marginTop = '16px';
+    sectionEl.style.padding = '12px';
+    sectionEl.style.backgroundColor = 'var(--background-secondary)';
+    sectionEl.style.borderRadius = '8px';
+    sectionEl.style.border = '1px solid var(--background-modifier-border)';
+
+    headerEl.style.marginBottom = '8px';
+
+    warningEl.style.marginBottom = '12px';
+    warningEl.style.padding = '8px';
+    warningEl.style.backgroundColor = 'var(--background-modifier-error-hover)';
+    warningEl.style.borderRadius = '4px';
+    warningEl.style.fontSize = '12px';
+
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.gap = '8px';
+    buttonContainer.style.marginTop = '12px';
   }
 }
