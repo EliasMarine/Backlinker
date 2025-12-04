@@ -370,8 +370,14 @@ export class SmartKeywordMatcher {
 
   /**
    * Find keywords for a single note match
-   * Uses CONTENT-BASED matching - shared phrases and keywords between notes
-   * NO LONGER uses title-based matching
+   *
+   * IMPORTANT: Only creates links when the TARGET note's title (or significant
+   * parts of it) appear in the source content. This ensures semantic correctness:
+   * - If "Presentation Layer" appears in a note, link it to "Presentation Layer.md"
+   * - Do NOT link arbitrary shared keywords to unrelated notes
+   *
+   * The hybrid scorer has already determined these notes are related.
+   * This method finds WHERE in the source to place the link.
    */
   async findKeywordsForNote(
     hybridResult: HybridResultForSmartMatching,
@@ -386,61 +392,101 @@ export class SmartKeywordMatcher {
 
     const targetTitle = getNoteTitleFromPath(targetNote.path);
     const sourceContent = sourceNote.content || '';
+    const sourceTitle = getNoteTitleFromPath(sourceNote.path);
 
     const results: KeywordToReplace[] = [];
 
-    // Strategy 1: SHARED PHRASES (highest priority)
-    // Multi-word phrases are more meaningful and specific
-    // These are phrases that appear in BOTH the source and target notes
-    if (hybridResult.matchedPhrases && hybridResult.matchedPhrases.length > 0) {
-      for (const phrase of hybridResult.matchedPhrases) {
-        // Verify the phrase exists in source content as whole words
-        if (textExistsInContent(phrase, sourceContent)) {
-          // Check if it's a valid keyword (not too generic)
-          if (this.isValidKeyword(phrase)) {
-            const confidence = hybridResult.finalScore * 0.95;
+    // =========================================================================
+    // TITLE-BASED MATCHING ONLY
+    // =========================================================================
+    // We ONLY create links when the target note's title appears in the source.
+    // This ensures semantic correctness - we're linking text that actually
+    // refers to the target note, not arbitrary shared keywords.
+    //
+    // IMPORTANT: We do NOT link shared keywords between notes. For example:
+    // - Source: "Session Layer.md" - talks about "Session Layer"
+    // - Target: "Presentation Layer.md" - talks about "Presentation Layer"
+    // - Shared keywords: "Layer", "Session", etc.
+    // - WRONG: Link "Session Layer" text to "Presentation Layer" note
+    // - RIGHT: Only link "Presentation Layer" text (if it appears) to that note
+    // =========================================================================
 
-            results.push({
-              keyword: phrase,
-              targetTitle,
-              targetPath: targetNote.path,
-              confidence
-            });
+    // CRITICAL: Skip if the target title contains the source title or vice versa
+    // This prevents linking "Session Layer" to "Presentation Layer" when both
+    // share common words. We only want to link exact title references.
+    const sourceTitleLower = sourceTitle.toLowerCase();
+    const targetTitleLower = targetTitle.toLowerCase();
 
-            console.log(
-              `[SmartKeywordMatcher] Matched shared phrase "${phrase}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
-            );
-          }
-        }
+    // Don't match if the titles are too similar (share significant words)
+    const sourceWords = new Set(sourceTitleLower.split(/[\s\-_()]+/).filter(w => w.length > 3));
+    const targetWords = new Set(targetTitleLower.split(/[\s\-_()]+/).filter(w => w.length > 3));
+    const sharedWords = [...sourceWords].filter(w => targetWords.has(w));
+
+    // If more than 50% of significant words are shared, skip (too similar, would create confusing links)
+    const minWords = Math.min(sourceWords.size, targetWords.size);
+    if (minWords > 0 && sharedWords.length / minWords > 0.5) {
+      console.log(
+        `[SmartKeywordMatcher] Skipping "${targetTitle}" - too similar to source "${sourceTitle}" (shared: ${sharedWords.join(', ')})`
+      );
+      return [];
+    }
+
+    // Strategy 1: FULL TITLE MATCH (highest confidence)
+    const titleVariants = getTitleVariants(targetTitle);
+
+    for (const variant of titleVariants) {
+      // Try full title match
+      if (textExistsInContent(variant, sourceContent)) {
+        // Multi-word titles are generally safe even if individual words are common
+        const confidence = hybridResult.finalScore * 0.9;
+
+        results.push({
+          keyword: variant,
+          targetTitle,
+          targetPath: targetNote.path,
+          confidence
+        });
+
+        console.log(
+          `[SmartKeywordMatcher] Matched full title "${variant}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
+        );
+        break; // Found a title match, no need to continue
       }
     }
 
-    // Strategy 2: SHARED KEYWORDS (fallback)
-    // Only use if no phrase matches found
-    // Single words that appear in BOTH notes
-    if (results.length === 0 && hybridResult.matchedKeywords && hybridResult.matchedKeywords.length > 0) {
-      for (const keyword of hybridResult.matchedKeywords) {
-        // Verify the keyword exists in source content as whole word
-        if (textExistsInContent(keyword, sourceContent)) {
-          // Check if it's a valid keyword (not too generic)
-          if (this.isValidKeyword(keyword)) {
-            let confidence = hybridResult.finalScore * 0.8;
+    // Strategy 2: PARTIAL TITLE MATCH (lower confidence)
+    // Only if no full title match was found
+    // Try to find significant unique words from the target title
+    if (results.length === 0) {
+      // Get words that are in target title but NOT in source title
+      // This prevents linking shared words like "Layer"
+      const uniqueTargetWords = targetTitle
+        .split(/[\s\-_()]+/)
+        .filter(word =>
+          word.length >= 4 &&
+          !this.isDomainStopword(word) &&
+          !sourceTitleLower.includes(word.toLowerCase())
+        );
 
-            // Optional: Context verification for single words using embeddings
+      for (const word of uniqueTargetWords) {
+        if (textExistsInContent(word, sourceContent)) {
+          if (this.isValidKeyword(word)) {
+            let confidence = hybridResult.finalScore * 0.6;
+
+            // Context verification is especially important for single words
             if (
               this.config.enableContextVerification &&
               this.embeddingEngine?.isModelLoaded()
             ) {
               const contextSimilarity = await this.verifyContextWithEmbeddings(
                 sourceContent,
-                keyword,
+                word,
                 targetNote.path
               );
 
               if (contextSimilarity < this.config.minContextSimilarity) {
-                // Context doesn't support this link - skip it
                 console.log(
-                  `[SmartKeywordMatcher] Skipping keyword "${keyword}" -> "${targetTitle}" - context similarity too low (${contextSimilarity.toFixed(2)})`
+                  `[SmartKeywordMatcher] Skipping title word "${word}" -> "${targetTitle}" - context similarity too low (${contextSimilarity.toFixed(2)})`
                 );
                 continue;
               }
@@ -449,94 +495,16 @@ export class SmartKeywordMatcher {
             }
 
             results.push({
-              keyword,
+              keyword: word,
               targetTitle,
               targetPath: targetNote.path,
               confidence
             });
 
             console.log(
-              `[SmartKeywordMatcher] Matched shared keyword "${keyword}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
+              `[SmartKeywordMatcher] Matched unique title word "${word}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
             );
-          }
-        }
-      }
-    }
-
-    // Strategy 3: TITLE-BASED MATCHING (final fallback)
-    // Only use if no shared phrases or keywords found
-    // The hybrid scorer already determined these notes are semantically related,
-    // so matching the target's title in the source is a valid link
-    if (results.length === 0) {
-      const titleVariants = getTitleVariants(targetTitle);
-
-      for (const variant of titleVariants) {
-        // Try full title match first
-        if (textExistsInContent(variant, sourceContent)) {
-          // Validate the title isn't too generic
-          if (this.isValidKeyword(variant) || variant.includes(' ')) {
-            // Multi-word titles are generally safe even if individual words are common
-            const confidence = hybridResult.finalScore * 0.7; // Slightly lower confidence for title matches
-
-            results.push({
-              keyword: variant,
-              targetTitle,
-              targetPath: targetNote.path,
-              confidence
-            });
-
-            console.log(
-              `[SmartKeywordMatcher] Matched title "${variant}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
-            );
-            break; // Found a title match, no need to continue
-          }
-        }
-      }
-
-      // If no full title match, try individual significant words from the title
-      if (results.length === 0) {
-        const titleWords = targetTitle
-          .split(/[\s\-_]+/)
-          .filter(word => word.length >= 4 && !this.isDomainStopword(word));
-
-        for (const word of titleWords) {
-          if (textExistsInContent(word, sourceContent)) {
-            if (this.isValidKeyword(word)) {
-              let confidence = hybridResult.finalScore * 0.6; // Lower confidence for partial title matches
-
-              // Context verification is especially important for single title words
-              if (
-                this.config.enableContextVerification &&
-                this.embeddingEngine?.isModelLoaded()
-              ) {
-                const contextSimilarity = await this.verifyContextWithEmbeddings(
-                  sourceContent,
-                  word,
-                  targetNote.path
-                );
-
-                if (contextSimilarity < this.config.minContextSimilarity) {
-                  console.log(
-                    `[SmartKeywordMatcher] Skipping title word "${word}" -> "${targetTitle}" - context similarity too low (${contextSimilarity.toFixed(2)})`
-                  );
-                  continue;
-                }
-
-                confidence = confidence * (0.5 + contextSimilarity * 0.5);
-              }
-
-              results.push({
-                keyword: word,
-                targetTitle,
-                targetPath: targetNote.path,
-                confidence
-              });
-
-              console.log(
-                `[SmartKeywordMatcher] Matched title word "${word}" -> "${targetTitle}" (confidence: ${confidence.toFixed(2)})`
-              );
-              break; // One title word match is enough
-            }
+            break; // One match is enough
           }
         }
       }
@@ -582,32 +550,17 @@ export class SmartKeywordMatcher {
       const validKeywords = keywords.filter(k => k.confidence >= minConfidence);
 
       if (validKeywords.length > 0) {
-        // Determine match reason based on how the keyword was matched
+        // All matches are now title-based (full or partial)
         const firstKeyword = validKeywords[0].keyword;
         const targetTitle = getNoteTitleFromPath(result.note.path);
         const titleVariants = getTitleVariants(targetTitle);
 
-        let matchReason: 'shared_phrase' | 'shared_keyword' | 'title_match' | 'context_verified';
-
-        // Check if matched via shared phrases
-        if (result.matchedPhrases?.includes(firstKeyword)) {
-          matchReason = 'shared_phrase';
-        }
-        // Check if matched via shared keywords
-        else if (result.matchedKeywords?.includes(firstKeyword)) {
-          matchReason = 'shared_keyword';
-        }
-        // Check if matched via title (full or partial)
-        else if (
-          titleVariants.some(v => normalize(v) === normalize(firstKeyword)) ||
-          targetTitle.toLowerCase().split(/[\s\-_]+/).some(w => normalize(w) === normalize(firstKeyword))
-        ) {
-          matchReason = 'title_match';
-        }
-        // Default fallback
-        else {
-          matchReason = firstKeyword.includes(' ') ? 'shared_phrase' : 'shared_keyword';
-        }
+        // Determine if it's a full title match or partial
+        const isFullTitleMatch = titleVariants.some(
+          v => normalize(v) === normalize(firstKeyword)
+        );
+        const matchReason: 'shared_phrase' | 'shared_keyword' | 'title_match' | 'context_verified' =
+          isFullTitleMatch ? 'title_match' : 'context_verified';
 
         results.push({
           targetNote: result.note,
