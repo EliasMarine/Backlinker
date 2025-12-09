@@ -330,10 +330,15 @@ export class EmbeddingEngine {
 
   /**
    * Yield to the event loop to keep UI responsive
-   * Uses setTimeout(0) to allow pending UI updates and user interactions
+   * Uses MessageChannel instead of setTimeout to avoid browser throttling
+   * when Obsidian is in the background (setTimeout gets throttled to 1s+)
    */
   private yieldToEventLoop(): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, 0));
+    return new Promise(resolve => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = () => resolve();
+      channel.port2.postMessage('');
+    });
   }
 
   /**

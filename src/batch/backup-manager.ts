@@ -395,8 +395,12 @@ export class BackupManager {
         errors.push(errorMsg);
       }
 
-      // Yield to event loop
-      await new Promise(resolve => setTimeout(resolve, 0));
+      // Yield to event loop (MessageChannel avoids background throttling)
+      await new Promise<void>(resolve => {
+        const channel = new MessageChannel();
+        channel.port1.onmessage = () => resolve();
+        channel.port2.postMessage('');
+      });
     }
 
     const duration = Date.now() - startTime;

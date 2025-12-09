@@ -194,9 +194,13 @@ export class LinkCleaner {
         summary.errors.push(`${file.path}: ${(error as Error).message}`);
       }
 
-      // Yield to event loop
+      // Yield to event loop (MessageChannel avoids background throttling)
       if (i % 50 === 0) {
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise<void>(resolve => {
+          const channel = new MessageChannel();
+          channel.port1.onmessage = () => resolve();
+          channel.port2.postMessage('');
+        });
       }
     }
 
@@ -297,8 +301,12 @@ export class LinkCleaner {
         scanResult.errors.push(`Failed to clean ${result.notePath}: ${(error as Error).message}`);
       }
 
-      // Yield to event loop
-      await new Promise(resolve => setTimeout(resolve, 0));
+      // Yield to event loop (MessageChannel avoids background throttling)
+      await new Promise<void>(resolve => {
+        const channel = new MessageChannel();
+        channel.port1.onmessage = () => resolve();
+        channel.port2.postMessage('');
+      });
     }
 
     progressCallback?.({

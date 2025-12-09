@@ -356,8 +356,12 @@ export class BatchLinker {
         summary.results.push(result);
       }
 
-      // Yield to event loop
-      await new Promise(resolve => setTimeout(resolve, 0));
+      // Yield to event loop (MessageChannel avoids background throttling)
+      await new Promise<void>(resolve => {
+        const channel = new MessageChannel();
+        channel.port1.onmessage = () => resolve();
+        channel.port2.postMessage('');
+      });
     }
 
     return summary;
@@ -437,8 +441,12 @@ export class BatchLinker {
         console.error(`[BatchLinker] Failed to apply changes to ${result.notePath}:`, error);
       }
 
-      // Yield to event loop
-      await new Promise(resolve => setTimeout(resolve, 0));
+      // Yield to event loop (MessageChannel avoids background throttling)
+      await new Promise<void>(resolve => {
+        const channel = new MessageChannel();
+        channel.port1.onmessage = () => resolve();
+        channel.port2.postMessage('');
+      });
     }
 
     progressCallback?.({
