@@ -56,95 +56,65 @@ export default class SmartLinksPlugin extends Plugin {
   private debounceTimer: NodeJS.Timeout | null = null;
 
   async onload() {
-    console.log('[Smart Links] Loading plugin...');
-
     // Load settings
-    console.log('[Smart Links] Loading settings...');
     await this.loadSettings();
-    console.log('[Smart Links] Settings loaded:', {
-      enableRealTimeSuggestions: this.settings.enableRealTimeSuggestions,
-      maxSuggestionsPerNote: this.settings.maxSuggestionsPerNote,
-      debounceDelay: this.settings.debounceDelay,
-      tfidfThreshold: this.settings.tfidfThreshold
-    });
 
     // Initialize cache manager
-    console.log('[Smart Links] Initializing cache manager...');
     this.cacheManager = new CacheManager(this.app);
 
     // Try to load cache from disk
-    console.log('[Smart Links] Loading cache from disk...');
     const loadedCache = await this.cacheManager.loadCache();
     if (loadedCache) {
       this.cache = loadedCache;
-      console.log('[Smart Links] ✓ Cache loaded:', this.cache.totalDocuments, 'notes,', this.cache.documentFrequency.size, 'unique terms');
 
       // Warn if cache has notes but no document frequency data
       if (this.cache.documentFrequency.size === 0 && this.cache.notes.size > 0) {
-        console.warn('[Smart Links] ⚠️  Cache has notes but no term frequencies!');
-        console.warn('[Smart Links] ⚠️  Suggestions will not work until you analyze the vault');
+        console.warn('[Smart Links] Cache has notes but no term frequencies - analyze vault to enable suggestions');
         new Notice('Smart Links: Go to Settings → Smart Links → Analyze Vault to enable suggestions', 10000);
       }
     } else {
       this.cache = this.cacheManager.createEmptyCache();
-      console.log('[Smart Links] ✓ New cache created (no existing cache found)');
     }
 
     // Initialize engines
-    console.log('[Smart Links] Initializing TF-IDF engine...');
     this.tfidfEngine = new TFIDFEngine(this.cache);
-    console.log('[Smart Links] ✓ TF-IDF engine initialized');
-
-    // Initialize semantic engine
-    console.log('[Smart Links] Initializing semantic engine...');
     this.semanticEngine = new SemanticEngine(this.cache);
-    console.log('[Smart Links] ✓ Semantic engine initialized');
-
-    console.log('[Smart Links] Initializing hybrid scorer...');
     this.hybridScorer = new HybridScorer(
       this.tfidfEngine,
-      this.semanticEngine, // Semantic engine (will build models during vault analysis)
+      this.semanticEngine,
       this.settings
     );
-    console.log('[Smart Links] ✓ Hybrid scorer initialized');
 
     // Initialize embedding cache
-    console.log('[Smart Links] Initializing embedding cache...');
     this.embeddingCache = new EmbeddingCache(
       this.app,
       this.manifest.id,
       this.settings.neuralModelName
     );
     await this.embeddingCache.load();
-    console.log('[Smart Links] ✓ Embedding cache initialized:', this.embeddingCache.size(), 'cached embeddings');
 
     // Initialize embedding engine if enabled
     if (this.settings.enableNeuralEmbeddings) {
-      console.log('[Smart Links] Neural embeddings enabled, initializing engine...');
       await this.initializeEmbeddingEngine();
     }
 
-    console.log('[Smart Links] Initializing vault indexer...');
+    // Initialize vault indexer
     this.vaultIndexer = new VaultIndexer(
       this.app,
       this.cache,
       this.settings,
       this.cacheManager
     );
-    console.log('[Smart Links] ✓ Vault indexer initialized');
 
     // Initialize link discovery
-    console.log('[Smart Links] Initializing link discovery engine...');
     this.linkDiscovery = new LinkDiscovery(
       this.app,
       this.cache,
       this.settings,
       this.hybridScorer
     );
-    console.log('[Smart Links] ✓ Link discovery initialized');
 
     // Initialize batch linker with embedding support
-    console.log('[Smart Links] Initializing batch linker...');
     this.batchLinker = new BatchLinker(
       this.app,
       this.cache,
@@ -153,66 +123,40 @@ export default class SmartLinksPlugin extends Plugin {
       this.embeddingEngine,
       this.embeddingCache
     );
-    console.log('[Smart Links] ✓ Batch linker initialized');
 
-    // Initialize link cleaner (uses batch linker's backup manager)
-    console.log('[Smart Links] Initializing link cleaner...');
+    // Initialize link cleaner
     const backupManager = this.batchLinker.getBackupManager();
     this.linkCleaner = new LinkCleaner(this.app, backupManager);
-    console.log('[Smart Links] ✓ Link cleaner initialized');
 
     // Register suggestion panel view
-    console.log('[Smart Links] Registering suggestion panel view...');
     this.registerView(
       SUGGESTION_PANEL_VIEW_TYPE,
       (leaf) => new SuggestionPanelView(leaf, this)
     );
-    console.log('[Smart Links] ✓ Panel view registered');
 
     // Add ribbon icon
-    console.log('[Smart Links] Adding ribbon icon...');
     this.addRibbonIcon('link', 'Smart Links', () => {
-      console.log('[Smart Links] Ribbon icon clicked');
       this.toggleSuggestionPanel();
     });
-    console.log('[Smart Links] ✓ Ribbon icon added');
 
     // Open suggestion panel after workspace is ready
-    console.log('[Smart Links] Waiting for workspace to be ready...');
     this.app.workspace.onLayoutReady(() => {
-      console.log('[Smart Links] ✓ Workspace is ready');
       this.activateSuggestionPanel();
     });
 
-    // Register commands
-    console.log('[Smart Links] Registering commands...');
+    // Register commands and event handlers
     this.registerCommands();
-    console.log('[Smart Links] ✓ Commands registered');
-
-    // Register event handlers
-    console.log('[Smart Links] Registering event handlers...');
     this.registerEventHandlers();
-    console.log('[Smart Links] ✓ Event handlers registered');
 
-    // Add settings tab
-    console.log('[Smart Links] Adding settings tab...');
+    // Add settings tab and status bar
     this.addSettingTab(new SmartLinksSettingTab(this.app, this));
-    console.log('[Smart Links] ✓ Settings tab added');
-
-    // Add status bar
-    console.log('[Smart Links] Adding status bar...');
     this.statusBarItem = this.addStatusBarItem();
     this.updateStatusBar('Ready');
-    console.log('[Smart Links] ✓ Status bar added');
 
-    console.log('[Smart Links] ========================================');
-    console.log('[Smart Links] ✓✓✓ Plugin loaded successfully ✓✓✓');
-    console.log('[Smart Links] ========================================');
+    console.log('[Smart Links] Plugin loaded');
   }
 
   async onunload() {
-    console.log('[Smart Links] Unloading plugin...');
-
     // Cleanup debounce timer
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
@@ -220,13 +164,11 @@ export default class SmartLinksPlugin extends Plugin {
 
     // Save embedding cache
     if (this.embeddingCache?.needsSave()) {
-      console.log('[Smart Links] Saving embedding cache...');
       await this.embeddingCache.save();
     }
 
     // Unload embedding engine
     if (this.embeddingEngine) {
-      console.log('[Smart Links] Unloading embedding engine...');
       this.embeddingEngine.unloadModel();
     }
 
@@ -305,7 +247,6 @@ export default class SmartLinksPlugin extends Plugin {
         ].join('\n');
 
         new Notice(message, 10000);
-        console.log('[Smart Links] Statistics:\n' + message);
       }
     });
 
@@ -377,16 +318,8 @@ export default class SmartLinksPlugin extends Plugin {
             return;
           }
 
-          // Display results
-          const message = similarNotes
-            .map((result, index) =>
-              `${index + 1}. ${result.note.title} (${(result.score * 100).toFixed(1)}%)\n   Keywords: ${result.matchedKeywords.slice(0, 3).join(', ')}`
-            )
-            .join('\n\n');
-
-          console.log('[Smart Links] Similar notes:\n' + message);
           new Notice(
-            `Found ${similarNotes.length} similar notes. Check console for details.`,
+            `Found ${similarNotes.length} similar notes`,
             5000
           );
         } catch (error) {
@@ -420,7 +353,6 @@ export default class SmartLinksPlugin extends Plugin {
    * Register event handlers for file changes and real-time monitoring
    */
   private registerEventHandlers() {
-    console.log('[Smart Links] Registering active-leaf-change handler...');
     // Real-time suggestion updates (active file change)
     this.registerEvent(
       this.app.workspace.on('active-leaf-change', async (leaf) => {
@@ -428,20 +360,13 @@ export default class SmartLinksPlugin extends Plugin {
           ? this.app.workspace.getActiveFile()
           : null;
 
-        console.log('[Smart Links] Active leaf changed, file:', file?.path || 'none');
-
         // Only analyze when switching TO a markdown note, not when losing focus
-        // This prevents clearing suggestions when clicking sidebar buttons
         if (this.settings.enableRealTimeSuggestions && file !== null) {
-          console.log('[Smart Links] Triggering real-time analysis for active file...');
           await this.linkDiscovery.analyzeCurrentNote(file);
-        } else if (!this.settings.enableRealTimeSuggestions) {
-          console.log('[Smart Links] Real-time suggestions disabled, skipping analysis');
         }
       })
     );
 
-    console.log('[Smart Links] Registering editor-change handler...');
     // Real-time suggestion updates (editor change with debounce)
     this.registerEvent(
       this.app.workspace.on('editor-change', () => {
@@ -454,18 +379,15 @@ export default class SmartLinksPlugin extends Plugin {
           clearTimeout(this.debounceTimer);
         }
 
-        console.log('[Smart Links] Editor changed, debouncing analysis (' + this.settings.debounceDelay + 'ms)...');
         this.debounceTimer = setTimeout(async () => {
           // Guard against overlapping analyses
           if (this.isAnalyzingCurrentNote) {
-            console.log('[Smart Links] Analysis already in progress, skipping');
             return;
           }
 
           this.isAnalyzingCurrentNote = true;
           try {
             const activeFile = this.app.workspace.getActiveFile();
-            console.log('[Smart Links] Debounce complete, analyzing:', activeFile?.path);
             await this.linkDiscovery.analyzeCurrentNote(activeFile);
           } finally {
             this.isAnalyzingCurrentNote = false;
@@ -474,17 +396,12 @@ export default class SmartLinksPlugin extends Plugin {
       })
     );
 
-    console.log('[Smart Links] Setting up suggestion update callback...');
     // Setup suggestion update callback
     this.linkDiscovery.onUpdate((update) => {
-      console.log('[Smart Links] Received suggestion update:', update.suggestions.length, 'suggestions');
       // Update suggestion panel if it exists
       const leaves = this.app.workspace.getLeavesOfType(SUGGESTION_PANEL_VIEW_TYPE);
       if (leaves.length > 0 && leaves[0].view instanceof SuggestionPanelView) {
-        console.log('[Smart Links] Updating suggestion panel...');
         leaves[0].view.updateSuggestions(update.suggestions);
-      } else {
-        console.log('[Smart Links] No suggestion panel found to update');
       }
     });
 
@@ -543,19 +460,14 @@ export default class SmartLinksPlugin extends Plugin {
    * Activate suggestion panel in right sidebar
    */
   async activateSuggestionPanel() {
-    console.log('[Smart Links] Activating suggestion panel...');
     const { workspace } = this.app;
 
     // Check if panel already exists
     let leaf = workspace.getLeavesOfType(SUGGESTION_PANEL_VIEW_TYPE)[0];
-    console.log('[Smart Links] Existing panel leaf:', leaf ? 'found' : 'not found');
 
     if (!leaf) {
       // Create new leaf in right sidebar
-      const position = this.settings.suggestionPanelPosition;
-      console.log('[Smart Links] Creating new panel in position:', position);
       const sideLeaf = workspace.getRightLeaf(false);
-      console.log('[Smart Links] Right sidebar leaf:', sideLeaf ? 'found' : 'not found');
 
       if (sideLeaf) {
         leaf = sideLeaf;
@@ -563,18 +475,12 @@ export default class SmartLinksPlugin extends Plugin {
           type: SUGGESTION_PANEL_VIEW_TYPE,
           active: true
         });
-        console.log('[Smart Links] Panel view state set');
-      } else {
-        console.error('[Smart Links] Could not get right sidebar leaf');
       }
     }
 
     // Reveal the leaf
     if (leaf) {
       workspace.revealLeaf(leaf);
-      console.log('[Smart Links] Panel revealed');
-    } else {
-      console.error('[Smart Links] No leaf to reveal');
     }
   }
 
@@ -615,7 +521,6 @@ export default class SmartLinksPlugin extends Plugin {
    */
   private async initializeEmbeddingEngine(): Promise<void> {
     if (this.embeddingEngine?.isModelLoaded()) {
-      console.log('[Smart Links] Embedding engine already loaded');
       return;
     }
 
@@ -645,8 +550,6 @@ export default class SmartLinksPlugin extends Plugin {
         this.batchLinker.setEmbeddingEngine(this.embeddingEngine, this.embeddingCache);
       }
 
-      console.log('[Smart Links] ✓ Embedding engine initialized');
-
       // Brief pause to show success message, then close
       await new Promise(resolve => setTimeout(resolve, 1500));
       progressModal.close();
@@ -663,7 +566,6 @@ export default class SmartLinksPlugin extends Plugin {
    * Shows confirmation dialog and downloads model
    */
   async enableNeuralEmbeddings(): Promise<void> {
-    console.log('[Smart Links] Enabling neural embeddings...');
 
     // Show confirmation modal
     return new Promise((resolve, reject) => {
@@ -688,16 +590,12 @@ export default class SmartLinksPlugin extends Plugin {
    * Disable neural embeddings
    */
   disableNeuralEmbeddings(): void {
-    console.log('[Smart Links] Disabling neural embeddings...');
-
     if (this.embeddingEngine) {
       this.embeddingEngine.unloadModel();
     }
 
     // Update hybrid scorer
     this.hybridScorer.setEmbeddingEngine(null, null);
-
-    console.log('[Smart Links] ✓ Neural embeddings disabled');
   }
 
   /**
@@ -735,15 +633,11 @@ export default class SmartLinksPlugin extends Plugin {
         notePath: 'Preparing...'
       });
 
-      console.log(`[Smart Links] Generating embeddings for ${totalNotes} notes...`);
-
       // Filter notes that need embedding (not cached or stale)
       const notesToProcess = notes.filter(note => {
         const contentHash = calculateContentHash(note.cleanContent || note.content);
         return !this.embeddingCache?.isValid(note.path, contentHash);
       });
-
-      console.log(`[Smart Links] ${notesToProcess.length} notes need embedding generation`);
 
       if (notesToProcess.length === 0) {
         progressModal.showComplete(0);
@@ -785,11 +679,9 @@ export default class SmartLinksPlugin extends Plugin {
       // Brief pause before showing complete
       await new Promise(resolve => setTimeout(resolve, 300));
       progressModal.showComplete(embeddings.size);
-      console.log(`[Smart Links] ✓ Generated ${embeddings.size} embeddings`);
 
     } catch (error) {
       if ((error as Error).message === 'Cancelled by user') {
-        console.log('[Smart Links] Embedding generation cancelled');
         progressModal.close();
       } else {
         console.error('[Smart Links] Failed to generate embeddings:', error);
@@ -835,11 +727,8 @@ export default class SmartLinksPlugin extends Plugin {
    * This will clear the cache and regenerate embeddings
    */
   async changeEmbeddingModel(modelName: string): Promise<void> {
-    console.log(`[Smart Links] Changing embedding model to: ${modelName}`);
-
     const currentModel = this.settings.neuralModelName;
     if (modelName === currentModel) {
-      console.log('[Smart Links] Same model selected, no change needed');
       return;
     }
 
@@ -852,7 +741,6 @@ export default class SmartLinksPlugin extends Plugin {
       const modelChanged = this.embeddingCache.updateModelName(modelName);
       if (modelChanged) {
         // Clear old embeddings since they're incompatible
-        console.log('[Smart Links] Clearing old embeddings due to model change');
         await this.embeddingCache.clear();
       }
     }
@@ -861,15 +749,12 @@ export default class SmartLinksPlugin extends Plugin {
     if (this.embeddingEngine) {
       const needsReload = this.embeddingEngine.updateConfig({ modelName });
       if (needsReload) {
-        console.log('[Smart Links] Unloading old model');
         this.embeddingEngine.unloadModel();
       }
     }
 
     // If embeddings are enabled, load new model and regenerate
     if (this.settings.enableNeuralEmbeddings) {
-      console.log('[Smart Links] Loading new model and regenerating embeddings...');
-
       // Create new engine with new model
       this.embeddingEngine = new EmbeddingEngine({
         modelName: modelName,
@@ -879,8 +764,6 @@ export default class SmartLinksPlugin extends Plugin {
       // Initialize and regenerate
       await this.initializeEmbeddingEngine();
       await this.regenerateEmbeddings();
-
-      console.log('[Smart Links] ✓ Model changed and embeddings regenerated');
     }
   }
 
@@ -898,7 +781,6 @@ export default class SmartLinksPlugin extends Plugin {
     }
 
     this.isIndexing = true;
-    console.log('[Smart Links] Starting vault analysis from settings UI...');
     new Notice('Analyzing vault...', 3000);
     this.updateStatusBar('Analyzing...');
 
@@ -910,7 +792,6 @@ export default class SmartLinksPlugin extends Plugin {
 
       // Step 2: Save cache
       await this.cacheManager.saveCache(this.cache);
-      console.log('[Smart Links] ✓ Analysis complete and cache saved');
 
       // Step 3: Generate embeddings if enabled
       if (this.settings.enableNeuralEmbeddings && this.embeddingEngine) {
@@ -951,13 +832,10 @@ export default class SmartLinksPlugin extends Plugin {
       this.cache.version = '1.0.0';
 
       // Also clear embedding cache to prevent stale embeddings
-      // (embeddings without corresponding notes in the main cache)
       if (this.embeddingCache) {
         await this.embeddingCache.clear();
-        console.log('[Smart Links] Embedding cache cleared');
       }
 
-      console.log('[Smart Links] Cache cleared');
       this.updateStatusBar('Cache cleared');
     } catch (error) {
       console.error('[Smart Links] Failed to clear cache:', error);
@@ -1008,7 +886,6 @@ export default class SmartLinksPlugin extends Plugin {
     }
 
     this.isBatchLinking = true;
-    console.log('[Smart Links] Starting batch auto-link...');
 
     const options: BatchLinkOptions = {
       previewOnly: true,
@@ -1020,7 +897,6 @@ export default class SmartLinksPlugin extends Plugin {
     const progressModal = new BatchProgressModal(this.app);
     progressModal.onCancel(() => {
       try {
-        console.log('[Smart Links] Batch auto-link cancelled by user');
         this.batchLinker?.cancel();
       } catch (error) {
         console.error('[Smart Links] Error during cancellation:', error);
@@ -1039,12 +915,9 @@ export default class SmartLinksPlugin extends Plugin {
 
       // Check if cancelled
       if (progressModal.wasCancelled()) {
-        console.log('[Smart Links] Analysis cancelled');
         new Notice('Batch auto-link cancelled');
         return;
       }
-
-      console.log(`[Smart Links] Analysis complete: ${summary.totalLinksAdded} links in ${summary.notesWithChanges} notes`);
 
       // Phase 2: Show preview modal
       if (this.settings.batchLinkSettings.enablePreviewMode) {
@@ -1053,8 +926,6 @@ export default class SmartLinksPlugin extends Plugin {
         previewModal.onResult(async (result: PreviewResult) => {
           if (result === 'apply' && summary.results.length > 0) {
             await this.applyBatchChanges(summary);
-          } else {
-            console.log('[Smart Links] Batch auto-link cancelled from preview');
           }
         });
 
@@ -1107,8 +978,6 @@ export default class SmartLinksPlugin extends Plugin {
       // Show completion
       const message = `Added ${summary.totalLinksAdded} links to ${appliedCount} notes`;
       progressModal.showComplete(message);
-      console.log(`[Smart Links] ✓ ${message}. Backup: ${backupId}`);
-
       new Notice(message, 5000);
 
     } catch (error) {
@@ -1139,11 +1008,8 @@ export default class SmartLinksPlugin extends Plugin {
     // Show confirmation modal
     const confirmed = await this.confirmRestore(manifest);
     if (!confirmed) {
-      console.log('[Smart Links] Restore cancelled by user');
       return;
     }
-
-    console.log(`[Smart Links] Restoring backup ${manifest.id}...`);
 
     try {
       const progressModal = new BatchProgressModal(this.app);
@@ -1170,8 +1036,6 @@ export default class SmartLinksPlugin extends Plugin {
       );
 
       progressModal.showComplete(`Restored ${restoredCount} notes from backup`);
-      console.log(`[Smart Links] ✓ Restored ${restoredCount} notes`);
-
       new Notice(`Restored ${restoredCount} notes from backup`, 5000);
 
     } catch (error) {
@@ -1239,7 +1103,6 @@ export default class SmartLinksPlugin extends Plugin {
       return null;
     }
 
-    console.log('[Smart Links] Previewing link clearing...');
     this.updateStatusBar('Scanning links...');
 
     try {
@@ -1249,9 +1112,7 @@ export default class SmartLinksPlugin extends Plugin {
         }
       });
 
-      console.log(`[Smart Links] Preview complete: ${summary.totalLinksRemoved} links in ${summary.notesWithChanges} notes`);
       this.updateStatusBar('Ready');
-
       return summary;
 
     } catch (error) {
@@ -1271,7 +1132,6 @@ export default class SmartLinksPlugin extends Plugin {
       return null;
     }
 
-    console.log('[Smart Links] Clearing all links...');
     this.updateStatusBar('Clearing links...');
 
     try {
@@ -1291,8 +1151,6 @@ export default class SmartLinksPlugin extends Plugin {
             break;
         }
       });
-
-      console.log(`[Smart Links] Cleared ${summary.totalLinksRemoved} links from ${summary.notesWithChanges} notes`);
 
       if (summary.errors.length > 0) {
         console.warn('[Smart Links] Errors during link clearing:', summary.errors);

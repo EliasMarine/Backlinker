@@ -26,8 +26,6 @@ export class CacheManager {
         `${this.pluginDataDir}/cache.json`,
         cacheJson
       );
-
-      console.log('[Smart Links] Cache saved successfully');
     } catch (error) {
       console.error('[Smart Links] Error saving cache:', error);
       throw error;
@@ -44,7 +42,6 @@ export class CacheManager {
       );
 
       if (!cacheExists) {
-        console.log('[Smart Links] No cache file found');
         return null;
       }
 
@@ -53,10 +50,7 @@ export class CacheManager {
       );
 
       const serialized: SerializedVaultCache = JSON.parse(cacheJson);
-      const cache = this.deserializeCache(serialized);
-
-      console.log('[Smart Links] Cache loaded successfully:', cache.totalDocuments, 'notes');
-      return cache;
+      return this.deserializeCache(serialized);
     } catch (error) {
       console.error('[Smart Links] Error loading cache:', error);
       return null;
@@ -74,7 +68,6 @@ export class CacheManager {
 
       if (cacheExists) {
         await this.app.vault.adapter.remove(`${this.pluginDataDir}/cache.json`);
-        console.log('[Smart Links] Cache cleared successfully');
       }
     } catch (error) {
       console.error('[Smart Links] Error clearing cache:', error);

@@ -39,13 +39,10 @@ export class SuggestionPanelView extends ItemView {
   }
 
   async onOpen() {
-    console.log('[Smart Links] SuggestionPanelView.onOpen() called');
     this.containerEl = this.contentEl;
     this.containerEl.empty();
     this.containerEl.addClass('smart-links-panel');
-
     this.render();
-    console.log('[Smart Links] Panel rendered');
   }
 
   async onClose() {
@@ -56,7 +53,6 @@ export class SuggestionPanelView extends ItemView {
    * Update suggestions and re-render
    */
   updateSuggestions(suggestions: LinkSuggestion[]) {
-    console.log('[Smart Links] Panel.updateSuggestions() called with', suggestions.length, 'suggestions');
     this.suggestions = suggestions;
     this.render();
   }
@@ -65,7 +61,6 @@ export class SuggestionPanelView extends ItemView {
    * Render the panel
    */
   private render() {
-    console.log('[Smart Links] Panel.render() - rendering with', this.suggestions.length, 'suggestions');
     this.containerEl.empty();
 
     // Header
@@ -76,7 +71,6 @@ export class SuggestionPanelView extends ItemView {
     const statusEl = header.createDiv('smart-links-status');
 
     if (this.suggestions.length === 0) {
-      console.log('[Smart Links] Panel.render() - showing empty state');
       statusEl.setText('No suggestions');
       statusEl.addClass('smart-links-status-empty');
 
@@ -86,7 +80,6 @@ export class SuggestionPanelView extends ItemView {
         text: 'Start typing to see link suggestions...'
       });
     } else {
-      console.log('[Smart Links] Panel.render() - rendering', this.suggestions.length, 'suggestions');
       statusEl.setText(`${this.suggestions.length} suggestion${this.suggestions.length > 1 ? 's' : ''}`);
       statusEl.addClass('smart-links-status-active');
 
@@ -195,7 +188,6 @@ export class SuggestionPanelView extends ItemView {
     });
 
     insertBtn.addEventListener('click', (e) => {
-      console.log('[Smart Links] Insert button clicked');
       e.preventDefault();
       e.stopPropagation();
       this.insertLink(suggestion);
@@ -207,7 +199,6 @@ export class SuggestionPanelView extends ItemView {
       cls: 'smart-links-btn-open'
     });
     openBtn.addEventListener('click', (e) => {
-      console.log('[Smart Links] Open button clicked');
       e.preventDefault();
       e.stopPropagation();
       this.openNote(suggestion.targetNote);
@@ -219,7 +210,6 @@ export class SuggestionPanelView extends ItemView {
       cls: 'smart-links-btn-dismiss'
     });
     dismissBtn.addEventListener('click', (e) => {
-      console.log('[Smart Links] Dismiss button clicked');
       e.preventDefault();
       e.stopPropagation();
       this.dismissSuggestion(suggestion);
@@ -230,14 +220,11 @@ export class SuggestionPanelView extends ItemView {
    * Insert link at cursor position
    */
   private async insertLink(suggestion: LinkSuggestion) {
-    console.log('[Smart Links] Insert button clicked for:', suggestion.targetNote);
-
     try {
       // Find the source note file
       const sourceFile = this.app.vault.getAbstractFileByPath(suggestion.sourceNote);
 
       if (!(sourceFile instanceof TFile)) {
-        console.warn('[Smart Links] Source note not found:', suggestion.sourceNote);
         new Notice('Source note not found');
         return;
       }
@@ -255,7 +242,6 @@ export class SuggestionPanelView extends ItemView {
       }
 
       if (!targetLeaf) {
-        console.warn('[Smart Links] Source note is not open in any editor');
         // Open the file and insert
         const leaf = this.app.workspace.getLeaf(false);
         await leaf.openFile(sourceFile);
@@ -278,8 +264,6 @@ export class SuggestionPanelView extends ItemView {
         const editor = view.editor;
         const noteName = this.getNoteName(suggestion.targetNote);
 
-        console.log('[Smart Links] Inserting link:', noteName);
-
         // Insert wikilink at cursor
         editor.replaceSelection(`[[${noteName}]]`);
       }
@@ -293,7 +277,6 @@ export class SuggestionPanelView extends ItemView {
       // Re-render
       this.render();
 
-      console.log('[Smart Links] ✓ Link inserted successfully');
       new Notice(`Linked to: ${this.getNoteName(suggestion.targetNote)}`);
     } catch (error) {
       console.error('[Smart Links] Failed to insert link:', error);
@@ -305,20 +288,15 @@ export class SuggestionPanelView extends ItemView {
    * Open the suggested note
    */
   private async openNote(notePath: string) {
-    console.log('[Smart Links] Open button clicked for:', notePath);
-
     try {
       const file = this.app.vault.getAbstractFileByPath(notePath);
 
       if (!(file instanceof TFile)) {
-        console.warn('[Smart Links] File not found:', notePath);
         new Notice(`Note not found: ${notePath}`);
         return;
       }
 
-      console.log('[Smart Links] Opening file:', file.path);
       await this.app.workspace.getLeaf(false).openFile(file);
-      console.log('[Smart Links] ✓ File opened successfully');
     } catch (error) {
       console.error('[Smart Links] Failed to open note:', error);
       new Notice('Failed to open note');
@@ -329,8 +307,6 @@ export class SuggestionPanelView extends ItemView {
    * Dismiss a suggestion
    */
   private dismissSuggestion(suggestion: LinkSuggestion) {
-    console.log('[Smart Links] Dismiss button clicked for:', suggestion.targetNote);
-
     suggestion.status = 'rejected';
 
     // Remove from current suggestions
@@ -338,8 +314,6 @@ export class SuggestionPanelView extends ItemView {
 
     // Re-render
     this.render();
-
-    console.log('[Smart Links] ✓ Suggestion dismissed');
   }
 
   /**

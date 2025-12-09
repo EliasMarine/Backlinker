@@ -104,7 +104,6 @@ export class EmbeddingCache {
       const binaryFile = this.app.vault.getAbstractFileByPath(binaryPath);
 
       if (!metadataFile || !binaryFile) {
-        console.log('[EmbeddingCache] No cache files found, starting fresh');
         return;
       }
 
@@ -114,20 +113,17 @@ export class EmbeddingCache {
 
       // Validate version and model
       if (metadata.version !== CACHE_VERSION) {
-        console.warn(`[EmbeddingCache] Cache version mismatch (${metadata.version} vs ${CACHE_VERSION}), clearing cache`);
         await this.clear();
         return;
       }
 
       if (metadata.modelName !== this.modelName) {
-        console.warn(`[EmbeddingCache] Model name mismatch (${metadata.modelName} vs ${this.modelName}), clearing cache`);
         await this.clear();
         return;
       }
 
       // Check dimension matches - if not, cache is incompatible
       if (metadata.embeddingDimension !== this.embeddingDimension) {
-        console.warn(`[EmbeddingCache] Embedding dimension mismatch (${metadata.embeddingDimension} vs ${this.embeddingDimension}), clearing cache`);
         await this.clear();
         return;
       }
@@ -150,19 +146,15 @@ export class EmbeddingCache {
           this.generatedTimes.set(entry.notePath, entry.generatedAt);
         } else {
           skippedEntries++;
-          console.warn(`[EmbeddingCache] Invalid offset for ${entry.notePath}, skipping (${endIndex} > ${embeddingsArray.length})`);
         }
       }
 
       if (skippedEntries > 0) {
-        console.warn(`[EmbeddingCache] Skipped ${skippedEntries} corrupted entries`);
         this.isDirty = true; // Mark dirty to rebuild on next save
       }
 
       this.lastSaved = metadata.lastSaved;
       this.isDirty = false;
-
-      console.log(`[EmbeddingCache] Loaded ${this.embeddings.size} embeddings from cache`);
 
     } catch (error) {
       console.error('[EmbeddingCache] Failed to load cache:', error);
@@ -178,7 +170,6 @@ export class EmbeddingCache {
    */
   async save(): Promise<void> {
     if (!this.isDirty && this.embeddings.size > 0) {
-      console.log('[EmbeddingCache] Cache not dirty, skipping save');
       return;
     }
 
@@ -275,8 +266,6 @@ export class EmbeddingCache {
 
       this.lastSaved = metadata.lastSaved;
       this.isDirty = false;
-
-      console.log(`[EmbeddingCache] Saved ${this.embeddings.size} embeddings to cache`);
 
     } catch (error) {
       console.error('[EmbeddingCache] Failed to save cache:', error);
@@ -377,8 +366,6 @@ export class EmbeddingCache {
       if (binaryFile) {
         await this.app.vault.delete(binaryFile as TFile);
       }
-
-      console.log('[EmbeddingCache] Cache cleared');
     } catch (error) {
       console.error('[EmbeddingCache] Failed to delete cache files:', error);
     }
@@ -420,12 +407,10 @@ export class EmbeddingCache {
    */
   updateModelName(modelName: string): boolean {
     if (modelName !== this.modelName) {
-      console.log(`[EmbeddingCache] Model name changed from ${this.modelName} to ${modelName}`);
       this.modelName = modelName;
       // Update dimension from model config
       const modelConfig = getModelConfig(modelName);
       this.embeddingDimension = modelConfig?.dimension ?? getDefaultModelConfig().dimension;
-      console.log(`[EmbeddingCache] Embedding dimension updated to ${this.embeddingDimension}`);
       return true;
     }
     return false;

@@ -121,11 +121,6 @@ export class BatchLinker {
       this.embeddingEngine,
       this.embeddingCache
     );
-
-    console.log('[BatchLinker] Smart matcher initialized:', {
-      contextVerification: smartMatcherConfig.enableContextVerification,
-      maxDocFrequencyPercent: smartMatcherConfig.maxDocumentFrequencyPercent
-    });
   }
 
   /**
@@ -175,21 +170,7 @@ export class BatchLinker {
    * This prevents creating links to stale cached notes that were deleted.
    */
   private filterExistingNotes(hybridResults: HybridResult[]): HybridResult[] {
-    const existingResults = hybridResults.filter(result => {
-      const exists = this.fileExistsInVault(result.note.path);
-      if (!exists) {
-        console.log(`[BatchLinker] Skipping stale cached note: ${result.note.path}`);
-      }
-      return exists;
-    });
-
-    if (existingResults.length < hybridResults.length) {
-      console.log(
-        `[BatchLinker] Filtered out ${hybridResults.length - existingResults.length} stale cached notes`
-      );
-    }
-
-    return existingResults;
+    return hybridResults.filter(result => this.fileExistsInVault(result.note.path));
   }
 
   /**
@@ -265,21 +246,7 @@ export class BatchLinker {
           matchResults,
           options.maxLinksPerNote
         );
-
-        // Debug logging for smart matcher
-        if (matchResults.length > 0) {
-          console.log(`[BatchLinker] Smart matching for "${noteIndex.title}":`, {
-            hybridCandidates: hybridResults.length,
-            smartMatches: matchResults.length,
-            keywords: keywordsToReplace.map(k => ({
-              keyword: k.keyword,
-              target: k.targetTitle,
-              confidence: k.confidence.toFixed(3)
-            }))
-          });
-        }
       } else {
-        console.warn('[BatchLinker] Smart matcher not initialized, skipping note');
         result.modifiedContent = content;
         return result;
       }
@@ -354,7 +321,6 @@ export class BatchLinker {
     });
 
     const totalNotes = notesToProcess.length;
-    console.log(`[BatchLinker] Processing ${totalNotes} notes`);
 
     progressCallback?.({
       phase: 'analyzing',
@@ -366,7 +332,6 @@ export class BatchLinker {
     // Process each note
     for (let i = 0; i < totalNotes; i++) {
       if (this.isCancelled) {
-        console.log('[BatchLinker] Cancelled by user');
         break;
       }
 
@@ -394,8 +359,6 @@ export class BatchLinker {
       // Yield to event loop
       await new Promise(resolve => setTimeout(resolve, 0));
     }
-
-    console.log(`[BatchLinker] Analysis complete: ${summary.totalLinksAdded} links in ${summary.notesWithChanges} notes`);
 
     return summary;
   }
@@ -446,14 +409,11 @@ export class BatchLinker {
       }
     );
 
-    console.log(`[BatchLinker] Created backup ${backup.id}`);
-
     // Phase 2: Apply changes
     let appliedCount = 0;
 
     for (let i = 0; i < totalNotes; i++) {
       if (this.isCancelled) {
-        console.log('[BatchLinker] Apply cancelled by user');
         break;
       }
 
@@ -487,8 +447,6 @@ export class BatchLinker {
       total: totalNotes,
       message: `Applied ${totalLinksAdded} links to ${appliedCount} notes`
     });
-
-    console.log(`[BatchLinker] Applied changes to ${appliedCount}/${totalNotes} notes`);
 
     return {
       backupId: backup.id,

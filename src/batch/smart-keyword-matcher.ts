@@ -503,9 +503,6 @@ export class SmartKeywordMatcher {
     const minWords = Math.min(sourceWords.size, targetWords.size);
 
     if (minWords > 0 && sharedWords.length / minWords > 0.5) {
-      console.log(
-        `[SmartKeywordMatcher] Skipping "${targetTitle}" - too similar to source "${sourceTitle}"`
-      );
       return [];
     }
 
@@ -524,7 +521,6 @@ export class SmartKeywordMatcher {
           confidence,
           matchReason: 'title'
         });
-        console.log(`[SmartKeywordMatcher] Tier 1 - Title match "${variant}" -> "${targetTitle}"`);
         return results; // Title match is definitive, no need for other tiers
       }
     }
@@ -558,7 +554,6 @@ export class SmartKeywordMatcher {
               confidence,
               matchReason: 'entity'
             });
-            console.log(`[SmartKeywordMatcher] Tier 2 - Entity match "${entity}" -> "${targetTitle}"`);
             break; // One entity match is enough
           }
         }
@@ -606,7 +601,6 @@ export class SmartKeywordMatcher {
               confidence,
               matchReason: 'phrase'
             });
-            console.log(`[SmartKeywordMatcher] Tier 3 - Phrase match "${phrase}" -> "${targetTitle}"`);
             break; // One phrase match is enough
           }
         }
@@ -662,9 +656,6 @@ export class SmartKeywordMatcher {
             confidence,
             matchReason: 'keyword'
           });
-          console.log(
-            `[SmartKeywordMatcher] Tier 4 - Keyword match "${keyword}" -> "${targetTitle}" (specificity: ${specificity.toFixed(2)})`
-          );
           break; // One keyword match is enough
         }
       }

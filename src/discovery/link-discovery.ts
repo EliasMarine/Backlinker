@@ -112,8 +112,7 @@ export class LinkDiscovery {
     // Check if document frequency is populated (debounce warning)
     if (this.cache.documentFrequency.size === 0) {
       if (!this.documentFrequencyWarningShown) {
-        console.warn('[Smart Links] Cannot generate suggestions - documentFrequency is empty');
-        console.warn('[Smart Links] Please run "Analyze entire vault" command first');
+        console.warn('[Smart Links] Cannot generate suggestions - analyze vault first');
         this.documentFrequencyWarningShown = true;
       }
       return [];
@@ -126,13 +125,11 @@ export class LinkDiscovery {
     try {
       tempNote = await this.createTempNoteIndex(file, content);
     } catch (error) {
-      console.error('[LinkDiscovery] Failed to create temp note index:', error);
+      console.error('[Smart Links] Failed to create temp note index:', error);
       return [];
     }
 
-    console.log('[LinkDiscovery] Calling hybridScorer.findSimilarNotes()...');
-
-    // Find similar notes using hybrid scoring with proper error handling
+    // Find similar notes using hybrid scoring
     let similarNotes: HybridResult[];
     try {
       similarNotes = await this.hybridScorer.findSimilarNotes(
@@ -140,38 +137,20 @@ export class LinkDiscovery {
         this.settings.maxRealtimeSuggestions
       );
     } catch (error) {
-      console.error('[LinkDiscovery] Hybrid scorer error:', error);
+      console.error('[Smart Links] Hybrid scorer error:', error);
       return [];
     }
 
-    console.log('[LinkDiscovery] HybridScorer returned', similarNotes.length, 'similar notes');
-    if (similarNotes.length > 0) {
-      console.log('[LinkDiscovery] Top 3 results:', similarNotes.slice(0, 3).map(r => ({
-        title: r.note.title,
-        finalScore: r.finalScore,
-        tfidfScore: r.tfidfScore,
-        semanticScore: r.semanticScore
-      })));
-    }
-
-    // CRITICAL: Filter out stale cached notes that no longer exist in vault
-    // This prevents suggesting links to deleted notes
+    // Filter out stale cached notes that no longer exist in vault
     const existingNotes = this.filterStaleNotes(similarNotes);
 
-    console.log('[LinkDiscovery] TempNote has', tempNote.existingLinks.length, 'existing links');
     // Filter out already-linked notes
     const filteredNotes = this.filterAlreadyLinked(existingNotes, tempNote);
 
-    console.log('[LinkDiscovery] After filtering already-linked:', filteredNotes.length, 'notes remain');
-
     // Convert to LinkSuggestion format
-    const suggestions = filteredNotes.map((result) =>
+    return filteredNotes.map((result) =>
       this.createLinkSuggestion(file.path, result)
     );
-
-    console.log('[LinkDiscovery] Final suggestions:', suggestions.length);
-
-    return suggestions;
   }
 
   /**
@@ -191,17 +170,6 @@ export class LinkDiscovery {
 
     // Calculate TF-IDF vector using cache's document frequency
     const tfidfVector = this.calculateTFIDFVector(wordFrequency);
-
-    // Diagnostic logging
-    console.log('[Smart Links] TempNote vector stats:', {
-      path: file.path,
-      vectorSize: tfidfVector.size,
-      wordFreqSize: wordFrequency.size,
-      topTerms: Array.from(tfidfVector.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([term, score]) => `${term}(${score.toFixed(3)})`)
-    });
 
     // Check if note is already in cache (might have embedding)
     const cachedNote = this.cache.notes.get(file.path);
@@ -250,22 +218,10 @@ export class LinkDiscovery {
    * This prevents suggesting links to notes that were deleted
    */
   private filterStaleNotes(results: HybridResult[]): HybridResult[] {
-    const existingResults = results.filter(result => {
+    return results.filter(result => {
       const file = this.app.vault.getAbstractFileByPath(result.note.path);
-      if (!(file instanceof TFile)) {
-        console.log(`[LinkDiscovery] Skipping stale cached note: ${result.note.path}`);
-        return false;
-      }
-      return true;
+      return file instanceof TFile;
     });
-
-    if (existingResults.length < results.length) {
-      console.log(
-        `[LinkDiscovery] Filtered out ${results.length - existingResults.length} stale cached notes`
-      );
-    }
-
-    return existingResults;
   }
 
   /**

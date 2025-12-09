@@ -104,13 +104,11 @@ export class EmbeddingEngine {
    */
   async loadModel(progressCallback?: ProgressCallback): Promise<void> {
     if (this.pipeline) {
-      console.log('[EmbeddingEngine] Model already loaded');
       progressCallback?.({ status: 'ready', message: 'Model already loaded' });
       return;
     }
 
     if (this.isLoading) {
-      console.log('[EmbeddingEngine] Model is already loading');
       return;
     }
 
@@ -125,8 +123,6 @@ export class EmbeddingEngine {
       });
 
       // Import transformers.js
-      // ONNX runtime WASM paths are configured at build time via esbuild plugin
-      console.log('[EmbeddingEngine] Importing @xenova/transformers...');
       const transformers = await import('@xenova/transformers');
 
       progressCallback?.({
@@ -151,18 +147,7 @@ export class EmbeddingEngine {
         env.backends.onnx.wasm.wasmPaths = WASM_CDN_PATH;
         env.backends.onnx.wasm.numThreads = 1;
         env.backends.onnx.wasm.proxy = false;
-        console.log('[EmbeddingEngine] WASM paths set to CDN:', WASM_CDN_PATH);
-      } else {
-        console.warn('[EmbeddingEngine] Could not set WASM paths - onnx backend not found');
       }
-
-      console.log('[EmbeddingEngine] Transformers env configured:', {
-        allowLocalModels: env.allowLocalModels,
-        useBrowserCache: env.useBrowserCache,
-        wasmPaths: env.backends?.onnx?.wasm?.wasmPaths,
-      });
-
-      console.log('[EmbeddingEngine] Loading model:', this.config.modelName);
 
       progressCallback?.({
         status: 'downloading',
@@ -228,8 +213,6 @@ export class EmbeddingEngine {
       };
 
       // Load the feature extraction pipeline
-      console.log('[EmbeddingEngine] Creating pipeline...');
-
       progressCallback?.({
         status: 'loading',
         progress: 90,
@@ -258,7 +241,6 @@ export class EmbeddingEngine {
       // Yield to allow UI to update before final message
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      console.log('[EmbeddingEngine] Model loaded successfully!');
       progressCallback?.({ status: 'ready', progress: 100, message: 'Neural model ready!' });
 
     } catch (error) {
@@ -300,7 +282,6 @@ export class EmbeddingEngine {
    */
   unloadModel(): void {
     if (this.pipeline) {
-      console.log('[EmbeddingEngine] Unloading model');
       this.pipeline = null;
     }
   }
@@ -374,8 +355,6 @@ export class EmbeddingEngine {
     const startTime = Date.now();
     let processedCount = 0;
 
-    console.log(`[EmbeddingEngine] Starting batch embedding for ${totalNotes} notes`);
-
     // Process in batches with UI yielding
     for (let i = 0; i < totalNotes; i += this.config.batchSize) {
       const batch = notes.slice(i, i + this.config.batchSize);
@@ -385,7 +364,6 @@ export class EmbeddingEngine {
         try {
           const text = note.cleanContent || note.content;
           if (!text || text.trim().length === 0) {
-            console.warn(`[EmbeddingEngine] Skipping empty note: ${note.path}`);
             continue;
           }
 
@@ -413,7 +391,6 @@ export class EmbeddingEngine {
         } catch (error) {
           // Check if this is a cancellation - if so, stop processing immediately
           if (error instanceof Error && error.message === 'Cancelled by user') {
-            console.log('[EmbeddingEngine] Batch embedding cancelled by user');
             throw error; // Re-throw to stop the batch
           }
           console.error(`[EmbeddingEngine] Failed to embed ${note.path}:`, error);
@@ -421,11 +398,6 @@ export class EmbeddingEngine {
         }
       }
     }
-
-    const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(
-      `[EmbeddingEngine] Batch embedding complete: ${results.size}/${totalNotes} notes in ${totalTime}s`
-    );
 
     return results;
   }
@@ -506,11 +478,9 @@ export class EmbeddingEngine {
 
     // If model name changed, update model config and unload old model
     if (config.modelName && config.modelName !== oldModelName) {
-      console.log(`[EmbeddingEngine] Model changed from ${oldModelName} to ${config.modelName}`);
       this.currentModelConfig = getModelConfig(config.modelName) || getDefaultModelConfig();
 
       if (this.pipeline) {
-        console.log('[EmbeddingEngine] Unloading old model');
         this.unloadModel();
       }
       return true;

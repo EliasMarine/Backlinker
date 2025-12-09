@@ -38,15 +38,12 @@ export class VaultIndexer {
    * Perform full vault analysis
    */
   async analyzeVault(progressCallback?: ProgressCallback): Promise<void> {
-    console.log('[Smart Links] Starting full vault analysis...');
     const startTime = Date.now();
 
     try {
       // Get all markdown files
       const files = this.app.vault.getMarkdownFiles();
       const totalFiles = files.length;
-
-      console.log('[Smart Links] Found', totalFiles, 'markdown files');
 
       if (progressCallback) {
         progressCallback(0, 'Starting analysis...');
@@ -82,9 +79,6 @@ export class VaultIndexer {
       // Update total documents count
       this.cache.totalDocuments = this.cache.notes.size;
 
-      console.log('[Smart Links] Indexed', this.cache.totalDocuments, 'notes');
-      console.log('[Smart Links] Found', this.cache.documentFrequency.size, 'unique terms');
-
       if (progressCallback) {
         progressCallback(60, 'Calculating TF-IDF vectors...');
       }
@@ -109,14 +103,11 @@ export class VaultIndexer {
         await this.cacheManager.saveCache(this.cache);
       }
 
-      const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-      console.log('[Smart Links] Analysis complete in', duration, 'seconds');
-
       if (progressCallback) {
         progressCallback(100, 'Analysis complete!');
       }
     } catch (error) {
-      console.error('[Smart Links] Error during vault analysis:', error);
+      console.error('[Smart Links] Vault analysis error:', error);
       throw error;
     }
   }
@@ -191,7 +182,6 @@ export class VaultIndexer {
    */
   async updateNote(file: TFile): Promise<void> {
     try {
-      console.log('[Smart Links] Updating note:', file.path);
 
       // Check if file should be excluded
       if (this.shouldExcludeFile(file)) {
@@ -271,8 +261,6 @@ export class VaultIndexer {
       if (this.settings.cacheEnabled) {
         await this.cacheManager.saveCache(this.cache);
       }
-
-      console.log('[Smart Links] Note updated:', file.path);
     } catch (error) {
       console.error('[Smart Links] Error updating note:', file.path, error);
     }
@@ -284,8 +272,6 @@ export class VaultIndexer {
   async removeNote(file: TFile): Promise<void> {
     const existingNote = this.cache.notes.get(file.path);
     if (existingNote) {
-      console.log('[Smart Links] Removing note from index:', file.path);
-
       // Update document frequency
       this.tfidfEngine.updateDocumentFrequency(existingNote, false);
 
@@ -306,8 +292,6 @@ export class VaultIndexer {
   async renameNote(file: TFile, oldPath: string): Promise<void> {
     const existingNote = this.cache.notes.get(oldPath);
     if (existingNote) {
-      console.log('[Smart Links] Renaming note in index:', oldPath, '->', file.path);
-
       // Update note data
       existingNote.path = file.path;
       existingNote.title = file.basename;

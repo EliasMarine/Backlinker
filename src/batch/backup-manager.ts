@@ -238,7 +238,6 @@ export class BackupManager {
 
     try {
       await adapter.write(backupPath, JSON.stringify(backupData, null, 2));
-      console.log(`[BackupManager] Wrote backup data to ${backupPath}`);
     } catch (error) {
       console.error(`[BackupManager] Failed to write backup:`, error);
       throw new Error(`Failed to write backup: ${(error as Error).message}`);
@@ -262,7 +261,6 @@ export class BackupManager {
         // Delete old backup data
         try {
           await adapter.remove(this.getBackupDataPath(old.id));
-          console.log(`[BackupManager] Deleted old backup ${old.id}`);
         } catch {
           // Ignore errors deleting old backups
         }
@@ -270,8 +268,6 @@ export class BackupManager {
     }
 
     await this.saveManifests(manifests);
-
-    console.log(`[BackupManager] Created backup ${backupId} with ${notes.length} notes (${linksAdded} links)`);
     return manifest;
   }
 
@@ -341,7 +337,6 @@ export class BackupManager {
     progressCallback?: (current: number, total: number, path: string) => void
   ): Promise<number> {
     const startTime = Date.now();
-    console.log(`[BackupManager] Starting restore from backup ${backupId}`);
 
     const data = await this.loadBackupData(backupId);
     if (!data) {
@@ -362,8 +357,6 @@ export class BackupManager {
       }
     }
 
-    console.log(`[BackupManager] Restoring ${notes.length} notes from backup ${backupId} (created ${new Date(manifest.timestamp).toLocaleString()})`);
-
     let restoredCount = 0;
     const errors: string[] = [];
 
@@ -379,7 +372,6 @@ export class BackupManager {
           restoredCount++;
         } else {
           // File may have been deleted or moved - try to recreate
-          console.warn(`[BackupManager] File not found, attempting to recreate: ${note.path}`);
           try {
             // Ensure parent folder exists
             const parentPath = note.path.substring(0, note.path.lastIndexOf('/'));
@@ -408,11 +400,6 @@ export class BackupManager {
     }
 
     const duration = Date.now() - startTime;
-
-    console.log(`[BackupManager] Restored ${restoredCount}/${notes.length} notes in ${duration}ms`);
-    if (errors.length > 0) {
-      console.warn(`[BackupManager] Restore completed with ${errors.length} errors:`, errors);
-    }
 
     // Record the restore in history
     const restoreRecord: RestoreRecord = {
@@ -446,8 +433,6 @@ export class BackupManager {
     const manifests = await this.loadManifests();
     const filtered = manifests.filter(m => m.id !== backupId);
     await this.saveManifests(filtered);
-
-    console.log(`[BackupManager] Deleted backup ${backupId}`);
   }
 
   /**
@@ -465,7 +450,6 @@ export class BackupManager {
     }
 
     await this.saveManifests([]);
-    console.log('[BackupManager] Cleared all backups');
   }
 
   // ==================== RESTORE HISTORY ====================
@@ -558,7 +542,6 @@ export class BackupManager {
     this.restoreHistory = [];
     this.restoreHistoryLoaded = true;
     await this.saveRestoreHistory();
-    console.log('[BackupManager] Cleared restore history');
   }
 
   // ==================== STATISTICS ====================

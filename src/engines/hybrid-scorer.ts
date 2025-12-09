@@ -48,10 +48,6 @@ export class HybridScorer {
     this.embeddingCache = embeddingCache || null;
     this.settings = settings;
 
-    const engines: string[] = ['TF-IDF'];
-    if (embeddingEngine) engines.push('Neural Embeddings');
-    if (semanticEngine) engines.push('N-gram/Context Semantic');
-    console.log('[Smart Links] HybridScorer initialized with:', engines.join(' + '));
   }
 
   /**
@@ -76,21 +72,12 @@ export class HybridScorer {
     const semanticEngineReady = this.semanticEngine?.isModelReady() &&
                                 this.settings.enableSemanticSearch;
 
-    console.log('[HybridScorer] Available engines:', {
-      neuralEmbeddings: neuralEmbeddingsReady,
-      semanticEngine: semanticEngineReady,
-      tfidf: true
-    });
-
     // Priority: Neural embeddings > Semantic engine > TF-IDF only
     if (neuralEmbeddingsReady) {
-      console.log('[HybridScorer] Using hybrid search (TF-IDF + Neural Embeddings)');
       return this.hybridSearchWithEmbeddings(sourceNote, maxResults);
     } else if (semanticEngineReady) {
-      console.log('[HybridScorer] Using hybrid search (TF-IDF + N-gram/Context Semantic)');
       return this.hybridSearch(sourceNote, maxResults);
     } else {
-      console.log('[HybridScorer] Using TF-IDF only search');
       return this.tfidfOnlySearch(sourceNote, maxResults);
     }
   }
@@ -99,37 +86,20 @@ export class HybridScorer {
    * TF-IDF only search (fast, always available)
    */
   private tfidfOnlySearch(sourceNote: NoteIndex, maxResults: number): HybridResult[] {
-    console.log('[HybridScorer] TF-IDF search params:', {
-      threshold: this.settings.tfidfThreshold,
-      maxResults
-    });
-
     const tfidfResults = this.tfidfEngine.findSimilarNotes(
       sourceNote,
       this.settings.tfidfThreshold,
       maxResults
     );
 
-    console.log('[HybridScorer] TF-IDF engine returned', tfidfResults.length, 'results');
-    if (tfidfResults.length > 0) {
-      console.log('[HybridScorer] Top TF-IDF result:', {
-        title: tfidfResults[0].note.title,
-        score: tfidfResults[0].score,
-        threshold: this.settings.tfidfThreshold
-      });
-    }
-
-    const hybridResults = tfidfResults.map((result) => ({
+    return tfidfResults.map((result) => ({
       note: result.note,
       tfidfScore: result.score,
       semanticScore: undefined,
-      finalScore: result.score, // TF-IDF score is the final score
+      finalScore: result.score,
       matchedKeywords: result.matchedKeywords,
-      matchedPhrases: result.matchedPhrases  // Pass through phrases for content-based linking
+      matchedPhrases: result.matchedPhrases
     }));
-
-    console.log('[HybridScorer] Returning', hybridResults.length, 'hybrid results from TF-IDF only search');
-    return hybridResults;
   }
 
   /**
@@ -138,18 +108,15 @@ export class HybridScorer {
   private hybridSearch(sourceNote: NoteIndex, maxResults: number): HybridResult[] {
     // Safety check - should not be called if semantic engine is null
     if (!this.semanticEngine) {
-      console.warn('[Smart Links] hybridSearch called but semantic engine not ready, falling back to TF-IDF');
       return this.tfidfOnlySearch(sourceNote, maxResults);
     }
 
     // Get TF-IDF results (use lower threshold to cast wider net)
     const tfidfResults = this.tfidfEngine.findSimilarNotes(
       sourceNote,
-      this.settings.tfidfThreshold * 0.5, // Lower threshold for initial filtering
-      maxResults * 3 // Get more candidates for re-ranking
+      this.settings.tfidfThreshold * 0.5,
+      maxResults * 3
     );
-
-    console.log('[HybridScorer] TF-IDF candidates:', tfidfResults.length);
 
     // Get semantic results
     const semanticResults = this.semanticEngine.findSimilarNotes(
@@ -157,8 +124,6 @@ export class HybridScorer {
       this.settings.semanticThreshold * 0.5,
       maxResults * 3
     );
-
-    console.log('[HybridScorer] Semantic candidates:', semanticResults.length);
 
     // Create a map of note paths to results
     const resultsMap = new Map<string, {
@@ -235,17 +200,6 @@ export class HybridScorer {
     // Sort by final score descending
     hybridResults.sort((a, b) => b.finalScore - a.finalScore);
 
-    console.log('[HybridScorer] Merged candidates:', resultsMap.size, '-> After threshold filtering:', hybridResults.length);
-    if (hybridResults.length > 0) {
-      console.log('[HybridScorer] Top hybrid result:', {
-        title: hybridResults[0].note.title,
-        tfidf: hybridResults[0].tfidfScore.toFixed(4),
-        semantic: hybridResults[0].semanticScore?.toFixed(4) ?? 'N/A',
-        final: hybridResults[0].finalScore.toFixed(4)
-      });
-    }
-
-    // Return top N results
     return hybridResults.slice(0, maxResults);
   }
 
@@ -288,7 +242,6 @@ export class HybridScorer {
     maxResults: number
   ): Promise<HybridResult[]> {
     if (!this.embeddingEngine || !this.embeddingCache) {
-      console.warn('[HybridScorer] Embedding engine not ready, falling back');
       return this.hybridSearch(sourceNote, maxResults);
     }
 
@@ -299,20 +252,16 @@ export class HybridScorer {
       maxResults * 3
     );
 
-    console.log('[HybridScorer] TF-IDF candidates:', tfidfResults.length);
-
     // Get or generate source embedding
     let sourceEmbedding = this.embeddingCache?.get(sourceNote.path);
     if (!sourceEmbedding) {
       try {
         const text = sourceNote.cleanContent || sourceNote.content;
         if (!text || text.trim().length === 0) {
-          console.warn('[HybridScorer] Source note has no content for embedding');
           return this.hybridSearch(sourceNote, maxResults);
         }
         sourceEmbedding = await this.embeddingEngine.generateEmbedding(text);
       } catch (error) {
-        console.warn('[HybridScorer] Failed to generate source embedding:', error);
         // Fall back to n-gram/context semantic or TF-IDF only
         if (this.semanticEngine?.isModelReady()) {
           return this.hybridSearch(sourceNote, maxResults);
@@ -323,23 +272,25 @@ export class HybridScorer {
 
     // Validate embedding was generated successfully
     if (!sourceEmbedding || sourceEmbedding.length === 0) {
-      console.warn('[HybridScorer] Source embedding is invalid, falling back');
       if (this.semanticEngine?.isModelReady()) {
         return this.hybridSearch(sourceNote, maxResults);
       }
       return this.tfidfOnlySearch(sourceNote, maxResults);
     }
 
-    // Get all cached embeddings (embeddingCache verified non-null earlier)
+    // Get all cached embeddings
     const allEmbeddings = this.embeddingCache!.getAll();
-    console.log('[HybridScorer] Total cached embeddings:', allEmbeddings.size);
 
-    // CRITICAL: If no embeddings are cached, fall back to TF-IDF only search
-    // This prevents the scenario where TF-IDF candidates are found with threshold*0.5
-    // but then filtered out by the full threshold (since there are no embeddings to boost scores)
+    // If no embeddings are cached, use the TF-IDF candidates we already found
     if (allEmbeddings.size === 0) {
-      console.log('[HybridScorer] No cached embeddings, falling back to TF-IDF only search');
-      return this.tfidfOnlySearch(sourceNote, maxResults);
+      return tfidfResults.map((result) => ({
+        note: result.note,
+        tfidfScore: result.score,
+        semanticScore: undefined,
+        finalScore: result.score,
+        matchedKeywords: result.matchedKeywords,
+        matchedPhrases: result.matchedPhrases
+      })).slice(0, maxResults);
     }
 
     // Calculate embedding similarities for all notes with embeddings
@@ -349,8 +300,6 @@ export class HybridScorer {
       maxResults * 3,
       new Set([sourceNote.path])
     );
-
-    console.log('[HybridScorer] Embedding candidates:', embeddingSimilarities.length);
 
     // Create results map
     const resultsMap = new Map<string, {
@@ -425,16 +374,6 @@ export class HybridScorer {
     // Sort and return
     hybridResults.sort((a, b) => b.finalScore - a.finalScore);
 
-    console.log('[HybridScorer] Neural hybrid results:', hybridResults.length);
-    if (hybridResults.length > 0) {
-      console.log('[HybridScorer] Top result:', {
-        title: hybridResults[0].note.title,
-        tfidf: hybridResults[0].tfidfScore.toFixed(4),
-        embedding: hybridResults[0].semanticScore?.toFixed(4) ?? 'N/A',
-        final: hybridResults[0].finalScore.toFixed(4)
-      });
-    }
-
     return hybridResults.slice(0, maxResults);
   }
 
@@ -443,7 +382,6 @@ export class HybridScorer {
    */
   setSemanticEngine(semanticEngine: SemanticEngine | null): void {
     this.semanticEngine = semanticEngine;
-    console.log('[Smart Links] SemanticEngine', semanticEngine ? 'enabled' : 'disabled', 'in HybridScorer');
   }
 
   /**
@@ -455,7 +393,6 @@ export class HybridScorer {
   ): void {
     this.embeddingEngine = embeddingEngine;
     this.embeddingCache = embeddingCache;
-    console.log('[Smart Links] EmbeddingEngine', embeddingEngine ? 'enabled' : 'disabled', 'in HybridScorer');
   }
 
   /**
