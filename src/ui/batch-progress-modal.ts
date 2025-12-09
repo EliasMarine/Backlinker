@@ -128,11 +128,11 @@ export class BatchProgressModal extends Modal {
       this.statusText.setText(progress.message);
     }
 
-    // Update progress bar
-    const current = progress.current ?? 0;
-    const total = progress.total ?? 0;
+    // Update progress bar with guards for edge cases
+    const current = typeof progress.current === 'number' && !isNaN(progress.current) ? progress.current : 0;
+    const total = typeof progress.total === 'number' && !isNaN(progress.total) ? progress.total : 0;
     const percentage = total > 0
-      ? Math.round((current / total) * 100)
+      ? Math.min(100, Math.max(0, Math.round((current / total) * 100)))
       : 0;
 
     if (this.progressFill) {
@@ -145,14 +145,14 @@ export class BatchProgressModal extends Modal {
 
     // Handle completion
     if (progress.phase === 'complete') {
-      this.showComplete(progress.message);
+      this.showComplete(progress.message, current, total);
     }
   }
 
   /**
    * Show completion state
    */
-  showComplete(message: string): void {
+  showComplete(message: string, current?: number, total?: number): void {
     if (this.phaseText) {
       this.phaseText.setText('Complete');
     }
@@ -163,6 +163,15 @@ export class BatchProgressModal extends Modal {
 
     if (this.progressFill) {
       this.progressFill.style.width = '100%';
+    }
+
+    // Update percentage text to show 100%
+    if (this.percentageText) {
+      if (typeof current === 'number' && typeof total === 'number') {
+        this.percentageText.setText(`100% (${current}/${total})`);
+      } else {
+        this.percentageText.setText('100%');
+      }
     }
 
     // Hide cancel, show close
@@ -187,6 +196,9 @@ export class BatchProgressModal extends Modal {
       this.statusText.setText(message);
     }
 
+    // Keep percentage visible but don't change it
+    // (shows where it failed)
+
     // Hide cancel, show close
     if (this.cancelButton) {
       this.cancelButton.style.display = 'none';
@@ -206,6 +218,13 @@ export class BatchProgressModal extends Modal {
 
     if (this.statusText) {
       this.statusText.setText('Operation was cancelled by user');
+    }
+
+    // Update percentage text to show cancelled state
+    if (this.percentageText) {
+      // Get current percentage from progress fill width
+      const currentWidth = this.progressFill?.style.width || '0%';
+      this.percentageText.setText(`${currentWidth} (cancelled)`);
     }
 
     // Hide cancel, show close

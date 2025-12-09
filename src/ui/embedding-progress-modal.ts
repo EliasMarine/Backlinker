@@ -175,11 +175,14 @@ export class EmbeddingProgressModal extends Modal {
   updateBatchProgress(info: BatchProgressInfo): void {
     if (this.isCancelled) return;
 
-    const percentage = Math.round((info.current / info.total) * 100);
+    // Guard against invalid values
+    const current = typeof info.current === 'number' && !isNaN(info.current) ? info.current : 0;
+    const total = typeof info.total === 'number' && !isNaN(info.total) && info.total > 0 ? info.total : 1;
+    const percentage = Math.min(100, Math.max(0, Math.round((current / total) * 100)));
     this.updateProgress(percentage);
 
     // Show which note is being processed
-    const noteName = info.notePath.split('/').pop()?.replace('.md', '') || 'note';
+    const noteName = info.notePath?.split('/').pop()?.replace('.md', '') || 'note';
     const truncatedName = noteName.length > 30 ? noteName.substring(0, 27) + '...' : noteName;
     this.statusText?.setText(`Analyzing: ${truncatedName}`);
 
@@ -188,9 +191,9 @@ export class EmbeddingProgressModal extends Modal {
       const etaMinutes = Math.floor(info.eta / 60);
       const etaSeconds = info.eta % 60;
       const etaStr = etaMinutes > 0 ? `${etaMinutes}m ${etaSeconds}s` : `${etaSeconds}s`;
-      this.etaText?.setText(`${info.current}/${info.total} notes • ${etaStr} remaining`);
+      this.etaText?.setText(`${current}/${total} notes • ${etaStr} remaining`);
     } else {
-      this.etaText?.setText(`${info.current}/${info.total} notes processed`);
+      this.etaText?.setText(`${current}/${total} notes processed`);
     }
   }
 
